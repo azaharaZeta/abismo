@@ -17,16 +17,14 @@
 </style>
 </head>
 <body>
-<!-- La pieza entera es este lienzo: el motor y los valores de la
-     escena están en motor.js; las criaturas, en bichos.js. -->
+<!-- La pieza entera es este lienzo. abismo.js tira del resto por
+     imports: motor.js, escena.js y el catálogo de bichos/ y eventos/. -->
 <canvas id="acuario"></canvas>
-<script src="motor.js"></script>
-<script src="bichos.js"></script>
-<script>Acuario.arranca();</script>
+<script type="module" src="abismo.js"></script>
 
 <!-- PANEL DE PRUEBAS · no forma parte de la pieza: borra esta línea
      y desaparece. Va al final porque lee la escena viva. Se abre con
      la tecla P o con ?pruebas -->
-<script src="pruebas.js"></script>
+<script type="module" src="pruebas.js"></script>
 </body>
 </html>

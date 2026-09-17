@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 «Abismo»: una pieza de arte generativo en un único `<canvas>`. Un abismo
 bioluminiscente con criaturas que se iluminan entre sí. Sin build, sin
-dependencias, sin tests automáticos: tres ficheros JS cargados por
-`index.html` con `<script>` planos.
+dependencias y sin tests automáticos: módulos ES planos que `index.html`
+carga directamente.
 
 **El código, los comentarios y los identificadores están en castellano.**
 Mantenlo así.
@@ -30,8 +30,8 @@ python3 -m http.server 8777
 ```
 
 Hay un `.claude/launch.json` con la configuración `abismo` en ese mismo
-puerto para las herramientas de preview. No abras `index.html` con
-`file://`: el motor lee píxeles de lienzos y necesita un servidor.
+puerto para las herramientas de preview. **Hace falta un servidor**: son
+módulos ES y `file://` los bloquea por CORS.
 
 No hay lint ni suite de pruebas. La verificación es visual, con el panel:
 `http://localhost:8777/?pruebas` (o tecla `P`) abre `pruebas.js`, que
@@ -40,22 +40,39 @@ repoblar sin recargar.
 
 ## Arquitectura
 
-Tres capas, en este orden de carga:
+Módulos ES sin build. `index.html` carga dos: `abismo.js`, que tira del
+resto por imports, y `pruebas.js`.
 
-1. **[motor.js](motor.js)** — el motor y **la escena**. Un IIFE que expone
-   `window.Acuario`. Contiene la constante `ABISMO`: *toda* la
-   configuración de la pecera (paleta, agua, planos, lista de bichos,
-   lista de eventos). Aquí no hay ninguna criatura.
-2. **[bichos.js](bichos.js)** — el catálogo de criaturas y eventos, cada
-   uno registrado con `Acuario.especie(nombre, def)` /
-   `Acuario.evento(nombre, def)`. Aquí no hay parámetros: los recibe de la
-   escena, así que el mismo bicho puede ser pálido y lento o nervioso y
-   quemado sin tocar una línea.
-3. **[pruebas.js](pruebas.js)** — andamio. **No forma parte de la pieza**:
-   borrar su `<script>` de `index.html` lo hace desaparecer sin más.
+```
+abismo.js          arranca
+escena.js          ABISMO: TODA la configuración de la pecera
+catalogo.js        una línea por criatura y por evento
+motor.js           la fachada: qué del motor es público
+motor/             util · color · registro · estado · agua · dedo · api · bucle
+bichos/            comun · forma · medusa · plancton · copepodo ·
+                   pezlinterna · rape (+ rape-cuerpo, rape-caza)
+eventos/           contagio · visitante · leviatan · carrona · cuerpo ·
+                   glitch · superpez
+pruebas.js         el andamio
+```
 
-La separación es el punto: **motor/escena ↔ criaturas**. Un valor ajustable
-va en `ABISMO`, nunca incrustado en `bichos.js`.
+Tres separaciones, y son el punto:
+
+1. **escena ↔ motor.** [escena.js](escena.js) es sólo números: paleta,
+   agua, planos, y la lista de bichos y eventos con sus parámetros. Es el
+   único fichero que hay que abrir para ajustar cómo se ve la pieza. Un
+   valor ajustable va ahí, nunca incrustado en una criatura.
+2. **motor ↔ criaturas.** Una criatura no tiene parámetros propios: los
+   recibe de la escena, así que el mismo bicho puede ser pálido y lento o
+   nervioso y quemado sin tocar una línea suya. Y el motor no conoce a
+   ninguna: las busca por nombre en su registro.
+3. **la pieza ↔ el andamio.** [pruebas.js](pruebas.js) **no forma parte de
+   la pieza**: borrar su `<script>` de `index.html` lo hace desaparecer.
+
+Dentro del motor, el estado vivo va en el objeto `V` de
+[motor/estado.js](motor/estado.js) y no en variables sueltas: un `import`
+no se puede reasignar, así que `setup()` escribe en `V` y los demás módulos
+leen de ahí. Los escalares que sólo usa un módulo se quedan en él.
 
 ### La regla que sostiene la pieza
 
@@ -91,7 +108,7 @@ pequeño (`scale`), más borroso (`resDiv`), más tenue (`alpha`), más lento
 (`drift`). Un objeto puede pedir `o.alFrente = true` en su `actualiza()`
 para pintarse en el plano delantero ese fotograma sin crecer ni afilarse.
 
-### Orden de un fotograma (`frame()` en [motor.js](motor.js))
+### Orden de un fotograma (`frame()` en [motor/bucle.js](motor/bucle.js))
 
 ```
 pasoEventos  → vacía `campos`, reinicia MOD, corre relojes y eventos vivos
@@ -166,19 +183,19 @@ niveles del velo. El velo nunca se quita: es lo que hace que esto sea agua.
 
 ## Añadir cosas
 
-**Un bicho nuevo**: `Acuario.especie('nombre', def)` en
-[bichos.js](bichos.js) + una entrada `{especie: 'nombre', …}` en
-`ABISMO.bichos`. El contrato completo de `def` (`conteo`, `siembra`,
+**Un bicho nuevo**: un fichero en `bichos/` que llame a
+`especie('nombre', def)`, una línea en [catalogo.js](catalogo.js) y una
+entrada `{especie: 'nombre', …}` en `ABISMO.bichos`. El contrato completo de `def` (`conteo`, `siembra`,
 `crear`, `actualiza`, `dibuja`, `campos`, y las banderas `luz`, `presa`,
 `cardumen`, `rompible`, `escalaCalidad`, `aligera`) está documentado en
-el comentario de **REGISTRO DE ESPECIES** en [motor.js](motor.js).
+**REGISTRO DE ESPECIES**, en [motor/registro.js](motor/registro.js).
 `siembra(M, p)` es el único que corre una vez por pecera en vez de por
 bicho: es donde va lo que toda la población comparte —los tonos que
 mandan en el banco salen de ahí.
 
-**Un evento nuevo**: `Acuario.evento('nombre', def)` (`exclusivo`, `cada`,
-`primero`, `arranca`, `actualiza`, `dibuja`) + entrada en
-`ABISMO.eventos`. El contrato está en **REGISTRO DE EVENTOS**. Dale un
+**Un evento nuevo**: igual, en `eventos/` y con `evento('nombre', def)`
+(`exclusivo`, `cada`, `primero`, `arranca`, `actualiza`, `dibuja`). El
+contrato está en **REGISTRO DE EVENTOS**, en el mismo fichero. Dale un
 `def.prueba` con valores por defecto: es lo que permite lanzarlo desde el
 panel aunque la escena no lo configure. Los mejores eventos **no dibujan
 nada** — apagan.
