@@ -22,19 +22,18 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 
 ## Ideas de usuario (pendientes de procesar)
 > Solo un humano edita esta sección. Texto breve; el detalle se desarrolla al crear la ficha.
-
-- Leviathan: hacer que su perfilado tenga también el mismo color random que su ojo.
-- El reparto del color excepcional de `puebla()` («uno y sólo uno en toda la pecera») se ha quedado sin candidatos: Quitarlo del motor.
-- Los peces tienen que huir del rape cuando éste caza una presa.
-- el rape se ilumina como dos veces cuando caza? revisar eso, tiene que iluminarse como una ráfaga violenta en la caza, y oscurecerse rápido de vuelta. revisar uqe no haya código espagueti ahí de pruebas pasadas.
-- eventos: meter carroña.
-- eventos: meter un cuerpo humano descendiendo
--eventos: los pececitos se alinean todos haciendo la forma como un super pez, cogen más color, y se comen una medusa . se dispersan después.
-- eventos: glitch
+- evento visitante: aleatorizarlo un poco. distintas formas y tamaños.
+- evento leviatan: me encanta el detalle de color en la panza, añadele algún detalle sutil más de color, en espinas y lomo. pero poco. está casi perfecto.
+- evento carroña: está muy bien, dale forma más clara de esqueleto, y métele algún random. Siempre color hueso.
+- evento cuerpo: es demasiado rígido, haz que tenga ciertas físicas ligeras, sus miembros flotando, su cuerpo doblándose, random. haz que tengan melena o no, random. y que pueda haber entre 1 y 3 cuerpos distintos cayendo en el evento, pero no exactamente a la vez, sin sincronizarse.
+- peces - cardumen: tiende a formarse siempre en círculo, y todavía con demasiada sincronia. mejoralo para que la formación sea más natural y erratica y erronea, y cada pez haga lo que pueda para seguir al grupo, sin éxito siempre. 
+- Claude comentó: " La carroña no entra en `L.presas`, que era la mitad de su diseño: los rapes tendrían que dejar de emboscar y converger cuando cae comida. Un objeto de evento no puede apuntarse a las listas por plano; decidir si pasa a ser especie o si el motor lo admite." Mi respuesta: la carroña no es presa, no es necesario que los rapes la cancen. los rapes solo se centran en los pececitos.
+- La pecera ha pasado de tres eventos a siete, cuatro de ellos exclusivos: revisar los `cada` y `primero` a ver si se pisan o si dejan huecos muertos.
 
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos que dejaron las ideas procesadas el 2026-09-17.
 
-
-- El leviatán es hoy el único evento pesado del abismo y va muy espaciado: la pecera se ha quedado con dos eventos ligeros. Elegir uno más del catálogo (`docs/ideas/idea-eventos-aleatorios.md`).
+- Evento `E-06 La estampida`: ya sólo le falta el registro, el campo `asusta` está hecho.
+- Evento `E-02 El apagón`: sigue siendo el de más efecto por línea de código.
+- Onda de proa: un campo `empuja` que el leviatán y el cuerpo pongan al pasar, para que el plancton se aparte y no sólo se apague. El plancton tenía el consumidor escrito y nadie ponía nunca el campo; se ha quitado como código muerto, así que la mitad que falta es la del que empuja.
 

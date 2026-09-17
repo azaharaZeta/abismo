@@ -129,17 +129,16 @@ const ABISMO = {
 
   paleta: [AZUL, CIAN, HIELO, VERDOSO, PLATA],
   /* ── EL COLOR EXCEPCIONAL ─────────────────────────────────────────
-     El motor sólo lo OFRECE en M.raro; cada especie decide. En esta pecera
-     lo coge una sola: LAS ASCUAS DEL PLANCTON, sorteadas por mota, que no
-     son un suceso sino temperatura.
+     El motor sólo lo OFRECE en M.raro y quien lo quiera se lo coge. Hoy lo
+     usa una sola especie y por su cuenta: LAS ASCUAS DEL PLANCTON,
+     sorteadas por mota, que no son un suceso sino temperatura.
 
-     El otro uso —EL RAPE ROJO, uno y sólo uno, repartido por puebla()— se
-     retiró al simplificar el color del rape: con todos ellos en el arco
-     morado-rojo-vino, un rape rojo ya no es excepción de nada. El reparto
-     de puebla() sigue en el motor y `raroProb` con él; para devolverlo
-     basta quitarle el `raro: false` a una especie con `aceptaRaro`. */
+     Hubo un segundo uso —EL RAPE ROJO, uno y sólo uno en toda la pecera,
+     que repartía puebla() con una bandera `aceptaRaro`—. Se retiró: al
+     simplificar el color del rape, todos ellos quedaron en el arco
+     morado-rojo-vino y un rape rojo dejó de ser excepción de nada. Con él
+     se fueron el reparto, `raroProb` y la bandera. */
   raro: ROJO,
-  raroProb: 0.30,                 // cada tres peceras, más o menos
 
   agua: {
     pos: [0.000, 0.070, 0.220, 0.480, 0.760, 1.000],
@@ -147,6 +146,14 @@ const ABISMO = {
        que la pantalla no sea un rectángulo plano. A mano y no por
        fórmula: el perfil de oscuridad está ajustado. */
     tono: [[4,13,21],[3,10,17],[2,6,12],[1,3,7],[0,1,3],[0,0,1]],
+
+    /* ── LA SOMBRA ───────────────────────────────────────────────────
+       Cuánta luz del agua le quita un campo `apaga`. A 1 el cuerpo deja el
+       agua en negro y se lee como una masa oscura de verdad contra el
+       resto; a 0 el mecanismo se apaga y un cuerpo enorme vuelve a
+       depender de las motas que faltan, que no basta. `nucleo` es hasta
+       dónde llega el negro pleno antes de empezar a desvanecerse. */
+    sombra: { fuerza: 1.0, nucleo: 0.55 },
 
     /* ── LA ONDULACIÓN ──────────────────────────────────────────────
        Un negro plano no se lee como profundidad, se lee como apagado, y
@@ -159,14 +166,6 @@ const ABISMO = {
        Van a `div` de resolución y se amplían: reducir y ampliar con
        bilineal es un desenfoque gratis, y lo que se pide es una
        ondulación, no cuatro círculos. `fuerza` a 0 la apaga entera. */
-    /* ── LA SOMBRA ───────────────────────────────────────────────────
-       Cuánta luz del agua le quita un campo `apaga`. A 1 el cuerpo deja el
-       agua en negro y se lee como una masa oscura de verdad contra el
-       resto; a 0 el mecanismo se apaga y un cuerpo enorme vuelve a
-       depender de las motas que faltan, que no basta. `nucleo` es hasta
-       dónde llega el negro pleno antes de empezar a desvanecerse. */
-    sombra: { fuerza: 1.0, nucleo: 0.55 },
-
     ondulacion: {
       /* `fuerza` medida contra el negro: a 0 la luminancia mediana del
          cuadro es 6,5 y a 0,9 sube a 14,2 —el doble, y ahí el negro ya no
@@ -248,9 +247,8 @@ const ABISMO = {
 
     /* EL LEVIATÁN. Imposiblemente grande, al fondo del todo, y lo que se
        ve de él es el hueco: dentro de su silueta la nieve marina se calla.
-       `largo` pasa de 1 a propósito —si cabe entero en pantalla deja de ser
-       más grande que el encuadre— y `brillo` es sólo el hilo del lomo. */
-    /* EL LEVIATÁN. Lo que ocupa a lo alto lo llena la ONDULACIÓN (`onda`),
+
+       Lo que ocupa a lo alto lo llena la ONDULACIÓN (`onda`),
        no el grosor del cuerpo (`grosor`, que es el semigrosor): el bicho es
        unas cinco veces más largo que ancho y lo que barre esa banda es el
        latigazo. Un bulto redondo no amedrenta.
@@ -301,23 +299,26 @@ const ABISMO = {
          de luminancia contra 8 del agua de alrededor— los puntos se leen
          sobre fondo oscuro y no hace falta que quemen. */
       brillo: 0.32, fotoforos: 11,
-      /* ── EL OJO ──────────────────────────────────────────────────
-         Lo único de la bestia que tiene color, y por eso es lo único que
-         se lee como vivo: el resto de lo que emite es el canto de un
-         hueco y va del azul del agua. Rojo o morado, sorteado por
-         travesía —`tono` cruza el 0 por el rojo, igual que el arco del
-         rape, y corta en 366 por lo mismo: a 378 (18°) el tramo del
-         extremo salía ÁMBAR y el ojo parecía una farola—, y `tramos`
-         bajo porque el halo se cachea por entrada de paleta y aquí hay
-         un leviatán cada vez.
+      /* ── SU COLOR ────────────────────────────────────────────────
+         TODO lo que emite la bestia va de aquí: el ojo, el hilo de la
+         cresta, los fotóforos del costado y el filo de la caudal. Es un
+         color por travesía, no por componente, y no es el azul del agua
+         como el resto de la escena: el leviatán es lo único que no
+         pertenece a esta pecera.
+
+         Rojo o morado. `tono` cruza el 0 por el rojo, igual que el arco
+         del rape, y corta en 366 por lo mismo: a 378 (18°) el tramo del
+         extremo salía ÁMBAR y el ojo parecía una farola. `tramos` bajo
+         porque el halo se cachea por entrada de paleta y aquí hay un
+         leviatán cada vez.
 
          `giroGlow` NEGATIVO y no el +5 de la casa: con el +5 el halo del
          extremo rojo se va al ámbar también. Con −6 el rojo tiene halo
          rojo y el morado, halo violeta. */
-      espectroOjo: { tono: [272, 366], tramos: 10,
-                     sat: [0.86, 1.00], luz: [0.50, 0.64],
-                     satGlow: [0.82, 1.00], luzGlow: [0.24, 0.34],
-                     luzCore: [0.80, 0.90], giroGlow: -6 },
+      espectro: { tono: [272, 366], tramos: 10,
+                  sat: [0.86, 1.00], luz: [0.50, 0.64],
+                  satGlow: [0.82, 1.00], luzGlow: [0.24, 0.34],
+                  luzCore: [0.80, 0.90], giroGlow: -6 },
       /* multiplica a `brillo`, así que el mando del panel lo apaga también.
          Bastante por encima de 1, y no es contradictorio con «sutil»:
          sutil es que sea PEQUEÑO. El leviatán vive en el plano del fondo,
@@ -326,6 +327,55 @@ const ABISMO = {
          tuviera un ojo; a 2,0 es un alfiler rojo y sigue sin alumbrar
          nada. */
       brilloOjo: 2.0 },
+
+    /* ── LA CARROÑA ─────────────────────────────────────────────────
+       Algo muerto que se hunde, y el primer evento que NO EMITE NADA: se
+       ve sólo mientras pasa por la luz de alguien, y del color de quien la
+       encuentra. Va en el plano de en medio: al fondo, a un tercio de
+       resolución, un esqueleto es una mancha, y delante taparía demasiado
+       cuadro durante el minuto que tarda en bajar.
+
+       `vel` BAJA —medio segundo de unidad por segundo— porque lo que tiene
+       que dar es el tiempo largo de la pieza: con 0,55 U/s tarda unos 50 s
+       en cruzar de arriba abajo, y en ese rato le pasan cosas por delante
+       tres o cuatro veces. `giro` es el volteo, y va en centésimas: una
+       vuelta cada minuto.
+
+       `caida` alta y `ganancia` alta es «hay que ponerse cerca, pero
+       entonces se ve bien». `base` es lo que se intuye sin nada, y va
+       mínimo: es un cadáver, no una lámpara. */
+    { evento: 'carrona', plano: 1,
+      cada: [130, 280], primero: [35, 95],
+      vel: [0.55, 0.95], largo: [0.15, 0.26],
+      vertebras: [11, 16], costillas: [6, 9],
+      giro: [-0.10, 0.10], deriva: 0.25,
+      /* `alcance` agranda el radio con el que un foco la revela, y es la
+         única licencia de este evento: los radios de `alcanceCuerpo` están
+         puestos para un pez oscuro —21 px un pez linterna del plano de en
+         medio— y un esqueleto es pálido y mate, así que se le ve desde más
+         lejos. Sin esto no se enciende nunca.
+
+         Ajustado por COBERTURA y no por travesías: una travesía suelta no
+         mide nada —depende de por dónde caiga, y tres seguidas dieron 21 %,
+         0 % y 69 % de fotogramas con algún hueso encendido—. Lo que se mide
+         es qué fracción del lienzo tiene luz bastante para revelarla:
+
+           alcance  1,0 → 1,1 %    2,6 → 7,3 %    3,6 → 12,8 %
+                    2,2 → 5,2 %    3,2 → ~10 %    5,5 → 24,3 %
+
+         Con 3,2 y doce vértebras repartidas por cuatrocientos píxeles, casi
+         siempre hay algún hueso en zona iluminada y casi nunca todos: eso
+         es «aparece y desaparece a trozos». Cuando le cae encima el banco
+         se enciende entera, y ése es el momento del evento. */
+      alcance: 3.2,
+      caida: 2.2, ganancia: 1.9, techo: 1.5, base: 0.025,
+      /* TAPA, y también a oscuras: es lo que la convierte en un cuerpo. El
+         `filo` va mucho más bajo que el del rape (28) porque un esqueleto
+         no es macizo —se le cuela luz entre las costillas. */
+      tapa: 0.85, tapaFilo: 6,
+      /* y la descomposición va prendiendo la nieve marina a su paso: casi
+         siempre se la ve por el rastro antes que por ella */
+      enciende: 0.55 },
 
     /* el poliqueto que cruza el fondo cada tanto, tan tenue que casi no
        está. `patas`, `antenas` y `cola` son el detalle: a 0 vuelve a ser la
@@ -336,13 +386,171 @@ const ABISMO = {
       largo: [0.40, 0.72], onda: [0.03, 0.10],
       grosor: 0.58, brillo: 0.26,
       patas: 0.95, antenas: 1.5, cola: 1.7 },
+
+    /* ── EL CUERPO ──────────────────────────────────────────────────
+       No dibuja NADA: la silueta es de campos `apaga`, así que lo que baja
+       es el hueco de un cuerpo humano. `alto` en fracción del alto del
+       cuadro, y grande —un tercio— porque lo que hace el evento es que se
+       RECONOZCA: más pequeño es una mancha con forma rara.
+
+       El más lento y el más raro de la pecera, y las dos cosas a propósito.
+       A 0,3-0,55 U/s tarda entre 40 y 80 segundos en bajar, que es el rato
+       que hace falta para dudar de lo que se está viendo; y con `cada` de
+       cinco a diez minutos no se convierte en parte del decorado. `giro`
+       en centésimas: una vuelta cada dos minutos. */
+    { evento: 'cuerpo', plano: 1,
+      cada: [300, 620], primero: [110, 250],
+      alto: [0.28, 0.40], vel: [0.30, 0.55],
+      giro: [-0.055, 0.055], deriva: 0.22, vaiven: 0.10,
+      /* `hondura` casi a 1 y `penumbra` como en el leviatán: el máximo de
+         cada elipse cae en su centro, así que sin agrandarlas la silueta
+         de verdad cae donde el apagado ya se desvanece y no hay masa
+         oscura. `filo` más bajo que el del leviatán (2,2) porque aquí los
+         trozos son finos —un brazo— y con canto duro se despegan. */
+      hondura: [0.92, 1.0], filo: 1.8, penumbra: 1.25 },
+
+    /* ── EL GLITCH ──────────────────────────────────────────────────
+       No es un fallo de la pantalla, es un fallo del DIBUJANTE: una o dos
+       medusas se quedan pintadas en bandas escalonadas mientras las otras
+       están perfectas. Lo aplica el motor con el campo `tajo` (ver
+       `pintaBicho`); la medusa no se entera. No dibuja nada.
+
+       ── VA A PASITOS, Y DURA ──────────────────────────────────────
+       El foco se sortea una vez al nacer y después no se sortea nada: cada
+       tirón AVANZA lo que ya había. `avance` es cuánto cambia la rotura por
+       paso y `giro` cuánto se recoloca cada banda, y los dos van cortos a
+       propósito. Sorteando el foco entero en cada tirón se veían SALTOS
+       —la rotura desaparecía y aparecía otra en otro sitio—; avanzando se
+       ve una sola avería dando pasos.
+
+       Y dura: de veintidós a cuarenta pasos repartidos por catorce a
+       veinticuatro segundos, con silencio corto entre medias —lo bastante
+       para que el paso se lea como un paso, no tanto que el evento se
+       quede en nada la mitad del rato—. Las dos versiones anteriores iban
+       a tres tirones de ochenta milisegundos y pasaban antes de que el ojo
+       llegara.
+
+       ── A QUIÉN LE TOCA ──────────────────────────────────────────
+       SÓLO A LAS MEDUSAS, y eso no lo decide el evento: lo declara la
+       especie con `rompible` (ver el REGISTRO DE ESPECIES). El evento
+       reparte campos y no sabe a quién le caen. Se probó rompiendo a todo
+       el mundo y lo que más se veía era plancton desplazado, que es ruido:
+       en una mota de tres píxeles la escalera no cabe. La medusa es el
+       sprite más grande de la pieza y el que se mueve más despacio, o sea
+       el único en el que una rotura se ve y da tiempo a mirarla.
+
+       De ahí sale el resto del reglaje. `radio` es lo que decide CUÁL de
+       las cuatro medusas le toca, así que va a media pantalla: más grande
+       les toca a todas y más chico no le toca a ninguna. Y `parte` sube a
+       1 —rompe a todas las que caen dentro— porque con cuatro candidatos
+       un 0,16 dejaba el evento en que no pasara nada; el «sólo algunos»
+       ya lo da el foco. En una pecera con más cosas rompibles hay que
+       bajarlo.
+
+       `bandas` y `paso` son los pasitos DENTRO del bicho: de ocho a
+       catorce bandas de seis a trece píxeles de escena, que es una pila de
+       unos cien píxeles y le cruza la campana entera. Los tentáculos caen
+       en la última banda y se van en bloque, que es justo lo que se quiere
+       —la campana en escalera y la cortina desalineada por debajo.
+
+       `sep` y `estira` son el TOPE, a plena rotura: lo que se aplica es el
+       tope por lo roto que esté el foco ahora mismo, así que los dos salen
+       del mismo número y la rotura es una cosa que crece y decrece en vez
+       de dos que se pelean.
+
+       ── LO QUE CUESTA, Y POR QUÉ `bandas` NO SUBE MÁS ─────────────
+       Cada banda es un dibujo entero del bicho. Cronometrado: una medusa
+       cuesta 0,069 ms de dibujo normal y 0,050 ms por banda —menos,
+       porque el recorte reduce el relleno—. En el peor caso imaginable
+       —un foco que coja a las cuatro medusas con catorce bandas— son
+       4·13·0,050 = 2,6 ms encima de un fotograma de 8,3, o sea un tercio
+       más. Con el `radio` de la escena le toca a una o dos, así que en la
+       práctica son 0,7-1,3 ms y sólo durante los tirones. Subir `bandas` o
+       el radio sí se notaría. */
+    { evento: 'glitch',
+      cada: [240, 540], primero: [70, 200],
+      dura: [14, 24], saltos: [22, 40], salto: [0.22, 0.50],
+      focos: [1, 2], radio: [0.30, 0.52],
+      bandas: [8, 14], paso: [6, 13],
+      sep: 34, estira: 0.85,
+      avance: 0.14, giro: [0.20, 0.70],
+      parte: 1,
+      /* `filo` alto: el foco queda casi plano dentro de su radio, así que
+         el que le toca se rompe ENTERO. Con `filo` bajo, los del borde
+         salen medio rotos y eso se lee como que la imagen tiembla. */
+      filo: 3 },
+
+    /* ── EL SUPERPEZ ────────────────────────────────────────────────
+       Parte del banco se encuentra un rato con forma de pez enorme —o de
+       dos—, avanza, describe una curva y se deshace. No caza nada y no va
+       a ningún sitio: es una coincidencia que dura veinte segundos. No
+       dibuja nada —manda un rato, y flojo, sobre una población que ya
+       estaba, y ni siquiera sobre toda.
+
+       Va en el plano de DELANTE porque es donde vive el 42 % del banco y
+       porque una silueta hecha de puntos necesita los puntos nítidos: al
+       fondo, a un tercio de resolución, no se lee la forma.
+
+       ── QUE PAREZCA CASUALIDAD, QUE ES TODO EL EVENTO ─────────────
+       No hay ni un número aquí que empuje. El centro y el rumbo salen del
+       propio banco —centro de masa y rumbo medio— así que nadie se
+       desplaza a una cita: la silueta aparece encima de ellos. Y lo que
+       hace que cuaje no es la fuerza, es el TIEMPO: `entra` de ocho a
+       catorce segundos, que es tres veces lo que tenía cuando esto era una
+       cacería y se cuadraban como un pelotón.
+
+       `minimo` es cuántos peces hacen falta POR SILUETA una vez aplicado el
+       cupo; con menos no hay evento —o hay una sola—, porque una silueta de
+       media pantalla hecha con diez peces no es una silueta.
+
+       ── AVANZA Y GIRA ────────────────────────────────────────────
+       `vel` es lento —un cuarto a medio U por segundo, unos diez segundos
+       para cruzar un tercio del cuadro— y `giro` es la velocidad ANGULAR,
+       que camina dentro de `±giroMax`: a 0,10 rad/s son hasta 70° en doce
+       segundos, o sea una curva abierta. Con un giro fijo describe un arco
+       de compás y con un rumbo objetivo sorteado da tirones; caminando, la
+       curva se abre y se cierra sola.
+
+       `sale` LARGO: la silueta se deshila descolgándose pez a pez —cada uno
+       tiene su umbral, ver `formaDesorden` en el banco— y eso necesita
+       rampa. Aquí ya no hay ningún empujón al final: el susto que había
+       cuando esto era una cacería se quitó, porque un banco que estalla no
+       se deshace casualmente. */
+    { evento: 'superpez', plano: 2,
+      cada: [200, 440], primero: [70, 190],
+      largo: [0.40, 0.54], largoMin: 0.26,
+      /* ── CUÁNTOS Y CUÁNTAS ─────────────────────────────────────
+         `reparto` es la fracción del banco que entra en la silueta, y no
+         es 1 a propósito: los que quedan fuera siguen nadando a lo suyo
+         por encima de la forma, y eso es la mitad de lo que la hace
+         parecer una casualidad en vez de una coreografía. Se sortea por
+         travesía, así que unas salen casi completas y otras a medias.
+
+         `superpeces` es cuántas siluetas: una o dos. Dos sólo si hay peces
+         para las dos —`minimo` por cabeza— y partiendo el banco por donde
+         se partiría solo, por el costado de su propio rumbo. Y cada una
+         mide menos: el largo se divide por la raíz del número, que es lo
+         que mantiene la densidad por perímetro y por tanto que el canto
+         siga cerrando.
+
+         `redondez` es lo gorda que sale CADA silueta, sorteado por ella:
+         a 0,70 un pez fusiforme y a 1,55 uno de cuerpo alto, casi un
+         disco. Con dos en pantalla a la vez, que no se parezcan es lo que
+         dice que son dos bichos y no un efecto duplicado. */
+      superpeces: [1, 2], reparto: [0.55, 0.90], redondez: [0.70, 1.55],
+      minimo: 12,
+      entra: [8, 14], nada: [7, 13], sale: [4, 7],
+      vel: [0.25, 0.55], giroMax: 0.10, giroPaso: 0.035,
+      /* el alcance del campo, ancho y plano: ver el comentario de `filo` en
+         el banco. Los que quedan fuera no se apuntan, y eso está bien
+         —siempre hay peces que no se enteran. */
+      alcance: 2.2, filo: 6.0 },
   ],
 
   /* ── BICHOS ───────────────────────────────────────────────────────
      Cada entrada: {especie, plano?, ...parámetros}. En aditivo sumar es
      conmutativo, así que el orden de la lista no cambia un píxel. Un
-     `paleta` o un `espectro` le dan colores propios a esa especie; un
-     `raro: false` la saca del sorteo del color excepcional.          */
+     `paleta` o un `espectro` le dan colores propios a esa especie.  */
   bichos: [
 
     /* nieve marina: mucha, lenta y casi apagada. Sólo existe de verdad
@@ -380,8 +588,6 @@ const ABISMO = {
       por: [ {cada:480000, min:1, max:3},
              {cada:600000, min:1, max:2},
              {cada:900000, min:0, max:1} ],
-      /* el rojo excepcional es del rape: repartirlo a suertes lo diluye */
-      raro: false,
       /* Frío y tirando a violeta, para que no compitan con el moteado del
          banco. `luzCore` BAJADO: la campana son nueve capas aditivas de
          `core`, y con el 0,95 de la casa esas nueve suman blanco. */
@@ -462,9 +668,6 @@ const ABISMO = {
                   sat: [0.66, 0.96], luz: [0.44, 0.58],
                   satGlow: [0.66, 0.92], luzGlow: [0.22, 0.32],
                   luzCore: [0.80, 0.90], giroGlow: -5 },
-      /* y fuera del sorteo del color excepcional: ya no hay excepción que
-         repartir, el arco entero es siniestro */
-      raro: false,
       /* punto pequeño y quemado, no mancha grande y suave */
       esca: 0.050,                // radio del señuelo, en largos
       difusion: 2.9,              // cuánto se derrama alrededor
@@ -588,29 +791,60 @@ const ABISMO = {
       acometida: [5, 8],          // el tirón del bocado
       acierto: 0.72,              // falla una de cada cuatro
       trasComer: [7, 16],         // la esca se apaga DESPUÉS de tragar
-      /* EL DESTELLO. No es una luz aparte: la esca emite once veces más durante
-         un instante y a la vez se recoge hacia la boca, así que el cuerpo se
-         enciende por el modelo de siempre. El tope está en `techo`. */
-      fogonazo: 11, fogonazoDura: 0.55, retrae: 0.95,
+      /* ── LA RÁFAGA, Y UNA SOLA ─────────────────────────────────
+         No es una luz aparte: la esca emite once veces más durante un
+         instante y a la vez se recoge hacia la boca, así que el cuerpo se
+         enciende por el modelo de siempre. El tope está en `techo`.
+
+         `fogonazoCaida` es lo que la convierte en una RÁFAGA. La luz sale
+         de elevar la fase a este exponente, así que por encima de 1 el
+         ataque es instantáneo y la caída violenta: a 1,8 queda en el 60 %
+         al primer quinto, en el 29 % a la mitad y en el 8 % a tres
+         cuartos. Con la resta pelada (exponente 1) la ráfaga bajaba a
+         ritmo constante y se leía como un foco que se enciende.
+
+         `fogonazoDura` SUBIDO de 0,55 —justo el bocado— a 0,9, que es el
+         bocado MÁS la masticación. No es que dure más luz: es que ahora
+         es la única que hay, y tiene que llegar viva —de cola— hasta que
+         acaba de tragar. Antes la masticación ponía su propia envolvente
+         encima y un bocado se veía como dos encendidos seguidos. */
+      fogonazo: 11, fogonazoDura: 0.9, fogonazoCaida: 1.8, retrae: 0.95,
 
       /* ── MASTICAR ──────────────────────────────────────────────
          El bocado dura medio segundo y va a seguir durándolo: un cazador
          de emboscada es un tirón. Lo que se alarga es lo de después: con
-         la presa dentro se queda trabajando la quijada, con el ilicio
-         recogido junto a la boca y por tanto con su propia luz encima.
+         la presa dentro se queda trabajando la quijada y con el ilicio
+         recogido junto a la boca.
 
-         El rango mide CUÁNTO SE ALUMBRA ÉL SOLO, del tirón a que se apagan
-         el fogonazo y la envolvente: con [0,20 · 0,38] son 0,75-0,93 s —el
-         bocado y poco más, un vistazo—, y por encima del segundo deja de ser
-         un vistazo y se convierte en un rape al que da tiempo a mirarse.
-         `masticaLuz` sigue por encima de 1 porque la luz propia está
-         penalizada por `autoLuz`.                                   */
+         Ya NO pone luz —eso era el segundo encendido—: lo que pone es
+         movimiento, y se ve con la cola de la ráfaga. Con [0,20 · 0,38] el
+         bocado y la masticación suman 0,75-0,93 s, que es a lo que se
+         ajustó `fogonazoDura`; por encima del segundo deja de ser un
+         vistazo y se convierte en un rape al que da tiempo a mirarse. */
       mastica: [0.20, 0.38],      // segundos con la presa dentro
-      masticaLuz: 2.4,            // lo que emite la esca recogida
       masticaRitmo: 4.6,          // dentelladas por segundo, en rad/s
       masticaAbre: 0.13,          // cuánto trabaja la quijada, en rad
       masticaRetrae: 0.82,        // lo recogido que se queda el ilicio
-      masticaEsca: 0.45,          // y cuánto se le ve al señuelo mientras
+
+      /* ── Y EL BANCO SE ENTERA ──────────────────────────────────
+         Un campo `asusta` en la boca al morder. `espanta` es el radio en
+         LARGOS del rape, así que espanta más lejos cuanto más grande es el
+         animal —que es lo que pasa— y la escala se mantiene en cualquier
+         pantalla, porque el rape mide siempre un quinto del ancho.
+
+         NO puede ir generoso. Se probó a 4,2 —el 61 % del ancho del
+         cuadro— y, medido, entraban en pánico LOS 68 peces de la pecera a
+         la vez: no quedaba nadie fuera y el susto dejaba de ser local. A
+         2,0 el radio es el 29 % del ancho y se asustan 34 de 68, que es lo
+         que se pidió: huye el que está cerca.
+
+         `espantaDura` es más largo que la ráfaga a propósito: si el susto
+         se apaga con la luz, cuando el ojo vuelve a ver al banco ya está
+         rehecho y el pánico no se ha visto. `espantaFilo` POR DEBAJO de 1
+         entra como pow(u, 1,25), así que el peso cae rápido en el canto y
+         los del borde del radio no llegan al umbral: el miedo no tiene
+         borde duro. */
+      espanta: 2.0, espantaDura: 2.2, espantaFilo: 0.8,
 
       /* la onda del dedo le hace dar media vuelta y salir de ahí */
       umbralHuida: 0.25, estampida: [3, 6],
@@ -623,26 +857,46 @@ const ABISMO = {
     { especie: 'pezlinterna',
       /* Muchos: el banco es el espectáculo, y con nueve peces no hay banco,
          hay nueve peces. El tope alto es para pantallas grandes;
-         `escalaCalidad` los recorta si la máquina no da. */
-      total: {cada:7500, min:30, max:88},
+         `escalaCalidad` los recorta si la máquina no da.
+
+         BAJADO de 7500·[30,88] a 9800·[24,68]: con el banco a tope y los
+         peces más grandes, lo que había dejaba de leerse como un banco y
+         pasaba a ser una alfombra. Menos y más grandes se ven mejor los
+         fotóforos, que es lo único que se ve de uno de lejos. */
+      total: {cada:9800, min:24, max:68},
       /* cargado hacia delante: el banco que se tiene que leer como banco es
          el de cerca, y el del fondo son motas */
       reparto: [0.24, 0.34, 0.42],
-      largo: [0.62, 1.05],
+      /* SUBIDO de [0,62 · 1,05]. `roce` va en U y no en largos, así que al
+         crecer el bicho hay que subirlo con él o el banco se solapa. */
+      largo: [0.76, 1.28],
       /* El círculo entero de tono, porque fotóforos verdes, ámbar y rosados los
          hay de verdad, y bastantes tramos porque el banco tiene que leerse
          moteado de color. `luzGlow` abajo: el bicho tiene color, el agua no.
 
-         SATURACIÓN A LA BAJA Y LUZ ARRIBA, que es lo que los vuelve
-         plateados: plateado no es un tono, es poco tono con mucha luz. Un
-         pelín, y medido contra lo que el ojo ve de verdad de un pez a
-         distancia, que es el HALO del fotóforo —el punto es `core` y sale
-         casi blanco pase lo que pase—. Por eso `satGlow` manda aquí más
-         que `sat`, y por eso no puede bajar mucho: a 0,34-0,58 el banco se
-         quedó blanco del todo y perdió el moteado, que es lo bonito. */
+         PLATEADO, PERO NO GRIS, y el mando de eso es `luz` y NO `sat`.
+         En HSL las dos cosas se pelean: a `luz` 0,85 un `sat` de 0,9 da
+         (182, 251, 182), o sea un pastel con un 27 % de saturación real.
+         Medido sobre los `mid` que salen:
+
+         | `sat` · `luz`        | saturación del RGB que sale |
+         |----------------------|-----------------------------|
+         | 0,74-0,98 · 0,72-0,88 | 0,25-0,31  ← gris          |
+         | 0,88-1,00 · 0,66-0,84 | 0,28-0,52  ← el original   |
+         | 0,78-1,00 · 0,64-0,80 | 0,33-0,67  ← esto          |
+
+         Así que el plateado se consigue subiendo `luz` sólo un poco desde
+         el original y bajando `sat` un poco, no subiéndola: se probó al
+         revés —`luz` a 0,88 con `sat` casi al máximo— y el banco salió
+         blanco. Lo que de verdad quitó el confeti no fue el color de cada
+         pez, fue el sorteo: uno o dos tonos mandando en vez de treinta.
+
+         `satGlow` va aparte y algo más bajo que el original, porque de un
+         pez a distancia lo que se ve es el HALO del fotóforo —el punto es
+         `core` y sale casi blanco pase lo que pase—. */
       espectro: { tono: [0, 352], tramos: 32,
-                  sat: [0.60, 0.88], luz: [0.72, 0.88],
-                  satGlow: [0.44, 0.70], luzGlow: [0.20, 0.30],
+                  sat: [0.78, 1.00], luz: [0.64, 0.80],
+                  satGlow: [0.56, 0.82], luzGlow: [0.20, 0.30],
                   giroGlow: 6 },
       /* ── Y EL ORDEN EN EL SORTEO ──────────────────────────────
          Uno o dos tonos mandan en toda la pecera y `tendencia` es qué
@@ -685,8 +939,55 @@ const ABISMO = {
          3,2 baja a 0,41 pero empieza a no leerse como banco. Los demás
          pesos se quedan como estaban: se probó tocarlos y la medición no
          distinguió el cambio del ruido. Ver docs/ideas/archivo. */
-      cardumen: { vista: 4.2, roce: 1.7, propio: 0.40,
+      cardumen: { vista: 4.2, roce: 2.0, propio: 0.40,
                   aparta: 1.8, alinea: 1.6, junta: 0.9 },
+      /* SEGUNDOS DE PÁNICO cuando algo muerde al lado, a peso pleno del
+         campo. Entra en el mismo `susto` que ya usaba el dedo y el fallo de
+         un rape: triplica el viraje, sube el nado a `velSusto` y suelta las
+         dos reglas de grupo —no la de no chocar—, así que el banco se abre
+         y se rehace solo cuando pasa. */
+      panico: 1.8,
+      /* ── SI ALGUIEN LOS FORMA ──────────────────────────────────
+         `formaPega` es la fuerza del tirón a su sitio, en 1/s: con rumbo
+         solo la silueta no cuaja —un pez que vira a 3 rad/s orbita su
+         sitio en vez de llegar—. `formaBrillo` es «coger más color»: lo
+         que emite de más el banco formado, y no un cambio de tono, que
+         daría un salto.
+
+         ── Y QUE NO VAYAN COMO REMACHES ───────────────────────────
+         Estos tres son la diferencia entre un banco imitando a un pez y
+         una plantilla. Los tres a 0 dan la primera versión, que era esto
+         último: los sesenta y ocho tirando a su casilla con la misma
+         fuerza, el morro clavado en la tangente y todos cuadrándose y
+         deshaciéndose en el mismo instante.
+
+         `formaError` es cuánto se equivoca cada pez de puesto, en fracción
+         del largo de la silueta, y va pequeño: a 0,055 son unos treinta
+         píxeles de una silueta de quinientos, bastante para que ninguno
+         esté donde «debería» y poco para que el contorno siga cerrando. El
+         error transversal va a la mitad del longitudinal, porque
+         desdibuja el canto mucho más.
+
+         `formaDesorden` abre pez a pez lo demás: la gana con la que tira a
+         su sitio (±80 %, o sea que unos llegan en un tercio del tiempo que
+         otros), el desvío del morro (±0,35 rad) y el umbral al que se
+         apunta y se suelta (0 a 0,77 de campo). Ese último es el que quita
+         los dos momentos más forzados: el banco formándose en bloque y la
+         silueta desapareciendo de golpe.
+
+         `formaCalma` es cuánto se le baja el nervio en formación. Estuvo
+         apagado del todo y el precio fue que los peces quedaban clavados;
+         a 0,70 queda un 30 % de tirón y de desvío, y la silueta tiembla.
+         Subió de 0,85 a 0,70 con el resto: si la forma no se impone, el
+         nervio tampoco tiene por qué callarse tanto. */
+      /* `formaPega` BAJÓ de 4,0 a 1,3 al dejar de ser una cacería: a 4 la
+         silueta cuajaba en un segundo y lo que se veía era un pelotón
+         cuadrándose. Flojo y con `entra` largo, cada pez llega cuando llega
+         y parece que se han encontrado. `formaCerca` es a cuántos largos de
+         su sitio deja de apuntar a él y se alinea con el contorno. */
+      formaPega: 1.3, formaCerca: 0.20, formaBrillo: 1.1,
+      formaError: 0.055, formaDesorden: 0.7, formaCalma: 0.70,
+
       /* DESORDEN POR CIZALLA. Antes TODOS los peces nadaban a la misma
          velocidad exacta —dispersión CERO—, así que el banco se trasladaba
          como un sólido y la forma que tenía se quedaba congelada. Esto abre
@@ -728,10 +1029,12 @@ const ABISMO = {
      dibuja(o, M, L, p, g)     → void, en el contexto del plano
      luz         → ilumina al plancton; necesita x, y, c y rLuz
      presa       → es comestible: entra en L.presas
+     rompible    → se le puede romper el DIBUJO: un campo `tajo` encima y
+                   el motor lo pinta cortado en bandas (ver pintaBicho).
+                   Sin la bandera, ni se le consulta.
      cardumen    → se agrupa: entra en L.cardumen y los suyos se miran
                    entre ellos sin saber de qué especie son; necesita
                    x, y y ang. Dos especies que lo pidan hacen banco mixto.
-     aceptaRaro  → puede llevar el color raro (el motor lo da a uno solo)
      escalaCalidad → su población se puede recortar al degradar
      aligera(o)  → simplificar un objeto vivo al degradar
      campos(o, M, L, p) → opcional. Empujar campos a M.campos, como un
@@ -769,11 +1072,19 @@ const paramsDe = conf => conf.params || conf;
 
    Actúa por dos vías, y ninguna obliga a las especies a saber que existe:
      · CAMPOS → M.campos.push({tipo, x, y, r, ri?, ky?, rot?, plano?,
-                fuerza, filo?, c?}) y el bicho pregunta M.campo(...). Un
-                bicho también puede empujarlos —el rape tapa con uno—,
-                pero entonces tiene que actualizarse ANTES que quien lo
-                lea: los campos se vacían al empezar cada fotograma.
-     · MODULACIÓN → M.mod.agua / .ritmo, que el motor aplica al pintar. */
+                fuerza, filo?, c?, d?}) y el bicho pregunta M.campo(...).
+                Un bicho también puede empujarlos —el rape tapa y asusta
+                con ellos—, pero entonces tiene que actualizarse ANTES que
+                quien lo lea: los campos se vacían al empezar cada
+                fotograma.
+     · MODULACIÓN → M.mod.agua / .ritmo, que el motor aplica al pintar.
+
+   Y para LEER la escena, un evento no recibe `L`: tiene M.luces(plano) y
+   M.cardumen(plano), que son las dos listas del plano que le pueden hacer
+   falta. Con la primera puede existir un evento que no emita nada y se vea
+   sólo cuando algo lo alumbra —la regla de la casa aplicada a un evento,
+   que es lo que hace la carroña—; con la segunda, uno que se forme donde
+   el banco ya estaba, sin preguntar de qué especie es. */
 const EVENTOS = {};
 function evento(nombre, def){ def.nombre = nombre; EVENTOS[nombre] = def; }
 
@@ -798,7 +1109,7 @@ let evGrupos = [], evVivos = [];
 const campos = [];
 const MOD = {agua:1, ritmo:1};
 function reiniciaMod(){ MOD.agua = 1; MOD.ritmo = 1; }
-/* los que piden frente este fotograma, en tríos grupo/plano/objeto */
+/* los que piden frente este fotograma, cada uno con su grupo y su plano */
 const frente = [];
 
 /* LOS PLANOS VIVOS. `ABISMO.planos` es lo que la escena PIDE; esto es lo
@@ -1143,7 +1454,10 @@ function salto(x, y, inset){
 /* pared tocada por envuelve(), compartido igual que _bor y _emp */
 const _enc = [0,0];
 /* campo que más pesa en un punto. Compartido: consúmelo en el acto. */
-const _cam = {peso:0, c:null, x:0, y:0};
+const _cam = {peso:0, c:null, d:null, x:0, y:0};
+/* para M.luces de un plano que no existe: devolver null obligaría a cada
+   consumidor a comprobarlo antes de recorrerlo */
+const VACIO = [];
 
 const M = {
   get W(){ return W; }, get H(){ return H; },
@@ -1160,6 +1474,39 @@ const M = {
     return eligeColor(p, p.suma);
   },
   rgba, clamp, rnd, rango, rangoE, elige, mezcla, suave, opt, TAU,
+  /* ── LOS FOCOS DE UN PLANO ────────────────────────────────────────
+     La MISMA lista que las especies reciben en `L.luces`, no una copia: se
+     lee y no se toca. Está aquí porque un evento no recibe `L`, y sin ella
+     no puede existir un evento que se vea SÓLO cuando algo lo alumbra
+     —que es la regla de la casa aplicada a un evento—.
+
+     En un `dibuja` de evento la lista es la de este fotograma, porque los
+     eventos se pintan después de los bichos; en un `actualiza` es la del
+     anterior, que a la velocidad a la que se mueve esto da igual. */
+  luces(plano){ const L = PLANOS[plano|0]; return L ? L.luces : VACIO; },
+  /* y quién hace banco, por lo mismo: el superpez necesita saber DÓNDE
+     está el banco y hacia dónde iba para formarse ahí, y no puede
+     preguntar de qué especie es nadie.
+
+     SIN `plano`, los tres planos juntos, y ésa es la forma de usarlo casi
+     siempre: el banco vive repartido en los tres y un campo puesto en el
+     plano de delante lo leen también los de atrás —la guarda sólo excluye
+     a quien pregunta desde más cerca—, así que quien quiera saber «dónde
+     está el banco» tiene que mirarlo entero. Se probó a contar sólo el
+     plano de delante y el superpez nunca llegaba a partirse en dos:
+     contaba 29 candidatos de los 68 que de hecho se le apuntaban.
+
+     Devuelve un array NUEVO en ese caso, así que se pide una vez al
+     arrancar un evento y no por fotograma. */
+  cardumen(plano){
+    if (plano === undefined){
+      const t = [];
+      for (const L of PLANOS) for (const o of L.cardumen) t.push(o);
+      return t;
+    }
+    const L = PLANOS[plano|0];
+    return L ? L.cardumen : VACIO;
+  },
   /* lo que los eventos empujan y los bichos consultan */
   campos, get mod(){ return MOD; }, get ritmo(){ return MOD.ritmo; },
   /* El campo de ese `tipo` que más pesa sobre (x,y), con el peso en .peso y
@@ -1169,7 +1516,8 @@ const M = {
      `filo` define el canto. `plano` es la guarda de profundidad: con él,
      sólo actúa sobre quien pregunta desde ese plano o desde uno más
      lejano; sin él, sobre todos —un evento sin cuerpo no tiene
-     profundidad. */
+     profundidad. `c` y `d` viajan sin que el motor los mire: el color, y
+     un dato cualquiera del que lo puso. */
   campo(tipo, x, y, plano){
     let vm = 0, mejor = null;
     for (let i=0;i<campos.length;i++){
@@ -1196,6 +1544,12 @@ const M = {
     }
     if (!mejor) return null;
     _cam.peso = vm > 1 ? 1 : vm; _cam.c = mejor.c || null;
+    /* `d` es un dato libre del campo, que el motor pasa tal cual. Igual que
+       `c`, pero sin decir qué es: lo que un campo necesite contar y no
+       quepa en un peso y un centro —el tamaño y el ángulo de una forma,
+       por ejemplo. Quien lo pone y quien lo lee se entienden solos; el
+       motor no lo mira. */
+    _cam.d = mejor.d || null;
     /* el centro, que un campo de empuje necesita para dar dirección */
     _cam.x = mejor.x; _cam.y = mejor.y;
     return _cam;
@@ -1264,19 +1618,6 @@ function puebla(){
       for (let i=0;i<q;i++) gr.items.push(def.crear(M, L, p));
       L.grupos.push(gr);
     }
-  }
-
-  /* El color raro: como mucho uno en toda la escena, y en los planos
-     delanteros para que se lea. `raroProb` hace falta desde que los
-     candidatos son uno o dos: si no, «como mucho uno» sería SIEMPRE ése. */
-  if (ABISMO.raro &&
-      (ABISMO.raroProb === undefined || Math.random() < ABISMO.raroProb)){
-    const cand = [];
-    for (let li=PLANOS.length-1; li>=Math.max(0,PLANOS.length-2); li--)
-      for (const gr of PLANOS[li].grupos)
-        if (gr.def.aceptaRaro && gr.p.raro !== false)
-          for (const o of gr.items) cand.push(o);
-    if (cand.length) elige(cand).c = ABISMO.raro;
   }
 }
 
@@ -1354,8 +1695,7 @@ function pasoEventos(dt){
 function dispara(nombre, extra){
   const def = EVENTOS[nombre];
   if (!def) return false;
-  let gr = null;
-  for (const g of evGrupos) if (g.def === def) gr = g;
+  let gr = evGrupos.find(g => g.def === def);
   if (!gr){
     gr = { def, p: fusiona(def.prueba || {}, extra || {}),
            vivo: null, prox: Infinity, suelto: true };
@@ -1555,6 +1895,113 @@ function pintaAgua(){
 
 /* Cada plano en su propio lienzo y en aditivo: primero la población,
    después los eventos que dibujen, y las ondas del dedo al final. */
+/* ── EL TAJO: PINTAR UN BICHO MAL ───────────────────────────────────
+   Todo dibujo de bicho pasa por aquí. Un campo `tajo` NO lo lee ninguna
+   especie: lo lee el motor justo antes de pintarla, y lo que hace es
+   pintarla ROTA. Es el mismo principio que `alFrente` —el dibujo de un
+   objeto lo coloca el motor, no el objeto— y es el único sitio donde se
+   puede corromper un sprite sin que la especie sepa que existe: un bicho
+   no puede dibujarse mal a sí mismo sin llenarse de ramas que no son
+   suyas.
+
+   La rotura son BANDAS HORIZONTALES, cada una corrida lo suyo: el bicho se
+   dibuja `d.bandas` veces, cada vez con el recorte de una banda y con su
+   propio desplazamiento, así que lo que sale es una escalera. Empezó
+   siendo un solo corte en dos mitades y se quedó corto: con dos trozos se
+   lee «esto está movido» y con cinco se lee «esto está mal dibujado», que
+   es lo que se pide. Las bandas miden `d.paso` píxeles de escena, así que
+   a un bicho grande le tocan varias y a una mota, una sola —y entonces lo
+   que le pasa es que aparece desplazada, que también vale.
+
+   La primera banda y la última se van a infinito, de modo que la escalera
+   cubre al bicho entero pase lo que pase: sin eso, lo que quedara por
+   encima o por debajo de la pila no se dibujaría en absoluto.
+
+   Nada de esto se sortea: el signo, la altura de los cortes, el salto de
+   cada banda y el selector salen de la POSICIÓN del bicho. Tienen que ser
+   estables entre fotogramas —un tajo que salta cada fotograma es ruido y
+   no una rotura— y el motor no puede guardar nada en el objeto de una
+   especie que no conoce. Con senos de periodo largo los cortes además se
+   arrastran despacio mientras el bicho nada, que es justo lo que hace un
+   sprite roto de verdad.
+
+   Lo único que viene de fuera es `d.giro`, una fase que el que pone el
+   campo va avanzando: sumada al seno de la banda, recoloca a TODAS un poco
+   y cada una lo suyo. Es lo que permite que la rotura dé pasos —el bicho
+   se rompe distinto que hace un segundo— sin que el motor guarde nada y
+   sin que el patrón se sortee de cero, que sería un salto y no un paso. */
+function pintaBicho(def, o, M, L, p, g){
+  /* `rompible` lo declara la ESPECIE, no el evento: el que rompe no elige a
+     quién, y aquí nadie pregunta de qué especie es nadie. En el abismo la
+     declara sólo la medusa, que es el sprite más grande y más legible que
+     hay —en una mota de tres píxeles la escalera no cabe— y además el único
+     que se mueve tan despacio que da tiempo a mirarla romperse.
+
+     Y es además lo que hace barato preguntar: sin la bandera, `M.campo` se
+     consultaría unas setecientas veces por fotograma; con ella, cuatro —y
+     con `campos` vacío, que es lo normal, esas cuatro no recorren nada. */
+  if (!def.rompible){ def.dibuja(o, M, L, p, g); return; }
+  const t = M.campo('tajo', o.x, o.y, L.i);
+  if (!t){ def.dibuja(o, M, L, p, g); return; }
+  /* M.campo devuelve un objeto COMPARTIDO y def.dibuja lo va a volver a
+     llamar —silencio() lo usa—, así que lo que haga falta se copia ahora. */
+  const d = t.d, k = t.peso;
+  if (!d){ def.dibuja(o, M, L, p, g); return; }
+  /* `parte` es cuántos de los que caen dentro se rompen, y sirve cuando hay
+     muchos candidatos: rompiéndolos todos se lee una REGIÓN averiada, que
+     es otra vez un fallo de pantalla. En el abismo va a 1 porque los
+     candidatos son cuatro medusas y el foco ya deja fuera a la mitad; en
+     una pecera con más cosas rompibles, bajarlo. El selector es otro seno
+     de la posición, con periodo distinto al de los cortes para que no vaya
+     correlacionado con ellos. */
+  const sel = Math.sin(o.x*0.031 - o.y*0.023 + 11.3);
+  if (sel < 1 - 2*opt(d.parte, 1)){ def.dibuja(o, M, L, p, g); return; }
+
+  const n = Math.max(2, d.bandas|0);
+  const paso = d.paso*L.scale;
+  const sep = d.sep * k;
+  const est = 1 + opt(d.estira, 0) * k;
+  const fase = Math.sin(o.x*0.011 + o.y*0.017);
+  /* la pila de cortes, centrada en el bicho */
+  const y0 = o.y - (n-1)*0.5*paso + fase*paso*0.5;
+  for (let i=0;i<n;i++){
+    /* EL SALTO DE CADA BANDA, al cuadrado con signo: así la mayoría se
+       quedan cerca de su sitio y unas pocas se van lejos. Repartido por
+       igual, la escalera sale regular y una escalera regular se lee como
+       un efecto y no como una avería. */
+    const q = Math.sin(i*2.399 + fase*7.3 + opt(d.giro, 0));
+    const dx = sep * q * Math.abs(q);
+    g.save();
+    /* los cortes van en coordenadas de MUNDO y se fijan antes de mover
+       nada: las líneas se quedan quietas y son las bandas las que se van */
+    g.beginPath();
+    const a = i === 0     ? -H : y0 + (i-1)*paso;
+    const b = i === n-1   ? H*2 : y0 + i*paso;
+    g.rect(-W, a, W*3, b - a);
+    g.clip();
+    /* escala alrededor del propio bicho: centrada en el origen, uno del
+       canto derecho se iría media pantalla */
+    g.translate(o.x + dx, o.y);
+    g.scale(est, 1/est);
+    g.translate(-o.x, -o.y);
+    def.dibuja(o, M, L, p, g);
+    g.restore();
+  }
+}
+
+/* Deja el contexto de un plano listo para sumar. Pasa por aquí TODO el que
+   pinta en él —la población, los que piden frente, los eventos y las
+   ondas—, y así ninguno hereda el estado en que lo dejó el anterior: el
+   `globalAlpha` que se olvide un evento no puede apagarle las ondas al
+   siguiente. */
+function abrePlano(L){
+  const g = L.g;
+  g.setTransform(L.r,0,0,L.r,0,0);
+  g.globalCompositeOperation = 'lighter';
+  g.globalAlpha = 1;
+  return g;
+}
+
 function pasoPlanos(dt){
   frente.length = 0;
 
@@ -1570,12 +2017,9 @@ function pasoPlanos(dt){
         for (const o of gr.items) gr.def.campos(o, M, L, gr.p);
 
   for (const L of PLANOS){
-    const g = L.g;
-    g.setTransform(L.r,0,0,L.r,0,0);
+    const g = abrePlano(L);
     g.clearRect(0,0,W,H);
-    g.globalCompositeOperation = 'lighter';
     g.lineCap = 'round'; g.lineJoin = 'round';
-    g.globalAlpha = 1;
 
     /* Tres listas por plano, y ninguna sabe de especies. luces: quién
        ilumina. presas: quién es comestible. cardumen: quién hace banco.
@@ -1591,8 +2035,8 @@ function pasoPlanos(dt){
       const {def, p} = gr;
       for (const o of gr.items) def.actualiza(o, M, L, p, dt);
       for (const o of gr.items)
-        if (o.alFrente) frente.push(gr, L, o);   // se pinta luego, delante
-        else            def.dibuja(o, M, L, p, g);
+        if (o.alFrente) frente.push({gr, L, o});   // se pinta luego, delante
+        else            pintaBicho(def, o, M, L, p, g);
     }
   }
 
@@ -1602,12 +2046,8 @@ function pasoPlanos(dt){
      con el `L` SUYO y el contexto del otro, así que no crece ni se afila:
      sólo deja de quedarse detrás.                                   */
   if (frente.length){
-    const F = PLANOS[PLANOS.length-1];
-    F.g.setTransform(F.r,0,0,F.r,0,0);
-    F.g.globalCompositeOperation = 'lighter';
-    F.g.globalAlpha = 1;
-    for (let i=0;i<frente.length;i+=3)
-      frente[i].def.dibuja(frente[i+2], M, frente[i+1], frente[i].p, F.g);
+    const g = abrePlano(PLANOS[PLANOS.length-1]);
+    for (const q of frente) pintaBicho(q.gr.def, q.o, M, q.L, q.gr.p, g);
   }
 
   /* Los eventos que dibujan lo hacen en su plano, después de los bichos:
@@ -1615,15 +2055,14 @@ function pasoPlanos(dt){
   for (const e of evVivos){
     if (!e.def.dibuja) continue;
     const L = PLANOS[clamp(opt(e.p.plano, PLANOS.length-1)|0, 0, PLANOS.length-1)];
-    L.g.setTransform(L.r,0,0,L.r,0,0);
-    L.g.globalCompositeOperation = 'lighter';
-    L.g.globalAlpha = 1;
-    e.def.dibuja(e, M, e.p, L.g);
+    e.def.dibuja(e, M, e.p, abrePlano(L));
   }
 
   /* las ondas van en el plano de delante: lo que se toca es la
-     superficie, no el fondo */
-  dibujaOndas(PLANOS[PLANOS.length-1].g);
+     superficie, no el fondo. Se le reabre el contexto porque el último que
+     pintó pudo ser un evento de otro plano —o de éste, dejándose el alfa
+     puesto—: nada de aquí depende de en qué estado lo dejara el anterior. */
+  dibujaOndas(abrePlano(PLANOS[PLANOS.length-1]));
 }
 
 /* ── EL VELO ────────────────────────────────────────────────────────

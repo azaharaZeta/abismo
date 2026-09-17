@@ -100,14 +100,32 @@ quiera tapar deba empujar su campo en `def.campos()` y no en
 
 Cada plano rehace tres listas por fotograma a partir de banderas de la
 definición de especie: `L.luces` (quién ilumina), `L.presas` (quién es
-comestible), `L.cardumen` (quién hace banco — dos especies que lo pidan
+comestible) y `L.cardumen` (quién hace banco — dos especies que lo pidan
 hacen banco mixto). Ese es todo el vocabulario. Ninguna especie pregunta
 por el nombre de otra.
 
 Los **eventos** actúan por dos vías que tampoco obligan a nadie a saber
 que existen: empujar a `M.campos` (y el bicho consulta `M.campo(tipo, x,
 y, plano)`), o modular `M.mod.agua` / `M.mod.ritmo`, que el motor aplica al
-pintar.
+pintar. Un campo lleva además dos cosas que el motor no mira y pasa tal
+cual: `c`, un color, y `d`, un dato cualquiera del que lo puso —lo usa el
+`superpez` para decir dónde y de qué tamaño es la silueta.
+
+Hay **un tipo de campo que no lee ninguna especie**, `tajo`: lo lee el
+motor en `pintaBicho()`, justo antes de dibujar a un bicho, y lo que hace
+es dibujarlo MAL —cortado en bandas horizontales escalonadas, cada una
+corrida lo suyo—. Es el mismo principio que `alFrente` (el dibujo de un
+objeto lo coloca el motor, no el objeto) y es el único sitio donde se puede
+corromper un sprite sin que la especie sepa que existe. Lo usa el `glitch`,
+y sólo se le aplica a quien declare la bandera `rompible` —hoy, la medusa.
+
+Y para **leer** la escena, un evento no recibe `L`: tiene
+`M.luces(plano)` y `M.cardumen(plano)` —ésta, sin argumento, da los tres
+planos juntos, que es como se usa casi siempre—. Con la primera puede existir un
+evento que no emita nada y se vea sólo cuando algo lo alumbra —la regla de
+la casa aplicada a un evento, que es lo que hace la `carrona`—; con la
+segunda, uno que se forme donde el banco ya estaba y hacia donde ya iba,
+que es lo que hace el `superpez`.
 
 ### Color
 
@@ -119,8 +137,9 @@ núcleo casi blanco, identidad, halo. Usa **`M.color(pal)`** y no
 `elige(pal)`, o los pesos no cuentan.
 
 `ABISMO.raro` es el color excepcional: el motor sólo lo **ofrece** en
-`M.raro` y `puebla()` lo da como mucho a un objeto de los planos
-delanteros que declare `aceptaRaro`.
+`M.raro` y quien lo quiera se lo coge. Hoy sólo lo usa el plancton, por
+mota y con su propia probabilidad (`raro: 0.02` en su entrada de escena).
+No hay ningún reparto automático.
 
 Los halos y puntos de luz están **pre-dibujados y cacheados en la propia
 entrada de paleta** (`M.halo(c)`, `M.punto(c)`): un degradado radial por
@@ -142,7 +161,7 @@ niveles del velo. El velo nunca se quita: es lo que hace que esto sea agua.
 [bichos.js](bichos.js) + una entrada `{especie: 'nombre', …}` en
 `ABISMO.bichos`. El contrato completo de `def` (`conteo`, `siembra`,
 `crear`, `actualiza`, `dibuja`, `campos`, y las banderas `luz`, `presa`,
-`cardumen`, `aceptaRaro`, `escalaCalidad`, `aligera`) está documentado en
+`cardumen`, `rompible`, `escalaCalidad`, `aligera`) está documentado en
 el comentario de **REGISTRO DE ESPECIES** en [motor.js](motor.js).
 `siembra(M, p)` es el único que corre una vez por pecera en vez de por
 bicho: es donde va lo que toda la población comparte —los tonos que
