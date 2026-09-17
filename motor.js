@@ -234,6 +234,23 @@ const ABISMO = {
   escala: 26,                     // divisor de sqrt(área) → unidad U
   maxPx: 4.6e6,                   // tope de píxeles de lienzo
 
+  /* ── EL RELEVO ENTRE EXCLUSIVOS ───────────────────────────────────
+     Cuánto espera un evento exclusivo al que le toca turno y se lo
+     encuentra ocupado. No es un adorno: sin él, al bloqueado se le sigue
+     descontando el reloj, se queda en negativo y arranca EN EL MISMO
+     FOTOGRAMA en que muere el que lo tapaba. Medido sobre el reloj de esta
+     escena, seis horas simuladas:
+
+       | encadenados (arranca a menos de 1 s del anterior) | sin relevo 30-37 % |
+       |                                                   | con [25,70]   1 %  |
+       | hueco entre exclusivos, p10                       | 0 s → 13 s         |
+
+     Y no le cuesta travesías a nadie: los exclusivos pasan de 165 a 161 en
+     seis horas y su cobertura de 42,5 % a 41,2 %. Lo que se compra es que
+     el leviatán y el cuerpo no salgan en pareja, que es justo lo que los
+     hace grandes.                                                     */
+  relevo: [25, 70],
+
   /* ── EVENTOS ──────────────────────────────────────────────────────
      Cada entrada: {evento, plano?, ...parámetros}. Un `porContacto: 0..1`
      deja que el dedo lo dispare. Ninguno dibuja gran cosa: el contagio no
@@ -294,9 +311,9 @@ const ABISMO = {
          deja la panza lisa. Desiguales, que una sierra regular se lee como
          decoración y no como amenaza. */
       espinas: 10, cresta: 0.55,
-      /* `brillo` es SÓLO el hilo de la cresta, los fotóforos y el ojo: el
-         cuerpo no emite nada. Ahora que el cuerpo sí se apaga —queda en 2
-         de luminancia contra 8 del agua de alrededor— los puntos se leen
+      /* `brillo` es SÓLO los dos cantos, los fotóforos y el ojo: el cuerpo
+         no emite nada. Ahora que el cuerpo sí se apaga —queda en 2 de
+         luminancia contra 8 del agua de alrededor— los puntos se leen
          sobre fondo oscuro y no hace falta que quemen. */
       brillo: 0.32, fotoforos: 11,
       /* ── SU COLOR ────────────────────────────────────────────────
@@ -326,14 +343,51 @@ const ABISMO = {
          el punto se disolvía en el borrón y no se leía que la sombra
          tuviera un ojo; a 2,0 es un alfiler rojo y sigue sin alumbrar
          nada. */
-      brilloOjo: 2.0 },
+      brilloOjo: 2.0,
+      /* ── Y EL LOMO ───────────────────────────────────────────────
+         El canto de ABAJO ya tenía su filo de luz —el hilo que recorre la
+         panza, que es lo mejor que tiene la bestia: hace que el hueco se
+         lea como un cuerpo con vientre—. El de arriba no tenía nada: sólo
+         la sierra oscura de los campos. Estos dos le dan color al lomo, y
+         los dos van CORTOS a propósito, que el leviatán es un hueco y no
+         un dibujo:
+
+           `brilloLomo`    un velo ancho de `glow` siguiendo el diente de
+                           sierra. No es un filo —va en un trazo de 0,30 U—:
+                           lo que se lee es que por encima del lomo el agua
+                           tiene un color que no es el suyo.
+           `brilloEspinas` la punta de cada diente encendida, con halo de
+                           0,17 U contra los 0,24 de un fotóforo: una
+                           espina es más fina que un costado. Late
+                           desacompasada del coletazo, como ellos.
+
+         AJUSTADOS POR AMPLITUD Y NO POR LUZ TOTAL, que es la medida que
+         engaña: el velo del lomo suma un tercio de todo lo que emite la
+         bestia y aun así casi no se ve, porque lo reparte por veinte mil
+         píxeles. Lo que dice si un detalle se lee es cuánto sube el píxel
+         más alto. Medido contra el hilo de la panza, que es la referencia
+         —sube 347 de 765 y deja 11.700 píxeles por encima de 8—:
+
+           | brilloLomo    0,15 | +6  |     0 px | ← no se ve
+           |               0,35 | +9  | 4.900 px | ← esto
+           |               0,50 | +13 | 16.000 px| ← ya es un filo
+           | brilloEspinas 1,0  | +18 |   370 px |
+           |               1,4  | +27 |   630 px | ← esto
+           |               2,0  | +38 |   990 px | ← compiten con el ojo
+
+         O sea: el lomo a una trigésima parte de la amplitud de la panza y
+         las espinas a una docena de veces menos. Eso es «poco».
+
+         Los dos multiplican a `brillo`, así que «leviatán · luz» a 0 los
+         apaga también y la bestia vuelve a ser sólo el hueco. */
+      brilloLomo: 0.35, brilloEspinas: 1.4 },
 
     /* ── LA CARROÑA ─────────────────────────────────────────────────
        Algo muerto que se hunde, y el primer evento que NO EMITE NADA: se
-       ve sólo mientras pasa por la luz de alguien, y del color de quien la
-       encuentra. Va en el plano de en medio: al fondo, a un tercio de
-       resolución, un esqueleto es una mancha, y delante taparía demasiado
-       cuadro durante el minuto que tarda en bajar.
+       ve sólo mientras pasa por la luz de alguien. Va en el plano de en
+       medio: al fondo, a un tercio de resolución, un esqueleto es una
+       mancha, y delante taparía demasiado cuadro durante el minuto que
+       tarda en bajar.
 
        `vel` BAJA —medio segundo de unidad por segundo— porque lo que tiene
        que dar es el tiempo largo de la pieza: con 0,55 U/s tarda unos 50 s
@@ -347,8 +401,36 @@ const ABISMO = {
     { evento: 'carrona', plano: 1,
       cada: [130, 280], primero: [35, 95],
       vel: [0.55, 0.95], largo: [0.15, 0.26],
-      vertebras: [11, 16], costillas: [6, 9],
       giro: [-0.10, 0.10], deriva: 0.25,
+      /* ── SIEMPRE HUESO ───────────────────────────────────────────
+         El único espectro de la pecera que no es del agua ni de un bicho
+         que emite: marfil mate. Estuvo cogiendo el color del foco que la
+         alumbrara —era su gracia contada— y no funcionaba: un esqueleto
+         verde o rosa no se lee como un esqueleto, se lee como otro bicho
+         encendido. Lo que tiene que cambiar con la luz que le llega es
+         cuánto se ve y por dónde, y eso ya lo hace vértebra a vértebra.
+
+         `sat` muy baja y `luz` alta es hueso y no ámbar; el tono apenas se
+         mueve (30-48°) y `tramos` a 4 porque un hueso es un hueso —lo que
+         se pide del rango es que una carroña salga marfil y la siguiente
+         algo más gris, no que haya cuatro colores. `luzGlow` baja: el halo
+         de un hueso mate es apenas nada. */
+      espectro: { tono: [30, 48], tramos: 4,
+                  sat: [0.10, 0.20], luz: [0.80, 0.90],
+                  satGlow: [0.14, 0.26], luzGlow: [0.26, 0.36],
+                  luzCore: [0.93, 0.98], giroGlow: 4 },
+      /* ── LA ANATOMÍA, Y NO HAY DOS IGUALES ───────────────────────
+         Ahora que el color es fijo, lo que cambia de una a otra es el
+         esqueleto. `vertebras`, `costillas` y `chevrones` son cuántas
+         piezas tiene; `caja` lo abombado del pecho, que entra en el perfil
+         del cuerpo y por tanto manda también sobre lo que TAPA y sobre el
+         largo de las costillas; `falta` la probabilidad de que una
+         costilla suelta no esté —por lados, que a una jaula a la que le
+         falta medio par se le lee la edad, y una completa y simétrica se
+         lee como un dibujo—; y `craneo`, la de que le quede cabeza: una de
+         cada siete baja descabezada y el espinazo empieza en seco. */
+      vertebras: [11, 16], costillas: [6, 9], chevrones: [3, 6],
+      caja: [0.30, 0.90], falta: 0.18, craneo: 0.86,
       /* `alcance` agranda el radio con el que un foco la revela, y es la
          única licencia de este evento: los radios de `alcanceCuerpo` están
          puestos para un pez oscuro —21 px un pez linterna del plano de en
@@ -379,12 +461,42 @@ const ABISMO = {
 
     /* el poliqueto que cruza el fondo cada tanto, tan tenue que casi no
        está. `patas`, `antenas` y `cola` son el detalle: a 0 vuelve a ser la
-       cadena de cuentas pelada. */
+       cadena de cuentas pelada.
+
+       ── NO PASA DOS VECES EL MISMO ─────────────────────────────────
+       Es un evento que cae cada minuto o dos, o sea el que más se repite
+       de la pecera, y por eso es el que más pide variar: lo que se sortea
+       por travesía son las PROPORCIONES, no sólo el tamaño.
+
+         `grosor`  el grueso del cuerpo, casi al doble de un extremo a otro.
+         `merma`   cuánto adelgaza hacia la cola: 0,18 es un tubo y 0,70 un
+                   cono. Antes estaba clavado a 0,50 dentro del dibujo.
+         `panza`   dónde tiene lo más gordo. A 0, en la cabeza; a 0,42, un
+                   bulto a un tercio del morro, que es un huso y no un
+                   gusano. Las dos cosas juntas dan tres bichos distintos
+                   con la misma cadena de cuentas.
+         `cuentas` por travesía, y con el largo ya sorteado lo que cambia
+                   es la SEPARACIÓN, o sea lo gruesa que se lee la
+                   segmentación: dieciocho dejan un cuerpo de segmentos
+                   bien marcados y cuarenta uno casi liso. NO llega a
+                   collar en ningún caso, que es lo que había que
+                   comprobar antes de bajar el tope: el halo de una cuenta
+                   mide de 93 a 177 px y la separación de 11 a 43, así que
+                   el solape va de ×2,1 en el caso más flaco a ×17 en el
+                   más gordo. Siempre se toca con el vecino.
+
+       `variedad` abre además los tres apéndices, cada uno por su lado y
+       por travesía. Va ALTO (0,8) y asimétrico, así que de vez en cuando
+       uno sale a 0 y cruza un bicho sin parapodios o sin antenas: es la
+       diferencia entre un poliqueto y una cinta, y el evento la necesita
+       más que un ajuste fino. A 0, todos los visitantes vuelven a ser
+       exactamente el mismo. */
     { evento: 'visitante', plano: 0,
       cada: [50, 120], primero: [15, 42],
-      cruce: [28, 46], cuentas: 34,
+      cruce: [28, 46], cuentas: [18, 40],
       largo: [0.40, 0.72], onda: [0.03, 0.10],
-      grosor: 0.58, brillo: 0.26,
+      grosor: [0.42, 0.80], merma: [0.18, 0.70], panza: [0, 0.42],
+      variedad: 0.8, brillo: 0.26,
       patas: 0.95, antenas: 1.5, cola: 1.7 },
 
     /* ── EL CUERPO ──────────────────────────────────────────────────
@@ -394,20 +506,160 @@ const ABISMO = {
        RECONOZCA: más pequeño es una mancha con forma rara.
 
        El más lento y el más raro de la pecera, y las dos cosas a propósito.
-       A 0,3-0,55 U/s tarda entre 40 y 80 segundos en bajar, que es el rato
-       que hace falta para dudar de lo que se está viendo; y con `cada` de
-       cinco a diez minutos no se convierte en parte del decorado. `giro`
-       en centésimas: una vuelta cada dos minutos. */
+       A 0,3-0,55 U/s cada cuerpo tarda entre 55 y 115 segundos en bajar,
+       que es el rato que hace falta para dudar de lo que se está viendo; y
+       con `cada` de seis a doce minutos no se convierte en parte del
+       decorado. `giro` en centésimas: una vuelta cada dos minutos.
+
+       Y no cae uno: caen de uno a tres, escalonados. Ver `cuantos`. */
     { evento: 'cuerpo', plano: 1,
-      cada: [300, 620], primero: [110, 250],
+      /* `cada` SUBIDO de [300,620] al entrar los cuerpos de dos en dos y
+         de tres en tres: con el desfase, una tirada de tres dura casi el
+         doble que una de una sola, así que a reloj igual el evento se
+         come más cuadro del que le toca. Medido sobre seis horas del
+         reloj de esta escena:
+
+           |                        | cuerpo | todos los exclusivos |
+           | un cuerpo, [300,620]   | 13,8 % |  41,2 %              |
+           | 1-3 cuerpos, [300,620] | 19,1 % |  46,2 %  ← demasiado |
+           | 1-3 cuerpos, [360,720] | 15,2 % |  43,0 %  ← esto      |
+
+         Y las travesías bajan de 39 a 31 en esas seis horas, que es justo
+         lo que se quiere: menos veces y más cosa cada vez. Un exclusivo
+         que está en pantalla una quinta parte del rato deja de ser raro,
+         y lo raro es todo lo que tiene este evento. */
+      cada: [360, 720], primero: [110, 250],
       alto: [0.28, 0.40], vel: [0.30, 0.55],
-      giro: [-0.055, 0.055], deriva: 0.22, vaiven: 0.10,
+      giro: [-0.055, 0.055], deriva: 0.22,
+      /* ── DE UNO A TRES, Y SIN CUADRARSE ──────────────────────────
+         `cuantos` es cuántos caen en una tirada y `retraso` los segundos
+         que tarda cada uno en asomar detrás del anterior. El retraso es
+         LARGO —de diez a treinta segundos, y el cuerpo tarda entre 55 y
+         115 en bajar— porque a la vez no son tres cuerpos, son una
+         formación: lo que hace que se lean como tres cosas sueltas es que
+         cuando el segundo entra por arriba el primero va ya por la mitad
+         del cuadro. Cada uno lleva además su propio sitio, su tamaño, su
+         velocidad, su volteo, su postura y su flexión: de una tirada de
+         tres no hay dos iguales. */
+      cuantos: [1, 3], retraso: [10, 30],
+      /* ── LA POSTURA ──────────────────────────────────────────────
+         La del ahogado sigue siendo la de reposo; esto es cuánto se aparta
+         de ella cada cuerpo. `abre` multiplica el ángulo del hombro y de
+         la cadera y `dobla` el del codo y de la rodilla, así que uno dice
+         lo abierto que va y el otro lo recogido. En los brazos, que es
+         donde se ve, `abre` a 0,70 los deja en cruz y a 1,22 casi
+         verticales sobre la cabeza. */
+      abre: [0.70, 1.22], dobla: [0.3, 1.8],
+      /* ── Y LO QUE LO HACE BLANDO ─────────────────────────────────
+         Era el número que le faltaba al evento: la primera versión era una
+         plantilla rígida trasladándose y se reconocía el cuerpo pero no se
+         creía.
+
+           `arqueo`  cuánto se arquea el espinazo, de constante y con el
+                     signo sorteado: uno baja recogido hacia delante y el
+                     siguiente arqueado hacia atrás.
+           `onda` ·  y cuánto le RECORRE, con su largo y su velocidad.
+           `ondas`   Media onda por cuerpo y muy despacio: en un cuerpo de
+           `velOnda` trescientos píxeles, 0,04 de onda son unos doce, y se
+                     recorren en medio minuto. Lo que se pide no es que
+                     nade, es que se le note que el agua lo mueve.
+           `vaiven`  cuánto se va cada MIEMBRO de su postura, y va SUBIDO
+                     de 0,10 a 0,30: antes torcía el ángulo de las elipses
+                     alrededor de su propio centro —un aspa— y 0,10 era
+                     todo lo que aguantaba sin que se notara el mecanismo.
+                     Ahora cada eslabón cuelga de su hueco y lleva su
+                     propia fase, así que 0,30 rad se leen como un brazo
+                     suelto en el agua y no como una pieza girando.
+
+         La flexión pesa por la distancia al ombligo, así que el tronco
+         aguanta y lo que se dobla son la cabeza y los pies —que es por
+         donde se dobla un cuerpo en el agua— y arrastra con él los
+         miembros que cuelgan de ahí. */
+      arqueo: [0.04, 0.13], onda: [0.02, 0.055],
+      ondas: [0.35, 0.8], velOnda: [0.10, 0.26], vaiven: 0.30,
       /* `hondura` casi a 1 y `penumbra` como en el leviatán: el máximo de
          cada elipse cae en su centro, así que sin agrandarlas la silueta
          de verdad cae donde el apagado ya se desvanece y no hay masa
          oscura. `filo` más bajo que el del leviatán (2,2) porque aquí los
          trozos son finos —un brazo— y con canto duro se despegan. */
-      hondura: [0.92, 1.0], filo: 1.8, penumbra: 1.25 },
+      hondura: [0.92, 1.0], filo: 1.8, penumbra: 1.25,
+      /* ── EL CANTO, CUANDO ALGO LO ALUMBRA ────────────────────────
+         El evento no dibujaba nada y ése era su mejor rasgo. Pero el agua
+         de la mitad de abajo del cuadro ya es casi negra —[0,1,3] contra
+         [4,13,21] del techo—, así que ahí un hueco negro sobre negro no se
+         lee y el cuerpo se perdía justo mientras bajaba.
+
+         NO SE LE PONE LUZ DESDE LA ESCENA. Un filo fijo por el canto de
+         arriba, como si cayera del techo, es exactamente lo que la regla
+         de la casa prohíbe —y aquí no llega el sol—. Lo que se enciende es
+         lo que un foco de verdad alcanza: la luz se acumula COMO VECTOR y
+         sólo se pinta el lado del canto que mira a ella, así que el de
+         sombra se queda negro. Pasa una medusa por su izquierda y se le
+         dibuja media silueta; se va, y vuelve a ser un hueco.
+
+           `borde`      la ganancia. Es un multiplicador sobre la luz que
+                        le llega, no un brillo suyo: a 0 el evento vuelve a
+                        no dibujar nada.
+           `bordeAlcance` agranda el radio con el que un foco lo revela, y
+                        va alto por lo mismo que en la carroña: los radios
+                        de la casa están puestos para revelar un pez, y un
+                        cuerpo mide medio cuadro.
+           `bordeCaida` alta es alcance corto: hay que ponerse cerca. La curva
+                        es la de `luzRecibida` —pow(1/(1+d²/r²), caida)— y no
+                        la de la carroña, que se corta en el radio: con
+                        corte el canto es todo o nada, porque los radios de
+                        esta escena van de 16 px a 125 y un cuerpo baja por
+                        agua vacía. Medido con corte: `alcance` 9 daba el
+                        0 % de fotogramas con canto y 13 el 100 %.
+           `bordeTecho` el tope, con rodilla blanda. La luz que le llega va
+                        de 0,02 a más de 1 según lo que pase cerca, y sin
+                        techo el canto se clavaba en alfa 1 cada vez que se
+                        le acercaba una medusa: dejaba de ser un hueco y
+                        pasaba a ser una figura recortada en blanco.
+           `bordeTono`  GRIS, casi neutro. No es un esqueleto pálido ni un
+                        bicho que emite: es carne mojada, y para eso el
+                        tono no puede tener color propio.
+           `bordeTinte` lo poco que coge del color de quien lo alumbra. A 0
+                        el cuerpo se despega de la escena —sería lo único
+                        sin tono compartido—; a 1 vuelve a parecer otro
+                        bicho encendido.
+           `bordeTapado` a partir de qué campo `apaga` se considera que un
+                        trozo de canto está ENTERRADO en otra parte del
+                        cuerpo —el brazo por donde cruza el hombro— y no se
+                        pinta. Sin esto salen rayas por dentro de la masa
+                        oscura y el cuerpo se lee como un despiece.
+
+         ── Y CÓMO SE AJUSTÓ ──────────────────────────────────────
+         `alcance` es una LICENCIA, igual que en la carroña y por lo mismo
+         pero más: los radios con los que un bicho revela a otro están
+         puestos para revelar un pez y un cuerpo mide medio cuadro, y
+         además baja por agua vacía —medido: en una travesía entera lo más
+         cerca que le pasó algo fueron 320 px, contra radios de 16 a 125—.
+
+         Medido sobre tres travesías ENTERAS —184 segundos simulados—,
+         contando los 82 trozos de canto que tiene un cuerpo:
+
+           | fotogramas con algo de canto      | 100 %        |
+           | trozos encendidos, de 82          | 31           |
+           | de espaldas a la luz              | 41           |
+           | enterrados en el propio cuerpo    | 10           |
+           | alfa del trazo   p10 · mediana · p90 · máx        |
+           |                  0,03 · 0,12 · 0,17 · 0,20        |
+
+         Lo que hay que leer ahí son dos cosas. La MITAD del canto —41 de
+         82— está siempre de espaldas y se queda negra: eso es lo que
+         mantiene al cuerpo siendo un hueco y no una figura recortada. Y el
+         alfa va de 0,03 a 0,20, o sea que el borde sube casi seis veces
+         entre pasar por agua vacía y tener una medusa al lado: el cuerpo
+         se ve siempre un poco y mucho más cuando algo lo encuentra, que es
+         exactamente lo que se le pedía.
+
+         `bordeTecho` estuvo en 0,14 y la mediana se iba a 0,20 —el borde
+         vivía clavado en el techo y dejaba de subir cuando algo se
+         acercaba, o sea que se perdía la mitad de la gracia. */
+      borde: 2.2, bordeAlcance: 4.2, bordeCaida: 2.0, bordeTecho: 0.09,
+      bordeGrosor: 0.05, bordeTono: [182, 196, 204],
+      bordeTinte: 0.22, bordeTapado: 0.25 },
 
     /* ── EL GLITCH ──────────────────────────────────────────────────
        No es un fallo de la pantalla, es un fallo del DIBUJANTE: una o dos
@@ -938,9 +1190,67 @@ const ABISMO = {
          el banco sigue igual de cohesionado (24 peces en un solo grupo). A
          3,2 baja a 0,41 pero empieza a no leerse como banco. Los demás
          pesos se quedan como estaban: se probó tocarlos y la medición no
-         distinguió el cambio del ruido. Ver docs/ideas/archivo. */
+         distinguió el cambio del ruido. Ver docs/ideas/archivo.
+
+         CUIDADO AL COMPARAR: estos números están medidos sobre TODOS los
+         peces de un plano y los de la tabla de `ciego`/`reacciona`, más
+         abajo, sobre el grupo mayor —24 peces contra 13—. No son la misma
+         cantidad y no se pueden poner en la misma columna. */
+      /* ── Y LAS DOS QUE HACEN QUE NINGUNO LO CONSIGA ────────────
+         Un banco en el que cada pez ve a todos sus vecinos, todo el rato y
+         sin error, CONVERGE: llegan a un rumbo común y de ahí en adelante
+         se trasladan como una pieza. Bajar los pesos no lo arregla —se
+         midió y el efecto no salía del ruido: ver
+         docs/ideas/archivo/idea-cardumen-desorden.md—. Lo que lo arregla es
+         que la información les llegue mal, y estas dos son las formas en
+         que le llega mal a un pez de verdad:
+
+           `ciego`     el cono que NO VE a su espalda, en radianes. A 1,9
+                       —unos 109°— el de atrás obedece al de delante y no
+                       al revés, así que la información viaja sólo hacia
+                       delante y el grupo se estira en vez de cuajar en una
+                       bola. El golpe sí se siente por detrás: la
+                       separación no mira el cono.
+           `reacciona` cada cuánto vuelve a mirar, en segundos. Entre mirada
+                       y mirada va con la idea de antes, así que corrige
+                       siempre hacia donde el grupo ESTABA. Es lo que se
+                       pidió —«que cada pez haga lo que pueda para seguir
+                       al grupo, sin éxito siempre»— y no hay número que
+                       empuje que lo finja.
+
+         ── Y LO QUE MIDEN ────────────────────────────────────────
+         Banco AISLADO —una sola especie, sin rapes que lo rompan ni
+         eventos que lo formen—, grupo mayor del plano de delante por
+         enlace simple a 2,2·`roce`, ventanas de 40 s y tres poblaciones
+         nuevas por fila. Es el método que el intento anterior dejó dicho
+         que hacía falta, y con él el efecto sale muy por encima del ruido:
+
+           |                         | alin. | error | elong. | var.forma |
+           | como estaba             | 0,97  | 0,20  |  1,30  |   0,14    |
+           | sólo cono ciego 1,9     | 0,86  | 0,39  |  1,70  |   0,52    |
+           | + reacciona [0,08-0,30] | 0,79  | 0,48  |  1,56  |   0,56    |
+           | + reacciona [0,18-0,68] | 0,63  | 0,70  |  1,88  |   0,58    |
+           | + reacciona [0,25-0,90] | 0,51  | 0,83  |  2,53  |   1,23    |
+
+         «alin.» es el módulo del rumbo medio del grupo: 1 es un sólido.
+         «error» es el ángulo medio entre el rumbo de un pez y el de sus
+         vecinos, en radianes. Y el grupo mayor se queda en 12-14 peces en
+         todas las filas menos la última, o sea que esto NO deshace el
+         banco: lo desordena.
+
+         COMO ESTABA, 0,97 Y 1,30: el banco iba alineado al 97 % —cada pez
+         a tres grados del rumbo de sus vecinos— y con forma de disco. O
+         sea que la hipótesis del círculo, que el intento anterior declaró
+         falsa midiendo elongaciones de 2,7-6,3, era CIERTA; lo que medía
+         mal era la medida. Vale la pena recordarlo: aquí la fuente de
+         verdad es lo que se mide hoy, no lo que se apuntó.
+
+         Se elige [0,18-0,68] y no más: a [0,25-0,90] la alineación baja a
+         0,51 y el grupo mayor pierde peces, o sea que ahí ya se está
+         deshaciendo el banco en vez de desordenarlo. */
       cardumen: { vista: 4.2, roce: 2.0, propio: 0.40,
-                  aparta: 1.8, alinea: 1.6, junta: 0.9 },
+                  aparta: 1.8, alinea: 1.6, junta: 0.9,
+                  ciego: 1.9, reacciona: [0.18, 0.68] },
       /* SEGUNDOS DE PÁNICO cuando algo muerde al lado, a peso pleno del
          campo. Entra en el mismo `susto` que ya usaba el dedo y el fallo de
          un rape: triplica el viraje, sube el nado a `velSusto` y suelta las
@@ -1667,8 +1977,15 @@ function pasoEventos(dt){
     gr.prox -= dt;
     if (gr.prox > 0) continue;
     /* un exclusivo espera su turno en vez de perder el suyo: sin esto
-       coinciden un apagón y un amanecer y la escena se contradice */
-    if (gr.def.exclusivo && hayGrande) continue;
+       coinciden un apagón y un amanecer y la escena se contradice. Y
+       espera de VERDAD —se le vuelve a armar el reloj—: dejándole el
+       `prox` correr en negativo arrancaba en el mismo fotograma en que
+       moría el que lo tapaba, y un tercio de los exclusivos salían en
+       pareja. Ver `relevo` en la escena. */
+    if (gr.def.exclusivo && hayGrande){
+      gr.prox = rango(gr.p.relevo || ABISMO.relevo || [25, 70]);
+      continue;
+    }
     lanza(gr);
     if (gr.def.exclusivo) hayGrande = true;
   }
@@ -1703,6 +2020,11 @@ function dispara(nombre, extra){
   } else if (extra){
     gr.p = fusiona(gr.p, extra);
   }
+  /* y sus espectros, que si no se queda sin `paleta`: los de la escena se
+     resuelven al arrancar, pero los de un `def.prueba` no pasan por ahí.
+     Cualquier evento con espectro propio y sin entrada en la escena
+     —hoy ninguno, pero se admite— se caía aquí en `M.color(undefined)`. */
+  resuelveEspectros(gr.p);
   para(nombre);
   /* un exclusivo a mano echa al que hubiera: en pruebas manda el dedo del
      que prueba. Se saca de la lista aquí y no con otra llamada a para()

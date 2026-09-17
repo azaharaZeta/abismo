@@ -22,13 +22,13 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 
 ## Ideas de usuario (pendientes de procesar)
 > Solo un humano edita esta sección. Texto breve; el detalle se desarrolla al crear la ficha.
-- evento visitante: aleatorizarlo un poco. distintas formas y tamaños.
-- evento leviatan: me encanta el detalle de color en la panza, añadele algún detalle sutil más de color, en espinas y lomo. pero poco. está casi perfecto.
-- evento carroña: está muy bien, dale forma más clara de esqueleto, y métele algún random. Siempre color hueso.
-- evento cuerpo: es demasiado rígido, haz que tenga ciertas físicas ligeras, sus miembros flotando, su cuerpo doblándose, random. haz que tengan melena o no, random. y que pueda haber entre 1 y 3 cuerpos distintos cayendo en el evento, pero no exactamente a la vez, sin sincronizarse.
-- peces - cardumen: tiende a formarse siempre en círculo, y todavía con demasiada sincronia. mejoralo para que la formación sea más natural y erratica y erronea, y cada pez haga lo que pueda para seguir al grupo, sin éxito siempre. 
-- Claude comentó: " La carroña no entra en `L.presas`, que era la mitad de su diseño: los rapes tendrían que dejar de emboscar y converger cuando cae comida. Un objeto de evento no puede apuntarse a las listas por plano; decidir si pasa a ser especie o si el motor lo admite." Mi respuesta: la carroña no es presa, no es necesario que los rapes la cancen. los rapes solo se centran en los pececitos.
-- La pecera ha pasado de tres eventos a siete, cuatro de ellos exclusivos: revisar los `cada` y `primero` a ver si se pisan o si dejan huecos muertos.
+
+- los tamaños relativos de distintos sprites y eventos son distintos en mobile (vertical) que en pc. Veo por ejemplo que los leviatanes son estrechos, y que los cuerpos cayendo son enormes. revisalo, debe de haber código por ahí de tamaños de los sprites que es dependiente del tamaño de la pantalla, lo que no es correcto. los elementos del mundo tienen que ser independientes del tamaño de la vista del navegador.
+
+- incluir un pequeñito marco inferior con un título Abyzz by Zeta. añadir en ese marco un boton de reiniciar, que reinicie la simulación con nuevo seed. 
+- en mobile, meter que la pantalla se ajuste a horizontal al girar el movil, automáticamente si se puede hacer de forma limpia, o con un botón.
+
+- tocar con el dedo: que no genere ondas (borrar ese código). pero hacer que el placton cercano crezca y se ilumine momentaneamente, lanzando ondas de iluminación de placton 
 
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos que dejaron las ideas procesadas el 2026-09-17.
@@ -36,4 +36,5 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 - Evento `E-06 La estampida`: ya sólo le falta el registro, el campo `asusta` está hecho.
 - Evento `E-02 El apagón`: sigue siendo el de más efecto por línea de código.
 - Onda de proa: un campo `empuja` que el leviatán y el cuerpo pongan al pasar, para que el plancton se aparte y no sólo se apague. El plancton tenía el consumidor escrito y nadie ponía nunca el campo; se ha quitado como código muerto, así que la mitad que falta es la del que empuja.
+- `M.campo()` es un recorrido lineal de `campos` y el plancton lo consulta por mota: con los tres cuerpos del evento del cuerpo son 39 campos y cuesta medio milisegundo de fotograma. Si algún día hay más cosas que tapen, aquí entra una rejilla —la misma que le hará falta al cardumen.
 

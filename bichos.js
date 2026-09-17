@@ -2052,19 +2052,69 @@ A.especie('rape', {
    huye— se le quitan las dos reglas de grupo, pero NO la de no chocar: con
    la separación apagada, la mitad de los cebados acaba con otro encima.
 
+   ── POR QUÉ NINGUNO LO CONSIGUE ────────────────────────────────────
+   Un banco en el que cada pez ve a todos sus vecinos, todo el rato y sin
+   error, CONVERGE: llegan a un rumbo común y a partir de ahí se trasladan
+   como una pieza, y lo que se ve es una mancha redonda y acompasada. Bajar
+   los pesos no lo arregla —se probó, y el efecto no salía del ruido de la
+   medida; está en docs/ideas/archivo/idea-cardumen-desorden.md—. Lo que lo
+   arregla es que la información les llegue MAL, y hay dos formas que además
+   son las de un pez de verdad:
+
+     · `ciego` · NO VE HACIA ATRÁS. Un pez tiene los ojos a los lados y un
+       cono ciego a la cola. Eso no es un detalle anatómico: es lo que
+       rompe la reciprocidad. Si A se alinea con B y B con A, los dos
+       convergen; con el cono ciego el de atrás obedece al de delante y no
+       al revés, así que la información viaja SÓLO hacia delante y el grupo
+       se estira y se cizalla en vez de cuajar. El golpe sí se siente por
+       detrás: la separación no mira el cono.
+     · `reacciona` · NO MIRA TODO EL RATO. Mira, decide, y va con esa idea
+       unas décimas de segundo. Cuando vuelve a mirar, el grupo ya no está
+       donde estaba, así que lo que corrige es un sitio equivocado: va
+       SIEMPRE con información vieja, y cuanto más rápido se mueva el
+       grupo, más se equivoca. Eso es «hacer lo que puede sin conseguirlo»,
+       y no hay ningún número que empuje para fingirlo.
+
+   `mira` es si a este pez le toca mirar en este fotograma. Cuando no le
+   toca, la separación se aplica igual —esquivar es un reflejo, no una
+   decisión— y las dos reglas de grupo se quedan con la idea de antes.
+
    Es todos contra todos dentro del plano: con las docenas que puebla la
    escena son unos cientos de comparaciones por plano y fotograma. El día
    que haya cientos de peces, aquí entra una rejilla.                */
-function cardumen(z, M, L, p, libre){
+function cardumen(z, M, L, p, libre, mira){
   const C = p.cardumen;
   if (!C) return;
   const vista = C.vista*M.U, v2 = vista*vista;
   const roce  = (C.roce || 0)*M.U, r2 = roce*roce;
+  /* el cono ciego, como coseno y al cuadrado: así el reparto de vecinos se
+     hace sin una sola raíz cuadrada, que en un bucle de todos contra todos
+     es lo que importa */
+  const cc = Math.cos(opt(C.ciego, 0)*0.5), cc2 = cc*cc;
+  const vx = Math.cos(z.ang), vy = Math.sin(z.ang);
   let n = 0, jx = 0, jy = 0, ax = 0, ay = 0, ex = 0, ey = 0;
   for (const o of L.cardumen){
     if (o === z) continue;
     const dx = o.x - z.x, dy = o.y - z.y, d2 = dx*dx + dy*dy;
     if (d2 > v2) continue;
+    /* NO CHOCAR, y esto va SIEMPRE: sólo con los de dentro del roce, y el
+       peso crece como 1/d, no como (1 − d/roce). Con la caída lineal, en un
+       grupo denso los vecinos están casi todos dentro del roce y sus
+       vectores se anulan entre ellos: la separación desaparece justo cuando
+       más falta hace. Con 1/d manda el más cercano, que es lo que hace un
+       pez de verdad. */
+    if (d2 < r2){
+      const d = Math.sqrt(d2) || 1e-4;
+      const q = Math.min(8, roce/d - 1);
+      ex -= dx/d*q; ey -= dy/d*q;
+    }
+    if (!mira) continue;
+    /* y a éste, ¿lo ve? El de detrás del cono ciego no cuenta para las dos
+       reglas de grupo. `proy` es el producto escalar con su rumbo, y
+       compararlo al cuadrado contra `cc2*d2` es lo mismo que comparar el
+       coseno del rumbo relativo con el del cono, sin la raíz. */
+    const proy = dx*vx + dy*vy;
+    if (proy < 0 && proy*proy > cc2*d2) continue;
     n++;
     /* JUNTARSE: hacia el centro del grupo, acumulando el vector relativo
        —luego sólo importa la dirección, así que dividir por n sobra—. PERO NO
@@ -2077,24 +2127,13 @@ function cardumen(z, M, L, p, libre){
        ángulos en radianes se rompe al cruzar el ±π —179° y −179° promedian
        0°, o sea justo el contrario. */
     ax += Math.cos(o.ang); ay += Math.sin(o.ang);
-    /* NO CHOCAR: sólo con los de dentro del roce, y el peso crece como 1/d,
-       no como (1 − d/roce). Con la caída lineal, en un grupo denso los
-       vecinos están casi todos dentro del roce y sus vectores se anulan
-       entre ellos: la separación desaparece justo cuando más falta hace. Con
-       1/d manda el más cercano, que es lo que hace un pez de verdad. */
-    if (d2 < r2){
-      const d = Math.sqrt(d2) || 1e-4;
-      const q = Math.min(8, roce/d - 1);
-      ex -= dx/d*q; ey -= dy/d*q;
-    }
   }
-  if (!n) return;
   /* Las dos de grupo se normalizan porque lo que aportan es un RUMBO: da
      igual si el centro está a dos cuerpos o a diez. La separación NO,
      porque aporta una URGENCIA: normalizada, la cohesión gana siempre de
      cerca y el banco se cierra en un nudo que deja de ir a la par. */
   let sx = Math.cos(z.angObj)*C.propio, sy = Math.sin(z.angObj)*C.propio;
-  if (libre){
+  if (libre && n){
     /* los pesos van por pez: un banco en el que todos hacen el mismo caso a
        sus vecinos converge a un solo rumbo y deja de fluir */
     const jl = Math.hypot(jx, jy);
@@ -2188,6 +2227,13 @@ A.especie('pezlinterna', {
       brio:    1 + rnd(-dso, dso),
       kAlinea: 1 + rnd(-dso, dso)*1.5,
       kJunta:  1 + rnd(-dso, dso)*1.5,
+      /* CADA CUÁNTO MIRA A SUS VECINOS, y cuándo le toca la próxima. El
+         segundo arranca sorteado dentro del primero y no a 0: naciendo
+         todos a cero, los sesenta y ocho miran el mismo fotograma y el
+         retraso deja de ser un retraso —vuelve a haber un banco que
+         decide a la vez, sólo que a tirones. */
+      reacciona: rango((p.cardumen && p.cardumen.reacciona) || 0),
+      proxMira:  Math.random()*rango((p.cardumen && p.cardumen.reacciona) || 0),
       fase: Math.random()*TAU,
       nFoto: rangoE(p.fotoforos),
       ilum: 0, cebada: false,
@@ -2419,8 +2465,15 @@ A.especie('pezlinterna', {
     /* mientras la forma manda, el banco no: las tres reglas de grupo y una
        silueta impuesta se pelean, y lo que gana es el grupo —que para eso
        está—, así que la forma no cuajaba nunca. Por debajo de 0,3 el
-       cardumen vuelve, y es lo que hace que deshacerse se vea. */
-    if (z.forma < 0.3) cardumen(z, M, L, p, !z.cebada && !z.susto);
+       cardumen vuelve, y es lo que hace que deshacerse se vea.
+
+       `mira` es si a este pez le toca replantearse el grupo en este
+       fotograma. Se llama IGUAL cuando no le toca: esquivar al de al lado
+       no es una decisión que se pueda posponer. */
+    z.proxMira -= dt;
+    const mira = z.proxMira <= 0;
+    if (mira) z.proxMira = z.reacciona;
+    if (z.forma < 0.3) cardumen(z, M, L, p, !z.cebada && !z.susto, mira);
 
     /* ── Y AHORA SÍ, HUIR ─────────────────────────────────────────
        Después del cardumen y no antes. `aparta` acumula un vector por
@@ -2617,14 +2670,29 @@ A.evento('contagio', {
    el espinazo que las une, un par de parapodios por segmento que remando
    van una fase por detrás de la ondulación del cuerpo, dos antenas y un
    filamento de cola. Todo son puntos y trazos de luz, que es el único
-   vocabulario que tiene esta pieza.                                  */
+   vocabulario que tiene esta pieza.
+
+   ── Y NO PASA DOS VECES EL MISMO ────────────────────────────────────
+   Lo que se sortea por travesía no es sólo el tamaño, son las
+   PROPORCIONES, que es lo que hace que parezca otro animal y no el mismo
+   más grande: ver `merma`, `panza`, `cuentas` y `variedad` en la escena.
+   Antes cambiaban el largo, la altura y el color, y el bicho era siempre
+   el mismo gusano con el mismo perfil.                               */
+/* la gana con la que sale un apéndice en ESTA travesía. Asimétrico a
+   propósito —el tirón hacia abajo es más largo que el de arriba— porque lo
+   que hace falta es que con `variedad` alta alguna travesía se quede a 0:
+   un poliqueto sin parapodios ya es otro animal, y ése es el punto. */
+const apendice = v => Math.max(0, 1 + rnd(-1.4, 1)*(v || 0));
+
 A.evento('visitante', {
   exclusivo: false,
   cada: [45, 110], primero: [15, 40],
-  prueba: { cruce: [22, 34], cuentas: 34, largo: [0.30, 0.55],
-            onda: [0.045, 0.115], grosor: 0.55, brillo: 0.30, plano: 0,
+  prueba: { cruce: [22, 34], cuentas: [18, 40], largo: [0.30, 0.55],
+            onda: [0.045, 0.115], grosor: [0.40, 0.78], brillo: 0.30,
+            merma: [0.18, 0.70], panza: [0, 0.42], variedad: 0.75, plano: 0,
             patas: 0.9, antenas: 1.5, cola: 1.6 },
   arranca(M, p){
+    const v = opt(p.variedad, 0);
     return {
       dir: Math.random() < 0.5 ? 1 : -1,
       dur:   rango(p.cruce),
@@ -2632,18 +2700,32 @@ A.evento('visitante', {
       amp:   M.H*rango(p.onda),
       largo: M.W*rango(p.largo),
       nOnda: rnd(2.6, 4.2), vel: rnd(0.45, 0.70),
+      /* EL CUERPO DE ESTA TRAVESÍA. `n` va aquí y no en la escena a secas
+         porque con el largo ya sorteado lo que cambia es la SEPARACIÓN
+         entre cuentas: pocas y gordas se cuentan una a una, muchas y finas
+         son un tubo. Tope por abajo a 6, que con menos no hay cadena. */
+      n:     Math.max(6, rangoE(p.cuentas)|0),
+      base:  M.U*rango(p.grosor),
+      merma: rango(p.merma || 0.5),
+      panza: rango(p.panza || 0),
+      kPatas: apendice(v), kAntenas: apendice(v), kCola: apendice(v),
       c: M.color(p.paleta),
     };
   },
   actualiza(e, M, p){ return e.t < e.dur; },
   dibuja(e, M, p, g){
     const u = e.t/e.dur;
-    const N = p.cuentas, span = M.W + e.largo*2;
+    const N = e.n, span = M.W + e.largo*2;
     const headX = e.dir > 0 ? -e.largo + u*span : M.W + e.largo - u*span;
     const fade = Math.sin(u*Math.PI);          // entra y sale con un seno
-    const base = M.U*p.grosor;
+    const base = e.base;
     const br = p.brillo*fade;
     if (br < 0.004) return;
+    /* la gana de cada apéndice EN ESTA TRAVESÍA: la de la escena es el
+       tope, y `variedad` es lo que la abre bicho a bicho */
+    const gPatas   = p.patas   * e.kPatas;
+    const gAntenas = p.antenas * e.kAntenas;
+    const gCola    = p.cola    * e.kCola;
 
     /* el punto `s` del cuerpo, 0 en la cabeza y 1 en la cola. La ondulación
        crece hacia atrás: la cabeza marca el rumbo y la cola lo obedece. */
@@ -2665,7 +2747,14 @@ A.evento('visitante', {
       _n[0] = -dy/d; _n[1] = dx/d;
       return _n;
     };
-    const grosor = s => base*(1 - s*0.50);
+    /* EL PERFIL, y es lo que de verdad cambia de bicho a bicho. `merma`
+       adelgaza hacia la cola —a 0,18 es un tubo, a 0,70 un cono— y `panza`
+       le mete un bulto con el máximo a un 37 % del morro, que es donde lo
+       tiene un huso. Con `panza` a 0 sale el cono de siempre. De aquí salen
+       también el radio de las cuentas y el largo de los parapodios, así que
+       el bicho engorda entero y no sólo por el espinazo. */
+    const grosor = s => base * (1 - s*e.merma)
+                        * (1 + e.panza*Math.sin(Math.PI*Math.pow(s, 0.7)));
 
     /* EL ESPINAZO, primero y flojo: es lo que hace que la fila de cuentas
        se lea como un cuerpo y no como un collar. */
@@ -2682,7 +2771,7 @@ A.evento('visitante', {
        ondulación del cuerpo: es lo que se lee como remar en vez de como
        flecos pegados. Se saltan la cabeza y la punta de la cola, donde un
        poliqueto no los tiene. */
-    if (p.patas){
+    if (gPatas > 0.01){
       g.strokeStyle = rgba(e.c.mid, Math.min(1, 0.30*br));
       g.lineWidth = Math.max(0.5, base*0.30);
       g.beginPath();
@@ -2694,7 +2783,7 @@ A.evento('visitante', {
         /* el remo: la fase retrasada da el barrido, y el largo sigue al
            grosor del cuerpo, así que se acortan hacia la cola */
         const rem = Math.sin(s*e.nOnda + e.t*e.vel - 0.9);
-        const l = grosor(s)*p.patas*(1.7 + 0.9*rem);
+        const l = grosor(s)*gPatas*(1.7 + 0.9*rem);
         const sesgo = -e.dir*grosor(s)*0.5*rem;   // se echan hacia atrás
         for (const lado of [1, -1]){
           g.moveTo(qx, qy);
@@ -2720,10 +2809,10 @@ A.evento('visitante', {
 
     /* LA CABEZA: dos antenas por delante del morro, abiertas en V. Es lo
        único que declara por dónde va, y sin ellas el bicho es reversible. */
-    if (p.antenas){
+    if (gAntenas > 0.01){
       const q = pt(0), hx = q[0], hy = q[1];
       const n = nrm(0), nx = n[0], ny = n[1];
-      const l = base*p.antenas*2.2;
+      const l = base*gAntenas*2.2;
       const vai = Math.sin(e.t*e.vel*1.7)*0.30;
       g.strokeStyle = rgba(e.c.mid, Math.min(1, 0.34*br));
       g.lineWidth = Math.max(0.5, base*0.26);
@@ -2750,10 +2839,10 @@ A.evento('visitante', {
 
     /* Y EL FILAMENTO DE LA COLA, que se apaga antes de acabar: un cuerpo
        que termina en seco se lee cortado. */
-    if (p.cola){
+    if (gCola > 0.01){
       const q = pt(1), tx = q[0], ty = q[1];
       const n = nrm(1), nx = n[0], ny = n[1];
-      const l = base*p.cola*4;
+      const l = base*gCola*4;
       const cx = tx + e.dir*l*0.45 + nx*l*0.5;
       const cy = ty + ny*l*0.5;
       const fx = tx + e.dir*l, fy = ty + Math.sin(e.t*e.vel*1.3)*l*0.35;
@@ -2812,7 +2901,8 @@ A.evento('leviatan', {
             rumbo: [-0.22, 0.22], cadaRumbo: [9, 20], velRumbo: 0.25,
             hondura: [0.94, 1.0], filo: 2.2, penumbra: 1.3, segmentos: 22,
             espinas: 10, cresta: 0.55,
-            brillo: 0.32, fotoforos: 11, brilloOjo: 2.0, plano: 0 },
+            brillo: 0.32, fotoforos: 11, brilloOjo: 2.0,
+            brilloLomo: 0.35, brilloEspinas: 1.4, plano: 0 },
   arranca(M, p){
     const dir = Math.random() < 0.5 ? 1 : -1;
     /* EL RUMBO. `base` es el lado por el que cruza y `ang` el rumbo real,
@@ -2902,14 +2992,16 @@ A.evento('leviatan', {
     }
     /* LA CRESTA. Espinas por encima del lomo, en campos aparte para que
        sierren el canto de arriba y dejen la panza lisa. Desiguales: una
-       sierra regular se lee como decoración, no como amenaza. */
+       sierra regular se lee como decoración, no como amenaza. Dónde va
+       cada una lo dicen `levEspina` y `levAlta`, que las comparte con
+       `dibuja`: ahí se le enciende la punta a cada diente. */
     const ne = p.espinas|0;
     for (let i=0;i<ne;i++){
-      const s = 0.14 + 0.62*reparte(i, ne);
+      const s = levEspina(i, ne);
       const q = levPunto(e, s, _lvQ), ang = levAngulo(e, s);
       const nx = -Math.sin(ang), ny = Math.cos(ang);
       const semi = e.grosor*levPerfil(s);
-      const alta = (0.55 + 0.45*Math.abs(Math.sin(i*2.3 + 1.1))) * opt(p.cresta, 0);
+      const alta = levAlta(i) * opt(p.cresta, 0);
       const h = semi*(1 + alta);
       M.campos.push({ tipo:'apaga', plano,
                       x: q[0] - nx*h*0.55, y: q[1] - ny*h*0.55,
@@ -2939,17 +3031,26 @@ A.evento('leviatan', {
   dibuja(e, M, p, g){
     const br = p.brillo;
     if (!(br > 0.002)) return;
-    /* EL HILO DE LA CRESTA: el canto de arriba, que ahora va serrado. Se
-       apaga en los dos extremos, así que no se ve dónde empieza ni acaba. */
     const N = 40;
+
+    /* ── EL HILO DE LA PANZA ──────────────────────────────────────
+       EL CANTO DE ABAJO, y no el de arriba: el hilo va por el lado
+       +normal del eje y las espinas del campo por el −normal, o sea que
+       lo que se ve encendido es la panza y lo que va serrado y oscuro es
+       el lomo. Se llamó «la cresta» mucho tiempo y era mentira.
+
+       Se queda tal cual: es el detalle de color que mejor funciona de la
+       bestia —un filo de luz por debajo hace que el hueco se lea como un
+       cuerpo con panza y no como una mancha—, y se apaga en los dos
+       extremos, así que no se ve dónde empieza ni acaba. Sin `pico`
+       porque la panza es LISA: los dientes están arriba, y serrar los dos
+       cantos deja al bicho con forma de hoja de sierra. */
     const bx = [], by = [];
     for (let i=0;i<=N;i++){
       const s = i/N, q = levPunto(e, s, _lvQ), a = levAngulo(e, s);
       const semi = e.grosor*levPerfil(s);
-      const pico = s > 0.14 && s < 0.76
-        ? 1 + opt(p.cresta, 0)*0.75*Math.abs(Math.sin(s*22 + 1.1)) : 1;
-      bx.push(q[0] + Math.sin(a)*(-semi*pico));
-      by.push(q[1] + Math.cos(a)*semi*pico);
+      bx.push(q[0] - Math.sin(a)*semi);
+      by.push(q[1] + Math.cos(a)*semi);
     }
     const gr = g.createLinearGradient(bx[0], by[0], bx[N], by[N]);
     gr.addColorStop(0.00, rgba(e.c.mid, 0));
@@ -2961,6 +3062,57 @@ A.evento('leviatan', {
     g.beginPath();
     for (let i=0;i<=N;i++) i ? g.lineTo(bx[i], by[i]) : g.moveTo(bx[i], by[i]);
     g.stroke();
+
+    /* ── Y EL LOMO, QUE ES EL OTRO CANTO ─────────────────────────
+       El de arriba no tenía nada de color: sólo la sierra oscura de los
+       campos. Dos cosas, las dos flojas —lo que se pide es que la bestia
+       siga siendo un hueco, no que se le dibuje el lomo—:
+
+       1 · UN VELO ANCHO siguiendo el diente de sierra de verdad, en
+           `glow`, que es el color más hondo de la entrada de paleta. Va
+           en un trazo gordo y a un alfa que es la quinta parte del hilo
+           de la panza, así que no es un filo: es que por encima del lomo
+           el agua tiene un color que no es el suyo.
+       2 · LA PUNTA DE CADA ESPINA encendida, y en las espinas DE VERDAD
+           —de `levEspina` y `levAlta`, las mismas que ponen los campos—.
+           El halo va más chico que el de un fotóforo: un diente es más
+           fino que un costado.
+
+       Los dos multiplican a `brillo`, así que el mando de «leviatán · luz»
+       a 0 los apaga con todo lo demás. */
+    const ne = p.espinas|0, cre = opt(p.cresta, 0);
+    const bl = br * opt(p.brilloLomo, 0);
+    if (bl > 0.002){
+      const lx = [], ly = [];
+      for (let i=0;i<=N;i++){
+        const s = i/N, q = levPunto(e, s, _lvQ), a = levAngulo(e, s);
+        const semi = e.grosor*levPerfil(s)*levCresta(s, ne, cre);
+        lx.push(q[0] + Math.sin(a)*semi);
+        ly.push(q[1] - Math.cos(a)*semi);
+      }
+      const gl = g.createLinearGradient(lx[0], ly[0], lx[N], ly[N]);
+      gl.addColorStop(0.00, rgba(e.c.glow, 0));
+      gl.addColorStop(0.24, rgba(e.c.glow, 0.30*bl));
+      gl.addColorStop(0.70, rgba(e.c.glow, 0.16*bl));
+      gl.addColorStop(1.00, rgba(e.c.glow, 0));
+      g.strokeStyle = gl;
+      g.lineWidth = Math.max(1.2, M.U*0.30);
+      g.beginPath();
+      for (let i=0;i<=N;i++) i ? g.lineTo(lx[i], ly[i]) : g.moveTo(lx[i], ly[i]);
+      g.stroke();
+    }
+    const be = br * opt(p.brilloEspinas, 0);
+    if (be > 0.004)
+      for (let i=0;i<ne;i++){
+        const s = levEspina(i, ne);
+        const q = levPunto(e, s, _lvQ), a = levAngulo(e, s);
+        const h = e.grosor*levPerfil(s)*(1 + levAlta(i)*cre);
+        const x = q[0] + Math.sin(a)*h, y = q[1] - Math.cos(a)*h;
+        /* desacompasadas entre ellas y con el coletazo, como los fotóforos:
+           una hilera de puntos a alfa fijo se lee como una costura */
+        const pa = be*(0.35 + 0.65*Math.abs(Math.sin(M.t*0.38 + i*2.1 + e.fase)));
+        pintaHalo(g, M, e.c, x, y, M.U*0.17, pa*0.26);
+      }
 
     /* DOS HILERAS DE FOTÓFOROS por el costado, no una nube: es lo que
        apunta que hay un cuerpo con lados. El halo va chico —solapados se
@@ -3056,6 +3208,31 @@ function levPerfil(s){
   const cola   = 1 - 0.55*Math.pow(Math.max(0, (s-0.62)/0.38), 1.6);
   return morro*cuerpo*cuello*cola;
 }
+/* ── LA CRESTA, EN UN SOLO SITIO ────────────────────────────────────
+   Dónde va la espina `i` de las `n` y cuánto se levanta sobre el lomo. Lo
+   comparten su `actualiza` —que pone los campos oscuros que sierran el
+   canto— y su `dibuja` —que le enciende la punta a cada diente—, y por eso
+   están aquí: escritas por separado se despegan, y era lo que pasaba. La
+   sierra que se DIBUJABA iba con `sin(s·22)` y las espinas de verdad con
+   `sin(i·2,3)`, o sea que ni el número de dientes coincidía.
+
+   `levCresta` es lo mismo pero muestreado en un `s` cualquiera, que es lo
+   que hace falta para trazar el canto de arriba: el diente más cercano y
+   su caída lineal hasta el valle. Cuesta `n` cuentas por muestra, o sea
+   unas cuatrocientas por fotograma y sólo mientras hay un leviatán. */
+const levEspina = (i, n) => 0.14 + 0.62*reparte(i, n);
+const levAlta = i => 0.55 + 0.45*Math.abs(Math.sin(i*2.3 + 1.1));
+function levCresta(s, n, cresta){
+  if (!(n > 0) || !(cresta > 0)) return 1;
+  const media = 0.62/n;
+  let pico = 0;
+  for (let i=0;i<n;i++){
+    const d = Math.abs(s - levEspina(i, n))/media;
+    if (d < 1) pico = Math.max(pico, levAlta(i)*(1 - d));
+  }
+  return 1 + cresta*pico;
+}
+
 const _lvA = [0,0], _lvB = [0,0];
 function levAngulo(e, s){
   const h = 0.004;
@@ -3069,7 +3246,14 @@ function levAngulo(e, s){
    NADA: no tiene luz propia, así que sólo existe mientras pasa por la de
    alguien —una esca, una medusa, un banco— y se apaga en cuanto sale. Baja
    volteando durante casi un minuto, así que aparece y desaparece a trozos
-   todo el descenso, y del color de lo que la encuentra.
+   todo el descenso.
+
+   PERO SIEMPRE DEL MISMO COLOR: hueso. Estuvo cogiendo el color del foco
+   que más le pesara —«del color de quien la encuentra»— y era más bonito
+   de contar que de ver: un esqueleto verde o rosa no se lee como un
+   esqueleto, se lee como otro bicho que brilla. Lo que hace falta que
+   cambie con la luz que le llega es CUÁNTO se ve y POR DÓNDE, no de qué
+   color es. Su espectro está en la escena y es marfil mate.
 
    Es la regla de la casa —«cada cuerpo existe sólo hasta donde llega la
    luz que le dan»— aplicada a un evento, y por eso hace falta
@@ -3092,8 +3276,13 @@ A.evento('carrona', {
   cada: [120, 260], primero: [30, 90],
   prueba: { vel: [0.55, 0.95], largo: [0.14, 0.24], vertebras: 13,
             giro: [-0.10, 0.10], deriva: 0.25, costillas: 7,
+            caja: [0.30, 0.90], falta: 0.18, chevrones: [3, 6], craneo: 0.85,
             alcance: 3.0, caida: 2.2, ganancia: 1.9, techo: 1.5, base: 0.03,
-            tapa: 0.85, tapaFilo: 6, enciende: 0.55, plano: 1 },
+            tapa: 0.85, tapaFilo: 6, enciende: 0.55, plano: 1,
+            espectro: { tono: [30, 48], tramos: 4,
+                        sat: [0.10, 0.20], luz: [0.80, 0.90],
+                        satGlow: [0.14, 0.26], luzGlow: [0.26, 0.36],
+                        luzCore: [0.93, 0.98], giroGlow: 4 } },
   arranca(M, p, x, y){
     const Lg = Math.max(M.W, M.H) * rango(p.largo);
     /* UN SOLO SORTEO de vértebras, y de aquí salen el contador Y el largo
@@ -3105,6 +3294,7 @@ A.evento('carrona', {
        fotograma. Cazado con una trampa en `addColorStop` tras 1414
        fotogramas simulados. */
     const nv = Math.max(4, rangoE(p.vertebras)|0);
+    const nc = rangoE(p.costillas || 0)|0;
     return {
       x: opt(x, rnd(0.14, 0.86)*M.W),
       /* arranca FUERA por arriba, y por su largo: entrando por el canto se
@@ -3120,7 +3310,31 @@ A.evento('carrona', {
          lleva, no cae a plomo */
       fase: Math.random()*TAU,
       vertebras: nv,
-      costillas: rangoE(p.costillas || 0)|0,
+      costillas: nc,
+      /* ── Y NO HAY DOS ESQUELETOS IGUALES ──────────────────────
+         Lo que se sortea es la ANATOMÍA, que es lo que queda por sortear
+         cuando el color ya es siempre hueso:
+
+           `caja`    lo abombada que sale la caja torácica. Entra en
+                     `carronaPerfil`, así que de ella salen también el
+                     grosor de lo que TAPA y el largo de las costillas: la
+                     que sale de pecho ancho lo es entera.
+           `falta`   qué costillas no están. Dos bits por par —izquierda y
+                     derecha por separado, que una jaula a la que le falta
+                     un lado es más vieja que una simétrica— y sorteados
+                     AQUÍ: por fotograma, los huesos irían y vendrían y eso
+                     no es una jaula, es un parpadeo.
+           `craneo`  si le queda cráneo. A veces el cuerpo baja descabezado
+                     y entonces el espinazo empieza en seco, que es peor.
+         Y `chevrones`, que va con `vertebras` y `costillas`: cuántas
+         espinas hemales le quedan en la cola. */
+      caja: rango(p.caja || 0.55),
+      chevrones: rangoE(p.chevrones || 0)|0,
+      falta: huecos(nc, opt(p.falta, 0)),
+      craneo: Math.random() < opt(p.craneo, 1),
+      /* HUESO, y de una vez por todas: se sortea al nacer y no lo vuelve a
+         tocar nadie. `luz` decide cuánto se ve, no de qué color. */
+      c: M.color(p.paleta),
       /* ── LA LUZ, HUESO A HUESO ────────────────────────────────
          Un número por vértebra y no uno para todo el cuerpo. No es un
          lujo: los radios con los que un bicho REVELA a otro son de
@@ -3135,7 +3349,7 @@ A.evento('carrona', {
          cosas que brillan. `ilum` se queda como el máximo, sólo para
          decidir si hay algo que pintar. */
       luz: new Float32Array(nv),
-      ilum: 0, c: null,
+      ilum: 0,
     };
   },
   actualiza(e, M, p, dt){
@@ -3160,14 +3374,15 @@ A.evento('carrona', {
        para un pez oscuro, y un esqueleto es pálido y mate, así que se le
        ve desde más lejos. Sin ella no se enciende nunca.
 
-       Del foco que más pesa en todo el cuerpo se guarda el COLOR: la
-       carroña no tiene color propio, tiene el de quien la encuentra. */
+       Aquí NO se mira de qué color es el foco: la carroña es hueso pase lo
+       que pase y su color se sorteó al nacer. Lo que se lleva de cada luz
+       es cuánta llega. */
     const n = e.vertebras;
     const ca = Math.cos(e.ang), sa = Math.sin(e.ang);
     const alc = opt(p.alcance, 1), caida = opt(p.caida, 2.2);
     const gan = opt(p.ganancia, 1.9), techo = opt(p.techo, 1.5);
     const base = opt(p.base, 0), k = Math.min(1, 7*dt);
-    let mejor = 0, c = null, pico = 0;
+    let pico = 0;
     for (let i=0;i<n;i++){
       const s = ((i+0.5)/n - 0.5)*e.Lg;
       const vx = e.x + s*ca, vy = e.y + s*sa;
@@ -3180,7 +3395,6 @@ A.evento('carrona', {
         const w = (o.luzI || 1) * Math.pow(1 - d/r, caida);
         if (w < 0.004) continue;
         tot += w;
-        if (w > mejor){ mejor = w; c = o.c; }
       }
       const obj = Math.min(techo, tot*gan) + base;
       /* con rampa, o los huesos entran y salen a saltos cuando un banco le
@@ -3190,7 +3404,6 @@ A.evento('carrona', {
       e.luz[i] = v;
       if (v > pico) pico = v;
     }
-    if (c) e.c = c;
     e.ilum = pico;
 
     /* ── LO QUE TAPA, Y LO QUE PRENDE ─────────────────────────────
@@ -3202,7 +3415,7 @@ A.evento('carrona', {
       for (let i=0;i<n;i++){
         const u = (i+0.5)/n;
         const s = (u - 0.5)*e.Lg;
-        const gro = carronaPerfil(u);
+        const gro = carronaPerfil(u, e.caja);
         M.campos.push({ tipo:'tapa', plano,
                         x: e.x + s*ca, y: e.y + s*sa,
                         r: paso*0.9, ky: Math.max(0.06, gro*e.Lg*0.16/(paso*0.9)),
@@ -3219,62 +3432,152 @@ A.evento('carrona', {
   dibuja(e, M, p, g){
     const br = e.ilum;
     if (br < 0.02) return;
-    /* sin haberla alumbrado nadie todavía no hay color de quien la
-       alumbra: se coge uno del agua y se sale del paso */
-    const c = e.c || (e.c = M.color(p.paleta));
+    const c = e.c;
     const Lg = e.Lg, n = e.vertebras;
+    const luzEn = u => e.luz[clamp((u*n)|0, 0, n-1)];
     g.save();
     g.translate(e.x, e.y);
     g.rotate(e.ang);
 
-    /* EL ESPINAZO: una cuenta por vértebra, cada una con SU luz. Una
-       pasada de relleno por hueso y no una para todas, que es el precio de
-       que el cuerpo se encienda a trozos: son doce o dieciséis arcos. */
+    /* ── EL ESPINAZO ──────────────────────────────────────────────
+       Una cuenta por vértebra, cada una con SU luz —una pasada de relleno
+       por hueso y no una para todas, que es el precio de que el cuerpo se
+       encienda a trozos: son doce o dieciséis arcos—, Y EL HUESO QUE LAS
+       UNE, que es lo que hacía falta: una fila de cuentas sueltas es un
+       collar, y con el tramo entre vértebra y vértebra dibujado pasa a ser
+       una columna. El tramo va al alfa del más apagado de sus dos
+       extremos, así que la columna se enciende a trozos igual que las
+       cuentas y no delata dónde acaba la luz. */
     const R = Math.max(0.5, Lg*0.012);
+    g.lineWidth = Math.max(0.5, Lg*0.010);
     for (let i=0;i<n;i++){
       const v = e.luz[i];
-      if (v < 0.02) continue;
       const u = (i+0.5)/n, s = (u-0.5)*Lg;
-      const r = R*(0.55 + 0.75*carronaPerfil(u));
+      if (i){
+        const vv = Math.min(v, e.luz[i-1]);
+        if (vv > 0.02){
+          g.strokeStyle = rgba(c.mid, Math.min(1, 0.46*vv));
+          g.beginPath();
+          g.moveTo(s - Lg/n, 0); g.lineTo(s, 0);
+          g.stroke();
+        }
+      }
+      if (v < 0.02) continue;
+      const r = R*(0.55 + 0.75*carronaPerfil(u, e.caja));
       g.fillStyle = rgba(c.core, Math.min(1, 0.55*v));
       g.beginPath(); g.arc(s, 0, r, 0, TAU); g.fill();
       /* y su propio halo, chico: es lo que hace que un trozo encendido se
          lea como masa y no como una cuenta de collar */
-      const H = Lg*0.07*(1 + carronaPerfil(u));
+      const H = Lg*0.07*(1 + carronaPerfil(u, e.caja));
       pintaHalo(g, M, c, s, 0, H, 0.34*v);
     }
 
-    /* LAS COSTILLAS, abiertas hacia atrás y desiguales: una jaula vacía es
-       lo que dice que esto estuvo vivo y ya no. Sólo en el tercio
-       delantero, que es donde está la caja, y con la luz de la vértebra que
-       les toca. */
+    /* ── LA JAULA ─────────────────────────────────────────────────
+       Una jaula vacía es lo que dice que esto estuvo vivo y ya no, así
+       que es la pieza que más tiene que leerse. Dos cosas la hacen jaula
+       y no un peine:
+
+       1 · EL LARGO DE CADA COSTILLA SALE DEL PERFIL DEL CUERPO
+           (`carronaPerfil`) y no de un seno cualquiera. Con el seno las
+           costillas salían desiguales pero al azar, y lo que se veía era
+           un peine desdentado; con el perfil, las del centro de la caja
+           son las largas y se acortan hacia los dos extremos, o sea que
+           el conjunto tiene silueta de tonel. Eso es lo que se reconoce.
+       2 · LE FALTAN COSTILLAS, y por lados sueltos (ver `falta` en
+           `arranca`). Una jaula completa y simétrica se lee como un
+           dibujo; a la que le falta medio par se le lee la edad.
+
+       Y va de 0,13 a 0,58 del cuerpo —antes 0,16 a 0,50—: la caja de un
+       pez llega más atrás que su tercio delantero, y con el tramo corto
+       las costillas salían apiñadas junto al cráneo. */
     const nc = e.costillas;
     if (nc){
       g.lineWidth = Math.max(0.4, Lg*0.007);
       for (let i=0;i<nc;i++){
-        const u = 0.16 + 0.34*reparte(i, nc);
-        const v = e.luz[Math.min(n-1, (u*n)|0)];
+        const u = 0.13 + 0.45*reparte(i, nc);
+        const v = luzEn(u);
         if (v < 0.03) continue;
         const s = (u-0.5)*Lg;
-        const h = Lg*0.16*(0.55 + 0.45*Math.abs(Math.sin(i*2.3 + 1.1)));
+        /* 0,19 y no más: el perfil vale hasta 0,90 en el pecho, así que
+           esto pone la costilla más larga en 0,17 del cuerpo, que es lo
+           que medía la más larga de antes. A 0,30 —el primer valor que se
+           probó— la caja medía media eslora de alto y lo que se veía era
+           un peine, no un tórax. */
+        const h = Lg*0.19*carronaPerfil(u, e.caja);
         g.strokeStyle = rgba(c.mid, Math.min(1, 0.42*v));
         g.beginPath();
+        let hay = false;
         for (const lado of [1,-1]){
+          if (e.falta[i*2 + (lado > 0 ? 0 : 1)]) continue;
+          hay = true;
           g.moveTo(s, 0);
           g.quadraticCurveTo(s + Lg*0.05, lado*h*0.8,
                              s + Lg*0.11, lado*h);
         }
+        if (hay) g.stroke();
+      }
+    }
+
+    /* ── LOS CHEVRONES DE LA COLA ─────────────────────────────────
+       Detrás de la caja, el espinazo iba pelado y los dos tercios de
+       atrás del bicho eran una fila de puntos. Las espinas hemales de un
+       pez salen en V apuntando hacia el morro, y son cuatro trazos
+       cortos: es lo que separa «esqueleto de pez» de «cadena de cuentas»
+       en la mitad del cuerpo donde ya no hay costillas. */
+    const nch = e.chevrones;
+    if (nch){
+      g.lineWidth = Math.max(0.35, Lg*0.005);
+      for (let i=0;i<nch;i++){
+        const u = 0.62 + 0.26*reparte(i, nch);
+        const v = luzEn(u);
+        if (v < 0.03) continue;
+        const s = (u-0.5)*Lg;
+        /* más cortos que una costilla, y por dos motivos: una espina
+           hemal lo es, y ahí atrás el cuerpo ya no tiene grosor que las
+           sostenga */
+        const h = Lg*0.20*carronaPerfil(u, e.caja);
+        g.strokeStyle = rgba(c.mid, Math.min(1, 0.34*v));
+        g.beginPath();
+        for (const lado of [1,-1]){
+          g.moveTo(s, 0);
+          g.lineTo(s - Lg*0.045, lado*h);       // apuntan hacia el morro
+        }
         g.stroke();
       }
     }
-    /* EL CRÁNEO, un punto más gordo en la punta, y el JIRÓN de la caudal
-       al otro extremo, que se apaga antes de acabar: lo que queda de una
-       aleta son dos radios sueltos. Los dos con la luz de su punta. */
+
+    /* ── EL CRÁNEO ────────────────────────────────────────────────
+       Era un punto gordo en la punta, o sea una cuenta más grande, y de
+       ahí que el bicho se leyera como un collar con un nudo. Un cráneo
+       necesita tres cosas y ninguna es tamaño: BÓVEDA —un arco cerrado—,
+       ÓRBITA —el agujero, que en aditivo no se puede vaciar, así que se
+       dibuja su borde— y QUIJADA, que es la que dice hacia dónde miraba.
+
+       Y no siempre está: `craneo` lo sortea, y cuando falta el espinazo
+       empieza en seco, que es bastante peor de ver. */
     const bc = e.luz[0], bt = e.luz[n-1];
-    if (bc > 0.02){
-      g.fillStyle = rgba(c.core, Math.min(1, 0.85*bc));
-      g.beginPath(); g.arc(-Lg*0.5, 0, Math.max(0.7, Lg*0.022), 0, TAU); g.fill();
+    if (bc > 0.02 && e.craneo){
+      const hx = -Lg*0.5, R1 = Lg*0.042;
+      g.strokeStyle = rgba(c.core, Math.min(1, 0.62*bc));
+      g.lineWidth = Math.max(0.4, Lg*0.008);
+      g.beginPath();
+      /* la bóveda, más alta que larga y ladeada hacia el morro */
+      g.ellipse(hx + R1*0.55, 0, R1, R1*0.74, 0, 0, TAU);
+      g.stroke();
+      /* la órbita, y la quijada colgando por debajo */
+      g.strokeStyle = rgba(c.mid, Math.min(1, 0.50*bc));
+      g.lineWidth = Math.max(0.35, Lg*0.006);
+      g.beginPath();
+      g.ellipse(hx + R1*0.42, -R1*0.16, R1*0.30, R1*0.26, 0, 0, TAU);
+      g.moveTo(hx + R1*0.10, R1*0.30);
+      g.quadraticCurveTo(hx + R1*0.95, R1*1.05, hx + R1*1.85, R1*0.62);
+      g.stroke();
+      /* y un halo que lo ata al resto: sin él la cabeza se despega */
+      pintaHalo(g, M, c, hx + R1*0.6, 0, Lg*0.055, 0.30*bc);
     }
+
+    /* y el JIRÓN de la caudal al otro extremo, que se apaga antes de
+       acabar: lo que queda de una aleta son dos radios sueltos. */
     const gr = g.createLinearGradient(Lg*0.42, 0, Lg*0.56, 0);
     gr.addColorStop(0, rgba(c.mid, Math.min(1, 0.30*bt)));
     gr.addColorStop(1, rgba(c.mid, 0));
@@ -3291,16 +3594,30 @@ A.evento('carrona', {
 });
 
 /* el grosor del cuerpo a lo largo: cráneo, caja torácica y una cola que se
-   queda en nada. `u` va de 0 en el morro a 1 en la punta de la cola. */
-function carronaPerfil(u){
+   queda en nada. `u` va de 0 en el morro a 1 en la punta de la cola, y
+   `caja` es lo abombado del pecho, que lo sortea cada carroña. De aquí sale
+   TODO lo que tiene que ver con el grosor —lo que tapa, el radio de las
+   cuentas, el largo de las costillas y de los chevrones—, y por eso la que
+   sale de pecho ancho lo es entera y no sólo por un sitio. */
+function carronaPerfil(u, caja){
   const craneo = u < 0.10 ? 0.55 + 4.5*u : 1;
-  const caja   = 1 + 0.55*Math.exp(-Math.pow((u-0.30)/0.16, 2));
+  const pecho  = 1 + opt(caja, 0.55)*Math.exp(-Math.pow((u-0.30)/0.16, 2));
   const cola   = Math.pow(1-u, 0.7);
-  return craneo*caja*cola*0.62;
+  return craneo*pecho*cola*0.62;
+}
+
+/* qué costillas le faltan a esta carroña: dos bits por par, izquierda y
+   derecha por separado. Se sortea una vez y no se vuelve a tocar —los
+   huesos no van y vienen— y va aquí y no dentro de `arranca` porque lo que
+   hace no tiene nada que ver con una carroña: es un array de monedas. */
+function huecos(n, q){
+  const a = new Uint8Array(n*2);
+  if (q > 0) for (let i=0;i<a.length;i++) a[i] = Math.random() < q ? 1 : 0;
+  return a;
 }
 
 /* ── EL CUERPO ──────────────────────────────────────────────────────
-   Un cuerpo humano bajando. NO SE DIBUJA NADA: es la silueta hecha de
+   Un cuerpo humano bajando. NO SE DIBUJA NADA: la silueta está hecha de
    campos `apaga`, igual que el leviatán, así que lo que cruza la pantalla
    es una región donde la nieve marina se calla y el agua se oscurece. Es
    la única forma de que aquí haya algo oscuro —sumar no oscurece— y
@@ -3317,66 +3634,285 @@ function carronaPerfil(u){
    frente y girado, que es importante porque va volteando muy despacio.
 
    Va MÁS LENTO que la carroña y con menos volteo: lo que se pide es que
-   tarde tanto en cruzar que dé tiempo a dudar de lo que se está viendo.  */
+   tarde tanto en cruzar que dé tiempo a dudar de lo que se está viendo.
 
-/* La anatomía, en fracciones del ALTO del cuerpo y con el origen en el
-   ombligo. Cada entrada es [x, y, semilargo, semiancho, ángulo, fuerza].
-   El ángulo va en radianes sobre el eje del cuerpo; la fuerza es relativa
-   a `hondura`, y baja en las extremidades porque son finas y en el plano
-   del fondo un campo fino no llega a taparse a sí mismo.
+   ── Y NO ES UN MANIQUÍ ─────────────────────────────────────────────
+   La primera versión era una plantilla rígida trasladándose: trece elipses
+   clavadas en un eje recto y un único seno que les torcía el ángulo a
+   todas a la vez. Se reconocía el cuerpo y no se creía. Cuatro cosas lo
+   arreglan, y todas están en que el cuerpo sea BLANDO y CONTINUO:
 
-   Está escrito a mano y por partes en vez de con una curva: lo que se
+     1 · NO HAY UNA ELIPSE POR HUESO. Se recorren dos perfiles —el del
+         tronco (`CUERPO_PERFIL`) y el de cada miembro— dejando campos
+         solapados con el grosor interpolado, y la unión es una manga
+         continua. Con una elipse por pieza se veía LA PIEZA: una elipse
+         se afila en sus dos puntas, así que cada junta dejaba un pellizco
+         y el cuerpo se leía como óvalos ensartados con los miembros
+         despegados del tronco. Esto es lo que lo arregla, y lo demás se
+         apoya en ello.
+     2 · EL ESPINAZO SE DOBLA (`arqueo`, `onda`). El eje no es recto: se
+         arquea lo suyo por cuerpo y encima le recorre una onda muy lenta.
+         La flexión se aplica CAMPO A CAMPO, así que arrastra todo lo que
+         cuelga del eje —miembros incluidos— sin partirlo.
+     3 · LOS MIEMBROS CUELGAN DE SU HUECO y no giran sobre su propio
+         centro. Un brazo con el centro por pivote es un aspa; con el
+         hombro por pivote es un brazo suelto en el agua. Y son dos
+         eslabones en cadena: el antebrazo se mueve con el brazo.
+     4 · CADA UNO FLOTA A LO SUYO. Cada eslabón lleva su fase y su
+         velocidad, sorteadas al nacer, así que no hay dos que vayan
+         acompasados. Con el seno único los cuatro miembros subían y
+         bajaban juntos y eso se lee como un mecanismo.
+
+   Y CAEN DE UNO A TRES, desfasados (`cuantos`, `retraso`): el segundo
+   entra cuando el primero lleva medio cuadro bajado. A la vez serían una
+   formación; escalonados, es que hay más de uno.                      */
+
+/* ── EL PERFIL DEL TRONCO ────────────────────────────────────────────
+   El semiancho a cada altura, en fracciones del ALTO del cuerpo y con el
+   origen en el ombligo. Puntos de control y no una fórmula: lo que se
    reconoce de un cuerpo es la PROPORCIÓN —la cabeza es un séptimo, los
-   hombros son dos cabezas—, y eso no sale de una fórmula. */
-const CUERPO_ANAT = [
-  /* cabeza y cuello, colgando hacia delante */
-  [ 0.000, -0.430, 0.075, 0.062,  0.00, 1.00],
-  [ 0.000, -0.352, 0.030, 0.034,  0.00, 0.90],
-  /* el tronco: hombros anchos, cintura estrecha, caderas */
-  [ 0.000, -0.280, 0.070, 0.105,  0.00, 1.00],
-  [ 0.000, -0.170, 0.070, 0.082,  0.00, 1.00],
-  [ 0.000, -0.060, 0.065, 0.090,  0.00, 1.00],
-  /* los brazos, ARRIBA y hacia fuera. Dos tramos cada uno para que tengan
-     codo: sin codo son dos palos y el cuerpo se lee como un muñeco. */
-  [-0.135, -0.290, 0.090, 0.028, -0.95, 0.80],
-  [-0.225, -0.385, 0.085, 0.022, -0.45, 0.70],
-  [ 0.135, -0.290, 0.090, 0.028,  0.95, 0.80],
-  [ 0.225, -0.385, 0.085, 0.022,  0.45, 0.70],
-  /* y las piernas, juntas y algo dobladas */
-  [-0.050,  0.075, 0.115, 0.042,  0.10, 0.90],
-  [-0.062,  0.285, 0.105, 0.030,  0.22, 0.80],
-  [ 0.050,  0.075, 0.115, 0.042, -0.06, 0.90],
-  [ 0.058,  0.285, 0.105, 0.030, -0.14, 0.80],
+   hombros dos cabezas, la cintura más estrecha que hombros y caderas—, y
+   eso no sale de una curva.
+
+   ── POR QUÉ UN PERFIL Y NO CINCO ELIPSES ────────────────────────────
+   Eran cinco elipses sueltas —cabeza, cuello y tres del tronco— y SE
+   VEÍAN. Una elipse se afila en sus dos puntas, así que cada junta entre
+   dos dejaba un pellizco: la silueta se leía como una pila de óvalos, con
+   un cinturón oscuro a la altura de la cintura donde dos se solapaban.
+   Aquí el perfil se muestrea a pasos cortos con los campos solapados y lo
+   que sale es un canto continuo.
+
+   Los dos extremos van a casi CERO de ancho a propósito. El campo del
+   final de una cadena tiene que sobresalir del rango —si no sobresale, no
+   solapa con el anterior—, y a dos milésimas de ancho lo que asoma es un
+   pelo. Con el ancho de la coronilla de verdad asomaba un pico por encima
+   de la cabeza.                                                       */
+const CUERPO_PERFIL = [
+  [-0.512, 0.004],
+  [-0.502, 0.030],        // la coronilla: sube de golpe, que un cráneo es redondo
+  [-0.486, 0.048],        //   y no un cono
+  [-0.466, 0.057],
+  [-0.438, 0.062],        // la cabeza, por donde es más ancha
+  [-0.400, 0.053],
+  [-0.366, 0.031],        // el cuello: la estrangulación que dice que hay cabeza
+  [-0.334, 0.060],
+  [-0.298, 0.097],        // los hombros
+  [-0.260, 0.105],
+  [-0.208, 0.087],
+  [-0.158, 0.074],        // la cintura
+  [-0.098, 0.081],
+  [-0.040, 0.094],        // las caderas
+  [ 0.014, 0.085],
+  [ 0.052, 0.040],
+  [ 0.072, 0.004],        // y de aquí abajo ya son las piernas
 ];
+
+/* el semiancho del tronco a una altura cualquiera. Con interpolación
+   lineal se le ven los vértices al perfil en el canto de la silueta, así
+   que se suaviza: `u²(3−2u)` entra y sale con pendiente cero, y entonces
+   el canto no tiene esquinas. */
+function cuerpoAncho(ly){
+  const T = CUERPO_PERFIL, n = T.length;
+  if (ly <= T[0][0]) return T[0][1];
+  if (ly >= T[n-1][0]) return T[n-1][1];
+  let i = 1;
+  while (i < n-1 && T[i][0] < ly) i++;
+  const a = T[i-1], b = T[i];
+  const u = (ly - a[0])/(b[0] - a[0]);
+  return a[1] + (b[1] - a[1])*(u*u*(3 - 2*u));
+}
+
+/* ── LOS MIEMBROS ───────────────────────────────────────────────────
+   Un miembro es un HUECO del que salen dos eslabones en cadena, y se
+   describe así y no como dos centros con sus ángulos porque lo que hay
+   que poder mover es el ángulo de cada eslabón: con el centro por pivote,
+   un brazo que flota es un aspa.
+
+   `anchos` es el semiancho en la RAÍZ, en la junta de en medio y en la
+   PUNTA, y es la otra mitad del arreglo de los óvalos: interpolado a lo
+   largo del miembro, un brazo va de grueso a fino de un tirón en vez de
+   ser dos lentejas pegadas por el codo. La punta va casi a cero por lo
+   mismo que la coronilla del perfil, y de paso lo que asoma se lee como
+   dedos. Y la raíz va bastante gorda para que el primer campo entre DENTRO
+   del tronco: el hueco del hombro cae a 0,062 del eje y ahí el tronco mide
+   0,105, así que el brazo nace por debajo del canto y no pegado a él.
+
+   LOS ÁNGULOS SE MIDEN DESDE «HACIA LOS PIES» y abriendo hacia fuera, que
+   es como se piensa una postura: 0 es un miembro colgando recto y π uno
+   estirado hacia arriba. El del segundo eslabón es RELATIVO al primero, o
+   sea que es el codo o la rodilla y no una orientación absoluta, y por eso
+   mover el brazo arrastra el antebrazo. `largos` son largos enteros.   */
+const CUERPO_MIEMBROS = [
+  /* los brazos, ARRIBA y hacia fuera, que es como flota un ahogado */
+  { x:-0.062, y:-0.256, lado:-1,
+    largos: [0.200, 0.184], angulos: [2.30, -0.42],
+    anchos: [0.040, 0.027, 0.012], fuerzas: [0.82, 0.70] },
+  { x: 0.062, y:-0.256, lado: 1,
+    largos: [0.200, 0.184], angulos: [2.30, -0.42],
+    anchos: [0.040, 0.027, 0.012], fuerzas: [0.82, 0.70] },
+  /* y las piernas, juntas y algo dobladas */
+  /* y las piernas, juntas y algo dobladas. El hueco de la cadera va a
+     0,046 del eje y el muslo mide 0,050, o sea que las dos piernas se
+     tocan justo en el eje y de ahí para abajo se separan: con el muslo a
+     0,058 se cruzaban y las dos piernas salían fundidas en una columna,
+     que es lo que se leía como cola. Y la rodilla dobla POCO —0,11— porque
+     en una silueta plana no hay más plano que éste: doblarla como se
+     dobla de verdad sale de lado, y a 0,34 el cuerpo bajaba haciendo un
+     compás. */
+  { x:-0.046, y:-0.026, lado:-1,
+    largos: [0.244, 0.224], angulos: [0.09, 0.13],
+    anchos: [0.050, 0.036, 0.016], fuerzas: [0.92, 0.80] },
+  { x: 0.046, y:-0.026, lado: 1,
+    largos: [0.244, 0.224], angulos: [0.09, 0.13],
+    anchos: [0.050, 0.036, 0.016], fuerzas: [0.92, 0.80] },
+];
+
+/* CADA CUÁNTO SE DEJA UN CAMPO, en fracciones del alto, y cuánto mide de
+   largo el que se deja —el factor sobre el paso—.
+
+   El factor sale de una cuenta: dos elipses iguales de semieje `a`
+   separadas `s` dejan la unión, justo en medio, a `sqrt(1 − (s/2a)²)` de
+   su ancho. Con el semieje igual al paso eso es el 87 % y el pellizco se
+   ve; con 1,35 es el 93 % y no. Subirlo más no arregla nada y hace que
+   asome más por las puntas.
+
+   ── Y POR QUÉ EL TRONCO VA MÁS FINO QUE LOS MIEMBROS ────────────────
+   Porque el paso es también el TAMAÑO DEL DETALLE MÁS PEQUEÑO que se
+   puede resolver: dos campos consecutivos se solapan a propósito, así que
+   cualquier estrechamiento más corto que el paso lo rellenan entre ellos.
+
+   El tronco tiene uno que no se puede perder —el CUELLO, que mide unas
+   tres centésimas del alto—, y con el paso a 0,072 los campos de la
+   cabeza y de los hombros se daban la mano por encima de él: salía un
+   cuerpo sin cabeza, un bulto puntiagudo. A 0,030 el cuello se resuelve y
+   hay cabeza. Los miembros no tienen ningún detalle así —son conos
+   lisos—, y ahí lo único que hacía falta era que no pellizcaran en el codo
+   y la rodilla.
+
+   ── LO QUE CUESTA, Y DÓNDE SE VA ────────────────────────────────────
+   41 campos por cuerpo: 19 del tronco, 5 por brazo y 6 por pierna. Eran
+   13. Cronometrado en el navegador, con los cuerpos parados para que la
+   medida no dependa de por dónde vayan:
+
+     | sin evento                    |   4 campos |  2,5 ms |
+     | un cuerpo                     |  45 campos |  3,2 ms |
+     | tres cuerpos (el peor caso)   | 127 campos |  4,5 ms |
+
+   Unos 0,018 ms por campo, o sea dos milisegundos en el peor caso de
+   todos. Y el gasto NO está en dibujar: apagando `pintaSombras` entera
+   —`agua.sombra.fuerza` a 0— la diferencia es de 0,02 ms, o sea ninguna.
+   Está TODO en `M.campo()`, que es un recorrido lineal del array de
+   campos y al que el plancton llama por mota: setecientas motas por dos
+   consultas por ciento veintisiete campos son ciento setenta mil
+   comparaciones por fotograma.
+
+   Eso es lo que pone el tope al paso, y no el número de elipses. Si algún
+   día hace falta bajarlo más, lo que hay que arreglar antes es la
+   consulta —una rejilla— y no este evento.                           */
+const PASO_TRONCO = 0.030, PASO_MIEMBRO = 0.075, LARGO_CAMPO = 1.35;
+
+/* CUÁNTAS MUESTRAS SALEN DE ESO, contadas una sola vez y aquí: las usan el
+   bucle que pone los campos y el que pinta el borde, y sobre todo el array
+   donde el primero le deja al segundo por dónde va el canto. Calculadas de
+   los mismos pasos y perfiles, así que no hay forma de que se
+   desincronicen de lo que de verdad se dibuja. */
+const N_TRONCO = Math.max(4, Math.round(
+  (CUERPO_PERFIL[CUERPO_PERFIL.length-1][0] - CUERPO_PERFIL[0][0]) / PASO_TRONCO));
+const N_MIEMBRO = CUERPO_MIEMBROS.map(
+  Mi => Math.max(3, Math.round((Mi.largos[0] + Mi.largos[1]) / PASO_MIEMBRO)));
+const N_PIEL = N_TRONCO + N_MIEMBRO.reduce((a, b) => a + b, 0);
+
+function cuerpoFlexion(b, ly, t){
+  const peso = Math.min(1, Math.abs(ly)/0.40);
+  return peso * (b.arqueo + b.onda*Math.sin(ly*b.k + b.fase + t*b.vOnda));
+}
+
+/* un cuerpo nuevo: su tamaño, su rumbo, su postura y su flotación. `espera`
+   son los segundos que tarda en asomar, que es lo que los desacompasa. */
+function cuerpoNuevo(M, p, x, y, espera){
+  const h = M.H * rango(p.alto);
+  const b = {
+    x: opt(x, rnd(0.16, 0.84)*M.W),
+    /* entra por arriba y desde fuera, por su altura entera: el cuerpo
+       cuelga del punto (x,y), así que si arranca en el canto asoman los
+       pies antes que la cabeza */
+    y: opt(y, -h*0.75),
+    h, espera,
+    vel:   rango(p.vel) * M.U,
+    ang:   rnd(-0.25, 0.25),
+    vGiro: rango(p.giro || 0),
+    fase:  Math.random()*TAU,
+    hondura: rango(p.hondura),
+    deriva: Math.random()*TAU,
+    /* ── LA POSTURA DE ESTE CUERPO ────────────────────────────────
+       No otra anatomía: los mismos huesos con los ángulos abiertos de
+       otra manera. `abre` multiplica el ángulo del HOMBRO y la CADERA y
+       `dobla` el del CODO y la RODILLA, o sea que uno dice lo abierto que
+       va y el otro lo recogido. En los brazos, que es donde se ve, `abre`
+       a 0,70 los deja en cruz —estirados a los lados— y a 1,22 casi
+       verticales sobre la cabeza. Es lo que hace que dos cuerpos cayendo
+       a la vez no se lean como el mismo dos veces. */
+    abre:  rango(p.abre || 1),
+    dobla: rango(p.dobla || 1),
+    /* ── Y LO QUE LO HACE BLANDO ──────────────────────────────────
+       `arqueo` con signo sorteado: uno baja recogido hacia delante y el
+       siguiente arqueado hacia atrás. */
+    arqueo: rango(p.arqueo || 0) * (Math.random() < 0.5 ? 1 : -1),
+    onda:   rango(p.onda || 0),
+    k:      TAU * rango(p.ondas || 0.5),
+    vOnda:  rango(p.velOnda || 0.2),
+    /* UNA FASE Y UNA VELOCIDAD POR ESLABÓN. Ocho números por cuerpo y
+       sorteados una vez: es lo que impide que los cuatro miembros suban y
+       bajen a la par, que es lo que más delataba el maniquí. */
+    fasesM: new Float32Array(CUERPO_MIEMBROS.length*2),
+    velesM: new Float32Array(CUERPO_MIEMBROS.length*2),
+    /* ── POR DÓNDE VA SU CANTO ────────────────────────────────────
+       Cinco números por muestra —x, y, el ángulo del eje ahí, el semiancho
+       y el semieje a lo largo—, en coordenadas del MUNDO y rellenados por
+       el mismo bucle que pone los campos. El semieje a lo largo va porque
+       de él sale cuánto mide el trazo del borde: el paso del tronco y el
+       de un miembro no son el mismo. De aquí saca `dibuja` el borde, y por eso
+       se guarda en vez de volver a calcularlo: los campos se ponen en
+       `actualiza` y el dibujo va en otra fase del fotograma, así que
+       recalcularlo serían dos recorridos que se pueden despegar —y
+       despegados, el borde se pinta donde el cuerpo no está. */
+    piel: new Float32Array(N_PIEL*5),
+    hecho: false,
+  };
+  for (let i=0;i<b.fasesM.length;i++){
+    b.fasesM[i] = Math.random()*TAU;
+    b.velesM[i] = rnd(0.45, 1.15);
+  }
+  return b;
+}
 
 A.evento('cuerpo', {
   exclusivo: true,
-  cada: [260, 520], primero: [80, 200],
+  cada: [320, 660], primero: [80, 200],
   prueba: { alto: [0.30, 0.42], vel: [0.30, 0.55], giro: [-0.055, 0.055],
-            deriva: 0.22, vaiven: 0.10, hondura: [0.92, 1.0],
-            filo: 1.8, penumbra: 1.25, plano: 1 },
-  arranca(M, p, x, y){
-    const h = M.H * rango(p.alto);
-    return {
-      x: opt(x, rnd(0.20, 0.80)*M.W),
-      /* entra por arriba y desde fuera, por su altura entera: el cuerpo
-         cuelga del punto (x,y), así que si arranca en el canto asoman los
-         pies antes que la cabeza */
-      y: opt(y, -h*0.75),
-      h,
-      vel:   rango(p.vel) * M.U,
-      ang:   rnd(-0.25, 0.25),
-      vGiro: rango(p.giro || 0),
-      fase:  Math.random()*TAU,
-      hondura: rango(p.hondura),
-    };
+            deriva: 0.22, vaiven: 0.30, hondura: [0.92, 1.0],
+            cuantos: [1, 3], retraso: [10, 30],
+            abre: [0.70, 1.22], dobla: [0.3, 1.8],
+            arqueo: [0.04, 0.13], onda: [0.02, 0.055],
+            ondas: [0.35, 0.8], velOnda: [0.10, 0.26],
+            filo: 1.8, penumbra: 1.25, plano: 1,
+            borde: 2.2, bordeAlcance: 4.2, bordeCaida: 2.0, bordeTecho: 0.09,
+            bordeGrosor: 0.05, bordeTono: [182, 196, 204],
+            bordeTinte: 0.22, bordeTapado: 0.25 },
+  arranca(M, p){
+    /* el primero entra ya; los demás esperan lo suyo. El contacto no le
+       pasa un sitio a ninguno: un cuerpo que sale del dedo se lee como
+       que el dedo lo ha hecho, y este evento va de encontrárselo. */
+    const n = Math.max(1, rangoE(p.cuantos || 1)|0);
+    const cuerpos = [];
+    let espera = 0;
+    for (let i=0;i<n;i++){
+      cuerpos.push(cuerpoNuevo(M, p, undefined, undefined, espera));
+      espera += rango(p.retraso || 0);
+    }
+    return { cuerpos };
   },
   actualiza(e, M, p, dt){
-    e.y += e.vel * dt;
-    e.ang += e.vGiro * dt;
-    e.x += Math.sin(M.t*0.11 + e.fase) * opt(p.deriva, 0) * M.U * dt;
-    if (e.y - e.h*0.6 > M.H) return false;
-
     const plano = opt(p.plano, 1);
     const filo = opt(p.filo, 1.8);
     /* `penumbra` agranda cada elipse por encima del cuerpo, igual que en el
@@ -3384,34 +3920,281 @@ A.evento('cuerpo', {
        silueta de verdad cae donde el apagado ya se está desvaneciendo y no
        hay masa oscura, sólo un degradado. */
     const pen = opt(p.penumbra, 1);
-    const ca = Math.cos(e.ang), sa = Math.sin(e.ang);
-    /* EL VAIVÉN. Los miembros van una fase por detrás del cuerpo: un cuerpo
-       que baja rígido es un maniquí, y lo que se tiene que ver es algo
-       blando al que lo mueve el agua. Sólo a brazos y piernas —el tronco
-       no— y va en centésimas de radián. */
-    const vai = opt(p.vaiven, 0) * Math.sin(M.t*0.5 + e.fase);
+    const vai = opt(p.vaiven, 0);
+    let quedan = 0;
 
-    for (let i=0;i<CUERPO_ANAT.length;i++){
-      const S = CUERPO_ANAT[i];
-      /* las cinco primeras entradas son cabeza, cuello y las tres del
-         tronco; de la sexta en adelante, brazos y piernas */
-      const miembro = i >= 5;
-      const bal = miembro ? vai*(S[0] < 0 ? 1 : -1) : 0;
-      /* del cuerpo al mundo: el eje del cuerpo gira `ang` */
-      const lx = S[0]*e.h, ly = S[1]*e.h;
-      const r  = S[2]*e.h*pen;
-      M.campos.push({ tipo:'apaga', plano,
-                      x: e.x + lx*ca - ly*sa,
-                      y: e.y + lx*sa + ly*ca,
-                      r, ky: Math.max(0.05, S[3]*e.h*pen/r),
-                      /* +π/2 porque la anatomía está escrita a lo ALTO y el
-                         semieje `r` de un campo es el horizontal */
-                      rot: e.ang + S[4] + bal + Math.PI*0.5,
-                      fuerza: e.hondura*S[5], filo });
+    for (const b of e.cuerpos){
+      if (b.hecho) continue;
+      quedan++;
+      if (b.espera > 0){ b.espera -= dt; continue; }
+      b.y += b.vel * dt;
+      b.ang += b.vGiro * dt;
+      b.x += Math.sin(M.t*0.11 + b.deriva) * opt(p.deriva, 0) * M.U * dt;
+      if (b.y - b.h*0.6 > M.H){ b.hecho = true; quedan--; continue; }
+      cuerpoCampos(b, M, plano, pen, filo, vai);
     }
-    return true;
+    return quedan > 0;
+  },
+  /* Y SÍ DIBUJA, aunque poco: el canto encendido por lo que le pasa cerca.
+     Ver `pintaBordeCuerpo`. El cuerpo sigue siendo un hueco —no emite
+     nada—; lo que se pinta es la luz de otro rebotando en él. */
+  dibuja(e, M, p, g){
+    const plano = opt(p.plano, 1);
+    for (const b of e.cuerpos)
+      if (!b.hecho && b.espera <= 0) pintaBordeCuerpo(b, M, p, g, plano);
   },
 });
+
+/* ── DEL CUERPO AL MUNDO ────────────────────────────────────────────
+   Empuja los campos de un cuerpo. Va fuera del evento porque lo que hace
+   es geometría y no reloj, y porque así el bucle de arriba se lee: mover
+   los cuerpos es una cosa y armar la silueta es otra.
+
+   Se recorren los DOS perfiles —el del tronco a lo alto y el de cada
+   miembro de la raíz a la punta— dejando campos solapados con el grosor
+   interpolado. La unión de todos es una manga continua, y eso es lo que
+   quita de en medio los dos defectos que tenía la silueta: el óvalo por
+   hueso y el pellizco en cada junta.
+
+   Y LA FLEXIÓN SE APLICA CAMPO A CAMPO, no pieza a pieza. Es lo que hace
+   que el cuerpo se DOBLE en vez de partirse: antes cada elipse se
+   desplazaba en bloque por la flexión de su centro, así que el muslo y la
+   espinilla —con los centros a un tercio de altura de diferencia— se
+   iban a un lado distinto y la rodilla se abría un hueco de veinte
+   píxeles. Con un campo cada 0,072 el desplazamiento cambia poco de uno
+   al siguiente y lo que se ve es una curva.                          */
+function cuerpoCampos(b, M, plano, pen, filo, vai){
+  const t = M.t;
+  const ca = Math.cos(b.ang), sa = Math.sin(b.ang);
+  /* deja un campo en el punto (lx, ly) del cuerpo. `r` es el semieje a lo
+     largo y `ancho` el semiancho ya en píxeles; `f` es la flexión a esa
+     altura, que la calcula quien llama porque el tronco además la
+     necesita para el giro. */
+  let k = 0;
+  const pon = (lx, ly, f, r, ancho, rot, fuerza) => {
+    const gx = (lx + f)*b.h, gy = ly*b.h;
+    const x = b.x + gx*ca - gy*sa, y = b.y + gx*sa + gy*ca;
+    const rt = b.ang + rot;
+    M.campos.push({ tipo:'apaga', plano, x, y,
+                    r, ky: Math.max(0.04, ancho/r),
+                    rot: rt, fuerza: b.hondura*fuerza, filo });
+    /* y de paso, por dónde va el canto aquí: lo consume `dibuja` para el
+       borde. Se apunta en el mismo sitio en que se pone el campo, que es la
+       única forma de que el borde caiga donde el cuerpo está. */
+    const j = k++*5;
+    b.piel[j] = x; b.piel[j+1] = y; b.piel[j+2] = rt;
+    b.piel[j+3] = ancho; b.piel[j+4] = r;
+  };
+  /* el semieje a lo largo NO lleva `pen` y el ancho SÍ. La penumbra está
+     para que la silueta de verdad caiga dentro de la zona llena del campo,
+     y eso es un problema del lado FINO: a lo largo ya solapan entre ellos.
+     Agrandándolo también a lo largo, lo único que crecía era el pelo que
+     asoma por la coronilla y por los dedos. */
+
+  /* EL TRONCO, de la coronilla a donde arrancan las piernas. `+π/2` porque
+     el perfil está escrito a lo ALTO y el semieje `r` de un campo es el
+     horizontal. */
+  const P = CUERPO_PERFIL;
+  const y0 = P[0][0], y1 = P[P.length-1][0];
+  const nT = N_TRONCO;
+  const pasoT = (y1-y0)/nT, rT = pasoT*LARGO_CAMPO*b.h;
+  let fAnt = null;
+  for (let i=0;i<nT;i++){
+    const ly = y0 + (i+0.5)*pasoT;
+    const f = cuerpoFlexion(b, ly, t);
+    /* el canto sigue el arco: el giro de cada campo sale de cuánto se ha
+       apartado respecto del ANTERIOR. Así no hay que derivar la flexión ni
+       hay dos fórmulas que se puedan desincronizar —el problema de siempre
+       en esta casa—, y el tronco arqueado sale como una curva y no como
+       una escalera de elipses verticales. */
+    const tg = fAnt === null ? 0 : Math.atan((f - fAnt)/pasoT);
+    fAnt = f;
+    pon(0, ly, f, rT, cuerpoAncho(ly)*b.h*pen, Math.PI*0.5 + tg, 1);
+  }
+
+  /* LOS MIEMBROS, de la raíz a la punta */
+  for (let m=0;m<CUERPO_MIEMBROS.length;m++){
+    const Mi = CUERPO_MIEMBROS[m];
+    const L1 = Mi.largos[0], L2 = Mi.largos[1], total = L1 + L2;
+    /* la postura dice dónde reposa cada junta —`abre` el hombro y la
+       cadera, `dobla` el codo y la rodilla— y `vaiven` cuánto se va de
+       ahí, con la fase y la velocidad propias de ese eslabón: por eso no
+       hay dos miembros acompasados. */
+    const a1 = Mi.angulos[0]*b.abre
+             + vai*Math.sin(t*b.velesM[m*2] + b.fasesM[m*2]);
+    const a2 = a1 + Mi.angulos[1]*b.dobla
+             + vai*Math.sin(t*b.velesM[m*2+1] + b.fasesM[m*2+1]);
+    const d1x = Math.sin(a1)*Mi.lado, d1y = Math.cos(a1);
+    const d2x = Math.sin(a2)*Mi.lado, d2y = Math.cos(a2);
+    const rot1 = Math.atan2(d1y, d1x), rot2 = Math.atan2(d2y, d2x);
+    /* el codo o la rodilla */
+    const jx = Mi.x + d1x*L1, jy = Mi.y + d1y*L1;
+    const n = N_MIEMBRO[m];
+    const paso = total/n, r = paso*LARGO_CAMPO*b.h;
+    const A = Mi.anchos, F = Mi.fuerzas;
+    for (let i=0;i<n;i++){
+      const s = (i+0.5)*paso;
+      const dentro = s <= L1;
+      const u = dentro ? s/L1 : (s-L1)/L2;
+      const ancho = dentro ? A[0] + (A[1]-A[0])*u : A[1] + (A[2]-A[1])*u;
+      const fz    = dentro ? F[0] + (F[1]-F[0])*u : F[1];
+      const lx = dentro ? Mi.x + d1x*s : jx + d2x*(s-L1);
+      const ly = dentro ? Mi.y + d1y*s : jy + d2y*(s-L1);
+      pon(lx, ly, cuerpoFlexion(b, ly, t), r, ancho*b.h*pen,
+          dentro ? rot1 : rot2, fz);
+    }
+  }
+}
+
+
+/* ── EL BORDE ───────────────────────────────────────────────────────
+   Lo ÚNICO que dibuja este evento, y le costó llegar: la primera versión
+   no dibujaba nada y era el mejor rasgo que tenía —«no se ve un cuerpo, se
+   ve el hueco de un cuerpo»—. Pero en la mitad de abajo del cuadro el agua
+   ya es casi negra ([0,1,3] de tono contra [4,13,21] del techo), así que
+   ahí un hueco negro sobre agua negra no se lee: el cuerpo bajaba y se
+   perdía justo cuando más cerca estaba de pasar delante de algo.
+
+   Y NO SE ILUMINA DESDE LA ESCENA. Un borde fijo por el canto de arriba
+   —como si cayera luz de la superficie— es lo que va expresamente contra
+   la regla de la casa, y además aquí no llega el sol. Lo que se enciende
+   es lo que un foco de verdad alcanza: se recorre el canto que ya dejó
+   apuntado `cuerpoCampos`, se mira qué luz le llega de `M.luces(plano)` y
+   se enciende SÓLO el lado que mira a esa luz. Es lo mismo que hace la
+   carroña, con dos diferencias:
+
+     · Aquí la luz tiene DIRECCIÓN. La carroña se pregunta cuánta luz le
+       llega a cada vértebra; un borde necesita además de dónde viene, o
+       se enciende el contorno entero y el cuerpo pasa de ser un hueco a
+       ser un muñeco recortado. Se acumula como VECTOR y el canto se
+       enciende por `dot(normal, luz)`: el lado de sombra se queda negro,
+       que es la mitad del efecto.
+     · Es GRIS y no del color del foco. Un cuerpo no es un esqueleto
+       pálido: lo que se quiere leer es carne mojada, y para eso el tono
+       tiene que ser casi neutro. Coge un poco del color de quien lo
+       alumbra —`tinte`— y nada más.
+
+   Se salta los trozos de canto que caen DENTRO de otra parte del cuerpo
+   —el brazo por donde cruza el hombro, o la pierna contra la cadera—
+   preguntándole al motor por su propio campo `apaga`: en el canto, el
+   campo de esa misma muestra vale cero, así que lo que devuelva viene de
+   otra parte. Sin esto salían rayas por dentro de la masa oscura y el
+   cuerpo se leía como un despiece.                                    */
+function pintaBordeCuerpo(b, M, p, g, plano){
+  const gan = opt(p.borde, 0);
+  if (!(gan > 0)) return;
+  const luces = M.luces(plano);
+  if (!luces.length) return;
+  const alc = opt(p.bordeAlcance, 1), caida = opt(p.bordeCaida, 2);
+  const techo = opt(p.bordeTecho, 1);
+  const T = p.bordeTono || [180, 196, 206], tinte = opt(p.bordeTinte, 0);
+  const grosor = Math.max(0.5, M.U*opt(p.bordeGrosor, 0.05));
+  g.lineCap = 'round';
+  g.lineWidth = grosor;
+  for (let i=0;i<N_PIEL;i++){
+    const j = i*5;
+    const x = b.piel[j], y = b.piel[j+1], rot = b.piel[j+2];
+    const anc = b.piel[j+3], rl = b.piel[j+4];
+    if (!(anc > 0)) continue;
+    /* ── LA LUZ QUE LE LLEGA, COMO VECTOR ──────────────────────
+       Con la curva de `luzRecibida` —pow(1/(1+d²/r²), caida)— y NO con la
+       de la carroña, que se corta en `r`. El corte es lo que la carroña
+       necesita para apagarse a trozos, y aquí es justo lo que no sirve:
+       los radios de esta escena van de 16 px un pez linterna del fondo a
+       125 px una medusa, o sea ocho veces, y un cuerpo baja por agua
+       vacía —medido: en una travesía entera lo más cerca que le pasó algo
+       fueron 320 px—. Con el corte, el canto es todo o nada: medido,
+       `alcance` 9 daba el 0 % de los fotogramas con algo encendido y 13 el
+       100 %, porque a 13 el radio de una medusa cubre la pantalla. Sin
+       corte hay un hilo de luz a cualquier distancia y sube cuando algo
+       se acerca, que es lo que se pide.
+
+       Y GUARDANDO LA DIRECCIÓN, que es la otra mitad: se acumula como
+       vector, así que el canto se enciende por `dot(normal, luz)` y el
+       lado de sombra se queda negro. Sumando sólo intensidades se
+       encendería el contorno entero y el cuerpo pasaría de ser un hueco a
+       ser un muñeco recortado. */
+    let lx = 0, ly = 0, mejor = 0, cm = null;
+    for (const o of luces){
+      const r = (o.rCuerpo || o.rLuz) * alc;
+      if (!r) continue;
+      const dx = o.x - x, dy = o.y - y, d2 = dx*dx + dy*dy;
+      const q = d2/(r*r);
+      const w = (o.luzI || 1) * Math.pow(1/(1 + q), caida);
+      if (w < 0.002) continue;
+      const d = Math.sqrt(d2) || 1e-4;
+      lx += dx/d*w; ly += dy/d*w;
+      if (w > mejor){ mejor = w; cm = o.c; }
+    }
+    if (Math.hypot(lx, ly) < 0.004) continue;
+    /* UN PUNTO DEL COLOR DE QUIEN LO ALUMBRA, y poco: con el gris a secas
+       el cuerpo se despega de la escena —sería lo único que no comparte
+       tono con nada— y teñido del todo vuelve a parecer otro bicho que
+       brilla. El tinte es del foco que más pesa EN ESTA MUESTRA, así que
+       un cuerpo entre dos medusas de colores distintos se tiñe distinto
+       de cada lado. */
+    let R = T[0], G = T[1], B = T[2];
+    if (tinte > 0 && cm && cm.mid){
+      R += (cm.mid[0] - R)*tinte;
+      G += (cm.mid[1] - G)*tinte;
+      B += (cm.mid[2] - B)*tinte;
+    }
+    const col = (R|0)+','+(G|0)+','+(B|0)+',';
+    /* el eje de la muestra y su normal: el canto está a `anc` de ahí, a un
+       lado y al otro */
+    const ex = Math.cos(rot), ey = Math.sin(rot);
+    const nx = -ey, ny = ex;
+    /* EL TRAZO MIDE EL PASO, no el ancho del cuerpo. Con el ancho, en el
+       tronco sobraba —26 px de trazo para 7 de paso— y en los miembros
+       faltaba —7 de trazo para 18 de paso—: el canto de un brazo salía a
+       rayitas y el cuerpo entero se leía como una escalera. El paso sale
+       del semieje a lo largo, que es `paso·LARGO_CAMPO`, y se estira un
+       30 % más para que dos trazos seguidos se pisen con la punta redonda
+       y el canto salga continuo. */
+    const largo = rl/LARGO_CAMPO*1.3;
+    for (let lado=-1;lado<=1;lado+=2){
+      /* ¿mira este lado a la luz? `cara` sale ya con la intensidad dentro.
+         La única puerta aquí es el signo —de espaldas no se enciende—; lo
+         flojo lo corta el alfa más abajo. Con una puerta en 0,01 se perdía
+         el caso normal: en una travesía por agua vacía la luz que le llega
+         vale unas cinco milésimas, o sea que las dos caras la fallaban y el
+         cuerpo se quedaba negro entero, que es de donde venía la queja. */
+      const cara = nx*lado*lx + ny*lado*ly;
+      if (cara <= 0) continue;
+      /* JUSTO POR FUERA de la masa y no en el canto exacto. Un rape de
+         verdad tiene el reflejo en el borde mojado, no dentro; y además
+         es lo que descuenta los falsos positivos de la prueba de abajo:
+         en el canto exacto, el trozo donde un brazo sale del hombro está
+         medio enterrado en el tronco y se descartaba. Medido en un
+         fotograma: de 82 trozos de canto, 43 daban la espalda a la luz
+         —eso es lo que se quiere, la mitad en sombra— y 15 salían
+         enterrados; un pelo por fuera, la mayoría de esos 15 son canto de
+         verdad y el borde deja de salir a trozos en las junturas. */
+      const fuera = anc + grosor*0.7;
+      const bx = x + nx*lado*fuera, by = y + ny*lado*fuera;
+      /* y si este trozo sigue enterrado en otra parte del cuerpo, no es
+         canto: es una raya por dentro de la masa oscura, y con ellas el
+         cuerpo se lee como un despiece */
+      const dentro = M.campo('apaga', bx, by, plano);
+      if (dentro && dentro.peso > opt(p.bordeTapado, 0.25)) continue;
+      /* EL TECHO, y con rodilla blanda en vez de recorte. La luz que le
+         llega tiene un rango enorme —de 0,02 cuando no hay nada cerca a
+         más de 1 cuando le pasa una medusa por el costado—, así que sin
+         esto el canto se quedaba clavado en alfa 1 cada vez que algo se
+         acercaba y el cuerpo pasaba de hueco a figura recortada en
+         blanco. `cara/(1 + cara/techo)` sube recto al principio y se
+         acerca al techo sin llegar nunca, así que el borde SIEMPRE tiene
+         margen para ponerse más vivo y nunca se satura. */
+      const a = gan*cara/(1 + cara/techo);
+      if (a < 0.004) continue;
+      g.strokeStyle = 'rgba('+col+a.toFixed(3)+')';
+      g.beginPath();
+      g.moveTo(bx - ex*largo*0.5, by - ey*largo*0.5);
+      g.lineTo(bx + ex*largo*0.5, by + ey*largo*0.5);
+      g.stroke();
+    }
+  }
+}
 
 /* ── EL GLITCH ──────────────────────────────────────────────────────
    Se rompe el DIBUJO DE UNA MEDUSA, no la pantalla. Uno o dos focos
