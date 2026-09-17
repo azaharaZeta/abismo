@@ -149,10 +149,19 @@ Coste: **ninguno medible.** Apagando `borde` la diferencia es de −0,17 ms, o s
 muestras × 15 focos son 615 cuentas por cuerpo, contra las 170.000 comparaciones que ya
 hace el plancton.
 
-**Aviso de método:** la primera tanda de estas medidas salió mal y hubo que repetirla. La
-bomba de fotogramas rebasaba su reloj al reloj real en cada llamada, así que llamándola en
-un bucle apretado el `dt` del motor salía casi cero: lo que creía que eran tres travesías
-completas eran tres ventanas de unos segundos. Con un reloj persistente, arreglado.
+**Dos avisos de método**, los dos por fallos del banco de pruebas que hubo que repetir:
+
+1. La bomba de fotogramas rebasaba su reloj al reloj real en cada llamada, así que
+   llamándola en un bucle apretado el `dt` del motor salía casi cero: lo que creía que eran
+   tres travesías completas eran tres ventanas de unos segundos. Arreglado con un reloj
+   persistente.
+2. La bomba avanzaba a `dt` de 1/20, que es el tope del motor, así que `vigila()` veía
+   50 ms por fotograma y llamaba a `degradar()` a los 90 fotogramas: todo corría con la
+   población recortada al 55 %. Arreglado bajando a 1/60.
+
+Repetidas las dos tandas con el banco bueno y la población entera, **los números del coste
+y del borde se confirman** (los del cardumen no: ver
+[idea-cardumen-natural.md](idea-cardumen-natural.md)).
 
 ## Lo que costó, medido
 

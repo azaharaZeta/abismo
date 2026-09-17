@@ -636,15 +636,16 @@ const ABISMO = {
          además baja por agua vacía —medido: en una travesía entera lo más
          cerca que le pasó algo fueron 320 px, contra radios de 16 a 125—.
 
-         Medido sobre tres travesías ENTERAS —184 segundos simulados—,
-         contando los 82 trozos de canto que tiene un cuerpo:
+         Medido sobre tres travesías ENTERAS —450 segundos simulados, con
+         la población entera— y contando los 82 trozos de canto que tiene
+         un cuerpo:
 
            | fotogramas con algo de canto      | 100 %        |
-           | trozos encendidos, de 82          | 31           |
+           | trozos encendidos, de 82          | 30           |
            | de espaldas a la luz              | 41           |
-           | enterrados en el propio cuerpo    | 10           |
+           | enterrados en el propio cuerpo    | 11           |
            | alfa del trazo   p10 · mediana · p90 · máx        |
-           |                  0,03 · 0,12 · 0,17 · 0,20        |
+           |                  0,04 · 0,13 · 0,16 · 0,20        |
 
          Lo que hay que leer ahí son dos cosas. La MITAD del canto —41 de
          82— está siempre de espaldas y se queda negra: eso es lo que
@@ -770,13 +771,50 @@ const ABISMO = {
        se deshace casualmente. */
     { evento: 'superpez', plano: 2,
       cada: [200, 440], primero: [70, 190],
-      largo: [0.40, 0.54], largoMin: 0.26,
+      /* ── LO QUE MIDE ─────────────────────────────────────────────
+         BAJADO de [0,40 · 0,54] a [0,28 · 0,38], y `largoMin` con él de
+         0,26 a 0,18 —es el suelo por debajo del cual una silueta no sale,
+         así que si no baja también, `escQueCabe` se queda sin sitio donde
+         encoger y la silueta se descarta en vez de caber—.
+
+         El motivo no es sólo que se viera grande: es que NO CABÍA. Medido
+         sobre cinco travesías, la fracción del contorno que queda dentro
+         del cuadro en el peor momento de cada una daba 0,85 · 0,48 · 0,73 ·
+         0,96 · 0,63. `escQueCabe` la coloca con el 87 % dentro AL NACER,
+         pero después la silueta nada —de 160 a 640 px a lo largo del
+         evento— y con media pantalla de eslora no hay borde que la
+         contenga: en una de cada tres se iba más de un tercio fuera. */
+      largo: [0.28, 0.38], largoMin: 0.18,
       /* ── CUÁNTOS Y CUÁNTAS ─────────────────────────────────────
          `reparto` es la fracción del banco que entra en la silueta, y no
          es 1 a propósito: los que quedan fuera siguen nadando a lo suyo
          por encima de la forma, y eso es la mitad de lo que la hace
          parecer una casualidad en vez de una coreografía. Se sortea por
          travesía, así que unas salen casi completas y otras a medias.
+
+         BAJADO de [0,55 · 0,90] a [0,40 · 0,68] junto con `largo`, y los
+         dos tienen que moverse JUNTOS: lo que cierra el canto es la
+         densidad por PERÍMETRO, así que bajar los peces sin bajar el
+         tamaño deja la silueta hecha de guiones sueltos. Medido —el
+         perímetro del contorno vale 3,9·`esc`, no lo que parece a ojo—,
+         con 59 peces en la pecera y el tamaño medio de cada caso:
+
+           |                  | esc | peces | perímetro | px entre peces |
+           | antes, 1 silueta | 481 |  43   |  1877     |      50        |
+           | antes, 2         | 340 |  21   |  1327     |      71        |
+           | ahora, 1 silueta | 338 |  32   |  1318     |      47        |
+           | ahora, 2         | 239 |  16   |   932     |      66        |
+
+         O sea que la separación entre peces del canto no se mueve: 50 → 47
+         con una silueta y 71 → 66 con dos. Es lo que se buscaba —encoger
+         las dos cosas a la vez—, y de paso deja escrito que un pez de este
+         plano mide 52 px, así que con DOS siluetas el canto nunca ha
+         cerrado del todo: los huecos son más largos que un pez. Eso ya
+         pasaba antes y no lo trae este cambio.
+
+         `minimo` baja de 12 a 10 por lo mismo: la silueta ya no es de
+         media pantalla sino de un tercio, así que diez peces dan para
+         cerrarla y con 12 las dos siluetas se volvían casi imposibles.
 
          `superpeces` es cuántas siluetas: una o dos. Dos sólo si hay peces
          para las dos —`minimo` por cabeza— y partiendo el banco por donde
@@ -789,10 +827,16 @@ const ABISMO = {
          a 0,70 un pez fusiforme y a 1,55 uno de cuerpo alto, casi un
          disco. Con dos en pantalla a la vez, que no se parezcan es lo que
          dice que son dos bichos y no un efecto duplicado. */
-      superpeces: [1, 2], reparto: [0.55, 0.90], redondez: [0.70, 1.55],
-      minimo: 12,
+      superpeces: [1, 2], reparto: [0.40, 0.68], redondez: [0.70, 1.55],
+      minimo: 10,
       entra: [8, 14], nada: [7, 13], sale: [4, 7],
-      vel: [0.25, 0.55], giroMax: 0.10, giroPaso: 0.035,
+      /* `vira` es con cuánta gana se tuerce hacia dentro cuando el MORRO
+         de la silueta se acerca al canto —ver el comentario en el evento:
+         se mide en el morro y no en el centro, que es lo que de verdad
+         arregló que la silueta se saliera—. Subido de 1,6 a 2,8: el
+         viraje del canto es lo único que se le impone a este evento, así
+         que tiene que poder más que su propio `giroMax`. */
+      vel: [0.25, 0.55], giroMax: 0.10, giroPaso: 0.035, vira: 2.8,
       /* el alcance del campo, ancho y plano: ver el comentario de `filo` en
          el banco. Los que quedan fuera no se apuntan, y eso está bien
          —siempre hay peces que no se enteran. */
@@ -1111,17 +1155,27 @@ const ABISMO = {
          hay nueve peces. El tope alto es para pantallas grandes;
          `escalaCalidad` los recorta si la máquina no da.
 
-         BAJADO de 7500·[30,88] a 9800·[24,68]: con el banco a tope y los
-         peces más grandes, lo que había dejaba de leerse como un banco y
-         pasaba a ser una alfombra. Menos y más grandes se ven mejor los
-         fotóforos, que es lo único que se ve de uno de lejos. */
-      total: {cada:9800, min:24, max:68},
+         BAJADO dos veces por el mismo motivo, y las dos en la misma
+         dirección —menos y más grandes—: de 7500·[30,88] a 9800·[24,68] y
+         de ahí a 11000·[24,60]. Con el banco a tope y los peces pequeños
+         dejaba de leerse como un banco y pasaba a ser una alfombra, y de
+         un pez de lejos lo único que se ve son los fotóforos, que a ese
+         tamaño no se resuelven.
+
+         OJO A CUÁL DE LOS TRES MANDA: a 1024×768 son 786.000 píxeles, o
+         sea 786.000/11.000 = 71 peces por área, así que el que corta es
+         `max` y no `cada`. Bajar sólo `cada` no habría quitado ni un pez
+         en una pantalla de ese tamaño; se bajan los dos para que en una
+         pantalla chica, donde manda `cada`, el cambio también se note. */
+      total: {cada:11000, min:24, max:60},
       /* cargado hacia delante: el banco que se tiene que leer como banco es
          el de cerca, y el del fondo son motas */
       reparto: [0.24, 0.34, 0.42],
-      /* SUBIDO de [0,62 · 1,05]. `roce` va en U y no en largos, así que al
-         crecer el bicho hay que subirlo con él o el banco se solapa. */
-      largo: [0.76, 1.28],
+      /* SUBIDO dos veces: de [0,62 · 1,05] a [0,76 · 1,28] y de ahí a
+         [0,86 · 1,44], un 13 % más. `roce` va en U y no en largos, así que
+         al crecer el bicho hay que subirlo CON ÉL o el banco se solapa: va
+         de 2,0 a 2,25, el mismo 13 %. */
+      largo: [0.86, 1.44],
       /* El círculo entero de tono, porque fotóforos verdes, ámbar y rosados los
          hay de verdad, y bastantes tramos porque el banco tiene que leerse
          moteado de color. `luzGlow` abajo: el bicho tiene color, el agua no.
@@ -1171,7 +1225,51 @@ const ABISMO = {
          se quedaba visible el 75 % del tiempo —lo delataban las presas que él
          había atraído. */
       alcanceCuerpo: 0.80,        // largos en los que revela un cuerpo
-      base: 0.075,                // lo que se intuye sin nada que lo alumbre
+      /* ── LO NEGROS QUE SE VEN ────────────────────────────────────
+         Tres mandos, y los tres SUBIDOS: un pez linterna al que no le da
+         nada era casi sólo su hilera de fotóforos sobre un cuerpo negro, y
+         lo que se pierde con eso es que se le vea la FORMA de pez.
+
+           `base`   lo que se intuye sin nada que lo alumbre. De 0,075 a 0,10.
+           `cuerpo` cuánto tinte propio coge el relleno —el degradado de
+                    `mid` a `glow` que va del morro a la cola—. A 1,22.
+           `blanco` y cuánto `core` se le suma encima, plano. Es lo que de
+                    verdad saca al cuerpo del negro: el tinte propio de un
+                    pez azul oscuro sobre agua negra sigue siendo oscuro,
+                    y un poco de blanco encima lo levanta sin cambiarle el
+                    color.
+           `canto`  lo marcada que va la línea del contorno, en `core`. SE
+                    QUEDA EN 0,34, como estaba. Subió a 0,48 en una tirada
+                    anterior y el filo se comía al bicho: la forma tiene
+                    que leerse por el relleno, no por una raya brillante
+                    alrededor de un hueco negro.
+
+         `base`, `cuerpo` y `canto` multiplican a la luz que le LLEGA, así
+         que a oscuras del todo apenas hacen nada. `blanco` va con la luz
+         que el pez EMITE —la de sus propios fotóforos, que los lleva en el
+         vientre—, y por eso es el único que sirve para lo que se pedía:
+         atado a la luz recibida, en un pez al que no le da nada el blanco
+         salía por debajo del ruido del dither y el cuerpo seguía negro. No
+         rompe la regla de la casa: no es la escena la que lo ilumina, es él.
+
+         ── LO QUE SE VE, MEDIDO ─────────────────────────────────────
+         Sobre un pez del plano de delante COMPLETAMENTE apagado
+         (`ilum` 0) y sin nada a menos de 97 px, congelando el fotograma
+         para que la única diferencia sea el mando. Luminancia que le sube
+         al cuerpo, contra un suelo de ruido del dither de 2,4 de media y
+         4 de pico:
+
+           | blanco 0,05 | +6,5  de media, +28  de pico |
+           | blanco 0,10 | +11   de media, +54  de pico | ← esto
+           | blanco 0,18 | +17   de media, +92  de pico |
+           | blanco 0,28 | +25   de media, +142 de pico |
+
+         A 0,10 el cuerpo queda en unos 11-15 de luminancia contra 3 del
+         agua: un gris oscuro con su forma, que es lo que se pidió. A 0,18
+         los peces salen lechosos y pierden el «apenas están» que es medio
+         abismo; se vieron los dos y de ahí sale la elección. */
+      base: 0.10,
+      cuerpo: 1.22, blanco: 0.06, canto: 0.34,
       brillo: 1.15, revelado: 1.6,// a cuántas U del cebo ya se le ve
       /* DESDE CUÁNTAS U VE UNA ESCA. Generoso a propósito: con un solo rape,
          un alcance corto deja la trampa sin clientes y el bocado —lo único que
@@ -1205,50 +1303,56 @@ const ABISMO = {
          que la información les llegue mal, y estas dos son las formas en
          que le llega mal a un pez de verdad:
 
-           `ciego`     el cono que NO VE a su espalda, en radianes. A 1,9
-                       —unos 109°— el de atrás obedece al de delante y no
-                       al revés, así que la información viaja sólo hacia
-                       delante y el grupo se estira en vez de cuajar en una
-                       bola. El golpe sí se siente por detrás: la
-                       separación no mira el cono.
            `reacciona` cada cuánto vuelve a mirar, en segundos. Entre mirada
                        y mirada va con la idea de antes, así que corrige
                        siempre hacia donde el grupo ESTABA. Es lo que se
                        pidió —«que cada pez haga lo que pueda para seguir
                        al grupo, sin éxito siempre»— y no hay número que
-                       empuje que lo finja.
+                       empuje que lo finja. ES EL QUE HACE EL TRABAJO.
+           `ciego`     el cono que NO VE a su espalda, en radianes. A 1,9
+                       son unos 109°. Rompe la reciprocidad —el de atrás
+                       obedece al de delante y no al revés—, y el golpe sí
+                       se siente por detrás: la separación no mira el cono.
 
          ── Y LO QUE MIDEN ────────────────────────────────────────
          Banco AISLADO —una sola especie, sin rapes que lo rompan ni
          eventos que lo formen—, grupo mayor del plano de delante por
          enlace simple a 2,2·`roce`, ventanas de 40 s y tres poblaciones
-         nuevas por fila. Es el método que el intento anterior dejó dicho
-         que hacía falta, y con él el efecto sale muy por encima del ruido:
+         nuevas por fila:
 
-           |                         | alin. | error | elong. | var.forma |
-           | como estaba             | 0,97  | 0,20  |  1,30  |   0,14    |
-           | sólo cono ciego 1,9     | 0,86  | 0,39  |  1,70  |   0,52    |
-           | + reacciona [0,08-0,30] | 0,79  | 0,48  |  1,56  |   0,56    |
-           | + reacciona [0,18-0,68] | 0,63  | 0,70  |  1,88  |   0,58    |
-           | + reacciona [0,25-0,90] | 0,51  | 0,83  |  2,53  |   1,23    |
+           |                        | alin. | error | elong. | grupo |
+           | como estaba            | 0,84  | 0,29  |  1,89  |  21   |
+           | sólo cono ciego 1,9    | 0,88  | 0,27  |  1,74  |  18   |
+           | sólo reacciona         | 0,51  | 0,74  |  1,96  |  19   |
+           | las dos (esto)         | 0,42  | 0,81  |  1,84  |  19   |
 
          «alin.» es el módulo del rumbo medio del grupo: 1 es un sólido.
          «error» es el ángulo medio entre el rumbo de un pez y el de sus
-         vecinos, en radianes. Y el grupo mayor se queda en 12-14 peces en
-         todas las filas menos la última, o sea que esto NO deshace el
-         banco: lo desordena.
+         vecinos, en radianes. Tres cosas que leer, y dos son avisos:
 
-         COMO ESTABA, 0,97 Y 1,30: el banco iba alineado al 97 % —cada pez
-         a tres grados del rumbo de sus vecinos— y con forma de disco. O
-         sea que la hipótesis del círculo, que el intento anterior declaró
-         falsa midiendo elongaciones de 2,7-6,3, era CIERTA; lo que medía
-         mal era la medida. Vale la pena recordarlo: aquí la fuente de
-         verdad es lo que se mide hoy, no lo que se apuntó.
+         1 · LO QUE SE ARREGLÓ ES LA SINCRONÍA, NO LA FORMA. La alineación
+             cae a la mitad (0,84 → 0,42) y el error de seguimiento casi se
+             triplica —de 17° a 46°—, que es exactamente lo que se pidió. La
+             elongación NO se mueve: 1,89 antes y 1,84 después.
+         2 · EL BANCO NUNCA FUE UN DISCO. Con la población entera sale 1,89
+             de elongación, o sea que la hipótesis del círculo era falsa y
+             el fichero archivado tenía razón. Una tanda anterior de estas
+             medidas dio 1,30 y llevó a escribir lo contrario aquí: estaba
+             tomada con la población RECORTADA por `degradar()` sin darse
+             cuenta —37 peces en vez de 59—, y un banco la mitad de denso
+             sale más apretado y más redondo. Al medir, comprobar primero
+             que `M.cardumen().length` es el que toca.
+         3 · EL CONO CIEGO SOLO NO HACE NADA (0,88 contra 0,84, dentro del
+             ruido) pero SÍ hace algo encima de `reacciona` (0,51 → 0,42, y
+             los rangos por tirada no se solapan). Tiene sentido: con
+             información al día y completa, perder a los de atrás no cambia
+             nada porque los de delante ya traen el acuerdo; con información
+             vieja, el de atrás era un canal de corrección más. Se queda por
+             eso, no porque suene bien.
 
-         Se elige [0,18-0,68] y no más: a [0,25-0,90] la alineación baja a
-         0,51 y el grupo mayor pierde peces, o sea que ahí ya se está
-         deshaciendo el banco en vez de desordenarlo. */
-      cardumen: { vista: 4.2, roce: 2.0, propio: 0.40,
+         Y el grupo mayor se queda en 19-21 peces en todas las filas: esto
+         NO deshace el banco, lo desordena. */
+      cardumen: { vista: 4.2, roce: 2.25, propio: 0.40,
                   aparta: 1.8, alinea: 1.6, junta: 0.9,
                   ciego: 1.9, reacciona: [0.18, 0.68] },
       /* SEGUNDOS DE PÁNICO cuando algo muerde al lado, a peso pleno del

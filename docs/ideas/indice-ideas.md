@@ -23,9 +23,10 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 ## Ideas de usuario (pendientes de procesar)
 > Solo un humano edita esta sección. Texto breve; el detalle se desarrolla al crear la ficha.
 
+- revisa el menú de pruebas y quita los controles que no aporten nada o poco valor. quiero un control del nivel de luz de fondo además.
 - los tamaños relativos de distintos sprites y eventos son distintos en mobile (vertical) que en pc. Veo por ejemplo que los leviatanes son estrechos, y que los cuerpos cayendo son enormes. revisalo, debe de haber código por ahí de tamaños de los sprites que es dependiente del tamaño de la pantalla, lo que no es correcto. los elementos del mundo tienen que ser independientes del tamaño de la vista del navegador.
 
-- incluir un pequeñito marco inferior con un título Abyzz by Zeta. añadir en ese marco un boton de reiniciar, que reinicie la simulación con nuevo seed. 
+- incluir un pequeñito marco inferior con un título Abyss by Zeta. añadir en ese marco un boton de reiniciar, que reinicie la simulación con nuevo seed. 
 - en mobile, meter que la pantalla se ajuste a horizontal al girar el movil, automáticamente si se puede hacer de forma limpia, o con un botón.
 
 - tocar con el dedo: que no genere ondas (borrar ese código). pero hacer que el placton cercano crezca y se ilumine momentaneamente, lanzando ondas de iluminación de placton 

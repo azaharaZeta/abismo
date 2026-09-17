@@ -7,24 +7,26 @@ todavía con demasiada sincronia. mejoralo para que la formación sea más natur
 erratica y erronea, y cada pez haga lo que pueda para seguir al grupo, sin éxito
 siempre.»
 
-## Lo primero: el enunciado era CIERTO, y el fichero anterior se equivocaba
+## De las dos mitades del enunciado, una era cierta y la otra no
 
-[idea-cardumen-desorden.md](idea-cardumen-desorden.md) declaró falsa la hipótesis del
-círculo: «midiendo la elongación del banco salía 2,7–6,3. Los bancos ya eran
-alargados». Medido otra vez, con el banco aislado y agrupando antes:
+**La sincronía, sí.** Medido con el banco aislado: **0,84** de alineación del grupo, o sea
+cada pez a **diecisiete grados** del rumbo medio de sus vecinos. El banco se trasladaba
+casi como una pieza.
 
-| | alineación del grupo | elongación |
-|---|---|---|
-| lo que había | **0,97** | **1,30** |
+**El círculo, no.** La elongación sale **1,89** —un banco claramente alargado—, así que
+[idea-cardumen-desorden.md](idea-cardumen-desorden.md) tenía razón cuando declaró falsa esa
+hipótesis, y no hacía falta corregirla.
 
-0,97 de alineación es que cada pez va a **tres grados** del rumbo medio de sus vecinos:
-el banco se trasladaba como un sólido. Y 1,30 de elongación es un disco. O sea: círculo
-y sincronía, las dos cosas, tal como se decía en el enunciado.
-
-La discrepancia es de método, no de la pecera: aquella medida se tomó sobre *todos* los
-peces de un plano —24 peces repartidos por la pantalla— y ésta sobre el grupo mayor por
-enlace simple a 2,2·`roce` —12–14 peces—. No son la misma cantidad. **Lección: la fuente
-de verdad es la medida de hoy, no la apuntada.**
+> ⚠️ **Y aquí hubo un error propio que conviene no repetir.** La primera tanda de estas
+> medidas dio 0,97 de alineación y **1,30** de elongación, y con eso se escribió —en el
+> código y en este fichero— que el banco era un disco y que el fichero anterior se había
+> equivocado. Estaba mal: el banco de pruebas bombeaba fotogramas con un `dt` de 1/20, que
+> es el tope del motor, así que `vigila()` veía 50 ms por fotograma, decidía que la máquina
+> no daba y llamaba a `degradar()` a los 90 fotogramas. Todo lo medido a partir de ahí
+> corría con la población **recortada al 55 %** —37 peces en vez de 59— y un banco la mitad
+> de denso sale más apretado y más redondo. Bombeando a 1/60 no degrada.
+>
+> **Al medir aquí: comprobar primero que `M.cardumen().length` es el que toca.**
 
 ## Por qué bajar pesos no podía funcionar
 
@@ -50,21 +52,32 @@ mandos en `ABISMO.bichos.@pezlinterna.cardumen`:
 
 ## Medición
 
-Banco aislado, grupo mayor del plano de delante, ventanas de 40 s, tres poblaciones
-nuevas por fila. «error» es el ángulo medio entre el rumbo de un pez y el de sus vecinos.
+Banco aislado, **población entera (59 peces)**, grupo mayor del plano de delante por enlace
+simple a 2,2·`roce`, ventanas de 40 s y tres poblaciones nuevas por fila. «error» es el
+ángulo medio entre el rumbo de un pez y el de sus vecinos, en radianes.
 
-| | alin. | error | elong. | var. forma | grupo mayor |
-|---|---|---|---|---|---|
-| como estaba | 0,97 | 0,20 | 1,30 | 0,14 | 13 |
-| sólo cono ciego 1,9 | 0,86 | 0,39 | 1,70 | 0,52 | 12 |
-| + reacciona [0,08-0,30] | 0,79 | 0,48 | 1,56 | 0,56 | 12 |
-| **+ reacciona [0,18-0,68]** | **0,63** | **0,70** | **1,88** | **0,58** | **12** |
-| + reacciona [0,25-0,90] | 0,51 | 0,83 | 2,53 | 1,23 | 11 |
+| | alin. | error | elong. | grupo mayor |
+|---|---|---|---|---|
+| como estaba | 0,84 | 0,29 | 1,89 | 21 |
+| sólo cono ciego 1,9 | 0,88 | 0,27 | 1,74 | 18 |
+| sólo `reacciona` [0,18-0,68] | 0,51 | 0,74 | 1,96 | 19 |
+| **las dos (lo que se queda)** | **0,42** | **0,81** | **1,84** | **19** |
 
-Monótono en los dos mandos y con el efecto muy por encima del ruido entre tiradas. El
-grupo mayor se queda en 12–14 peces en todas las filas menos la última: **esto desordena
-el banco, no lo deshace**. Se paró en [0,18-0,68] justamente por eso: a [0,25-0,90] la
-alineación cae a 0,51 y el grupo empieza a perder peces.
+Tres cosas que leer:
+
+1. **Lo que se arregló es la sincronía, no la forma.** La alineación cae a la mitad
+   (0,84 → 0,42) y el error de seguimiento casi se triplica (17° → 46°). La elongación
+   **no se mueve**: 1,89 antes, 1,84 después. El banco no era un disco y sigue sin serlo.
+2. **`reacciona` es quien hace el trabajo**: por sí solo lleva la alineación de 0,84 a 0,51.
+3. **El cono ciego a solas NO HACE NADA** —0,88 contra 0,84, dentro del ruido— pero sí
+   baja de 0,51 a 0,42 **encima** de `reacciona`, y los rangos por tirada no se solapan
+   ([0,53 0,46 0,53] contra [0,41 0,42 0,44]). Tiene explicación: con información al día y
+   completa da igual perder a los de atrás, porque los de delante ya traen el acuerdo; con
+   información vieja, el de atrás era un canal de corrección más. **Se queda por la medida,
+   no porque suene bien** — si algún día deja de medirse, fuera.
+
+El grupo mayor se queda en 19–21 peces en todas las filas: esto **desordena** el banco, no
+lo deshace.
 
 Coste: ninguno medible. El bucle sigue siendo todos contra todos —hace falta para la
 separación— y el reparto por cono ciego se hace sin una sola raíz cuadrada, comparando
@@ -72,5 +85,9 @@ cosenos al cuadrado.
 
 ## Siguiente acción
 
-Nada pendiente. Si alguien vuelve aquí: medir **el grupo mayor**, no el plano entero, y
-con ventanas de 40 s o más.
+Nada pendiente. Si alguien vuelve aquí, tres avisos de método, y los tres salieron de
+equivocarse:
+
+1. Medir **el grupo mayor**, no el plano entero, y con ventanas de 40 s o más.
+2. Comprobar que la población **no está degradada** antes de creerse un número.
+3. Bombear fotogramas con `dt` de 1/60, no de 1/20: con 1/20 se dispara `degradar()`.

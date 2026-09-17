@@ -2055,25 +2055,35 @@ A.especie('rape', {
    ── POR QUÉ NINGUNO LO CONSIGUE ────────────────────────────────────
    Un banco en el que cada pez ve a todos sus vecinos, todo el rato y sin
    error, CONVERGE: llegan a un rumbo común y a partir de ahí se trasladan
-   como una pieza, y lo que se ve es una mancha redonda y acompasada. Bajar
-   los pesos no lo arregla —se probó, y el efecto no salía del ruido de la
+   como una pieza. Medido, era lo que pasaba: 0,84 de alineación, o sea
+   cada pez a diecisiete grados del rumbo medio de sus vecinos. Bajar los
+   pesos no lo arregla —se probó, y el efecto no salía del ruido de la
    medida; está en docs/ideas/archivo/idea-cardumen-desorden.md—. Lo que lo
    arregla es que la información les llegue MAL, y hay dos formas que además
    son las de un pez de verdad:
 
+     · `reacciona` · NO MIRA TODO EL RATO, y es el que hace el trabajo.
+       Mira, decide, y va con esa idea unas décimas de segundo. Cuando
+       vuelve a mirar, el grupo ya no está donde estaba, así que lo que
+       corrige es un sitio equivocado: va SIEMPRE con información vieja, y
+       cuanto más rápido se mueva el grupo, más se equivoca. Eso es «hacer
+       lo que puede sin conseguirlo», y no hay ningún número que empuje
+       para fingirlo. Medido: la alineación del grupo baja de 0,84 a 0,51 y
+       el ángulo entre un pez y sus vecinos pasa de 17° a 42°.
      · `ciego` · NO VE HACIA ATRÁS. Un pez tiene los ojos a los lados y un
-       cono ciego a la cola. Eso no es un detalle anatómico: es lo que
-       rompe la reciprocidad. Si A se alinea con B y B con A, los dos
-       convergen; con el cono ciego el de atrás obedece al de delante y no
-       al revés, así que la información viaja SÓLO hacia delante y el grupo
-       se estira y se cizalla en vez de cuajar. El golpe sí se siente por
+       cono ciego a la cola, y eso rompe la reciprocidad: si A se alinea
+       con B y B con A, los dos convergen. El golpe sí se siente por
        detrás: la separación no mira el cono.
-     · `reacciona` · NO MIRA TODO EL RATO. Mira, decide, y va con esa idea
-       unas décimas de segundo. Cuando vuelve a mirar, el grupo ya no está
-       donde estaba, así que lo que corrige es un sitio equivocado: va
-       SIEMPRE con información vieja, y cuanto más rápido se mueva el
-       grupo, más se equivoca. Eso es «hacer lo que puede sin conseguirlo»,
-       y no hay ningún número que empuje para fingirlo.
+
+       OJO CON ÉSTE: medido a solas NO HACE NADA —0,88 de alineación
+       contra 0,84 sin él, dentro del ruido—; lo que sí hace es bajar de
+       0,51 a 0,42 ENCIMA de `reacciona`. Con información al día y completa
+       da igual perder a los de atrás, porque los de delante ya traen el
+       acuerdo; con información vieja, el de atrás era un canal de
+       corrección más. Se queda por la medida, no porque suene bien.
+
+   Ninguno de los dos cambia la FORMA del banco: la elongación se queda en
+   1,9 con ellos y sin ellos. Lo que arreglan es la sincronía.
 
    `mira` es si a este pez le toca mirar en este fotograma. Cuando no le
    toca, la separación se aplica igual —esquivar es un reflejo, no una
@@ -2567,6 +2577,14 @@ A.especie('pezlinterna', {
        que es lo que se lee como «coge color». */
     const rl = 1 + z.realce*opt(p.formaBrillo, 0);
     const br = (p.base + z.ilum) * p.brillo * apaga * rl;
+    /* LO QUE EMITE ÉL, que no es lo mismo que lo que le llega. `br` es la
+       luz recibida y va de 0,12 a 1,5 según lo que tenga al lado —trece
+       veces—; esto es su hilera de fotóforos, que está encendida igual
+       cuando no le da nada. La diferencia era justo el problema del que se
+       quejaba el cuerpo negro: los fotóforos se ven siempre y el cuerpo
+       sólo cuando algo lo alumbraba, así que un pez a solas era una fila
+       de puntos sobre nada. */
+    const propia = p.foto * (0.75 + 0.45*z.ilum) * apaga * rl;
     const cola = Math.sin(M.t*p.aleteo + z.fase);
 
     g.save();
@@ -2574,8 +2592,11 @@ A.especie('pezlinterna', {
     g.rotate(z.ang);            // +x es hacia donde nada
     if (men < 1) g.scale(Math.max(0.06, men), Math.max(0.06, men));
 
-    /* el cuerpo sólo existe si algo lo alumbra */
-    if (br > 0.02){
+    /* El cuerpo. Se pinta siempre que haya ALGO que pintar, y ahora eso
+       incluye su propio blanco: con la guarda en `br` a solas, un pez al
+       que no le da nada se saltaba el bloque entero y no había forma de
+       que se le viera la silueta. */
+    if (br > 0.02 || opt(p.blanco, 0)*propia > 0.004){
       g.beginPath();
       g.moveTo(Lg*0.50, 0);
       g.quadraticCurveTo(Lg*0.10, -Lg*0.20, -Lg*0.42, -Lg*0.07 + cola*Lg*0.05);
@@ -2586,12 +2607,47 @@ A.especie('pezlinterna', {
       g.quadraticCurveTo(PANZA[1][0]*Lg, PANZA[1][1]*Lg,
                          PANZA[2][0]*Lg, PANZA[2][1]*Lg);
       g.closePath();
+      /* `cuerpo`, `blanco` y `canto` salen de la escena porque son el mando
+         de lo NEGRO que se ve un pez: escritos a mano aquí no se pueden
+         tocar sin abrir el catálogo. Los tres multiplican a `br`, que es la
+         luz que de verdad le llega, así que a oscuras siguen sin encender
+         nada.
+
+         `cuerpo` es cuánto tinte coge el relleno —el degradado que va de
+         `mid` en el morro a `glow` en la cola, o sea el color propio del
+         pez. */
+      const tin = opt(p.cuerpo, 1);
       const gb = g.createLinearGradient(Lg*0.5, 0, -Lg*0.6, 0);
-      gb.addColorStop(0.00, rgba(z.c.mid,  0.42*br));
-      gb.addColorStop(0.55, rgba(z.c.glow, 0.20*br));
-      gb.addColorStop(1.00, rgba(z.c.glow, 0.04*br));
+      gb.addColorStop(0.00, rgba(z.c.mid,  Math.min(1, 0.42*br*tin)));
+      gb.addColorStop(0.55, rgba(z.c.glow, Math.min(1, 0.20*br*tin)));
+      gb.addColorStop(1.00, rgba(z.c.glow, Math.min(1, 0.04*br*tin)));
       g.fillStyle = gb; g.fill();
-      g.strokeStyle = rgba(z.c.core, 0.34*br*sh);
+      /* Y `blanco` ES UN POCO DE `core` ENCIMA, plano y en una SEGUNDA
+         pasada. Metido como un tramo más del degradado de arriba no vale:
+         entre dos tramos el alfa interpola, así que un tramo claro entre
+         dos oscuros deja una banda apagada cruzando el cuerpo. Sumando
+         encima —el plano va en `lighter`— el cuerpo coge el blanco sin
+         perder su tinte. El path sigue puesto de la pasada anterior, así
+         que esto no vuelve a trazarlo.
+
+         VA CON `propia` Y NO CON `br`, y ahí está la gracia: es la carne
+         del bicho alumbrada por SUS PROPIOS FOTÓFOROS —que es lo que hace
+         un mictófido de verdad, llevarlos en el vientre—, no luz que le
+         llegue de fuera. Atado a `br` no servía para nada: en un pez al
+         que no le da nada `br` vale 0,12, así que el blanco salía por
+         debajo del ruido del dither y seguía viéndose negro, que era
+         exactamente la queja. Con `propia` se ve siempre, y sólo sube un
+         75 % cuando además lo alumbran.
+
+         Una pasada de relleno más por pez: cronometrado con los 59 de la
+         pecera, 0,13 ms de fotograma, o sea dos microsegundos por bicho.
+         El path ya está trazado y es el gasto de rellenarlo otra vez. */
+      const bl = opt(p.blanco, 0);
+      if (bl > 0.002){
+        g.fillStyle = rgba(z.c.core, Math.min(1, bl*propia));
+        g.fill();
+      }
+      g.strokeStyle = rgba(z.c.core, Math.min(1, opt(p.canto, 0.34)*br*sh));
       g.lineWidth = Math.max(0.4, Lg*0.022);
       g.stroke();
       /* el ojo, desproporcionado como el de un mictófido de verdad */
@@ -2601,7 +2657,7 @@ A.especie('pezlinterna', {
 
     /* LOS FOTÓFOROS: esto sí se ve siempre, y es lo único que se ve de lejos.
        Una hilera en el vientre, con brillos desiguales. */
-    const n = z.nFoto, bfo = p.foto * (0.75 + 0.45*z.ilum) * apaga * rl;
+    const n = z.nFoto, bfo = propia;
     for (let i=0;i<n;i++){
       /* del morro a la cola, que es el orden en el que iban */
       const t = FOTO_T[1] - (FOTO_T[1]-FOTO_T[0])*reparte(i, n);
@@ -3791,14 +3847,15 @@ const CUERPO_MIEMBROS = [
 
    ── LO QUE CUESTA, Y DÓNDE SE VA ────────────────────────────────────
    41 campos por cuerpo: 19 del tronco, 5 por brazo y 6 por pierna. Eran
-   13. Cronometrado en el navegador, con los cuerpos parados para que la
+   13. Cronometrado en el navegador con la población ENTERA —59 peces, sin
+   que haya entrado `degradar()`— y con los cuerpos parados, para que la
    medida no dependa de por dónde vayan:
 
-     | sin evento                    |   4 campos |  2,5 ms |
-     | un cuerpo                     |  45 campos |  3,2 ms |
-     | tres cuerpos (el peor caso)   | 127 campos |  4,5 ms |
+     | sin evento                    |   4 campos |  2,4 ms |
+     | un cuerpo                     |  45 campos |  3,1 ms |
+     | tres cuerpos (el peor caso)   | 127 campos |  4,4 ms |
 
-   Unos 0,018 ms por campo, o sea dos milisegundos en el peor caso de
+   Unos 0,017 ms por campo, o sea dos milisegundos en el peor caso de
    todos. Y el gasto NO está en dibujar: apagando `pintaSombras` entera
    —`agua.sombra.fuerza` a 0— la diferencia es de 0,02 ms, o sea ninguna.
    Está TODO en `M.campo()`, que es un recorrido lineal del array de
@@ -4354,7 +4411,7 @@ A.evento('superpez', {
   prueba: { largo: [0.40, 0.54], largoMin: 0.26, minimo: 12,
             superpeces: [1, 2], reparto: [0.55, 0.90], redondez: [0.70, 1.55],
             entra: [8, 14], nada: [7, 13], sale: [4, 7],
-            vel: [0.25, 0.55], giroMax: 0.10, giroPaso: 0.035,
+            vel: [0.25, 0.55], giroMax: 0.10, giroPaso: 0.035, vira: 2.8,
             alcance: 2.2, filo: 6.0, plano: 2 },
   arranca(M, p){
     const plano = opt(p.plano, 2);
@@ -4454,11 +4511,32 @@ A.evento('superpez', {
       f.ang += f.giro * dt;
       /* CONTENIDA POR EL CANTO, que es lo único que se le impone: cerca
          del borde el rumbo se tuerce hacia dentro. Sin esto la silueta se
-         sale del cuadro justo cuando acaba de cuajar. */
-      const b = M.borde(f.cx, f.cy);
+         sale del cuadro justo cuando acaba de cuajar.
+
+         Y SE MIDE EN EL MORRO, no en el centro. `M.borde` tiene un margen
+         fijo y el morro de la silueta va medio largo por delante de su
+         centro —con un tercio de pantalla de eslora, casi doscientos
+         píxeles—, así que midiendo en el centro, cuando la silueta empieza
+         a virar el morro lleva un rato fuera del cuadro.
+
+         Es DE LEJOS lo que más hizo por que la silueta quepa, y bastante
+         más que encogerla. Medido: la fracción del contorno que queda
+         dentro del cuadro en el peor momento de cada travesía, de media,
+
+           | como estaba (larga, y midiendo en el centro) | 0,73 |
+           | sólo encogiéndola                            | 0,76 |
+           | encogida y midiendo en el morro              | 0,89 |
+
+         o sea que el tamaño explicaba tres centésimas y el punto de medida
+         trece. Se probó a mirar TAMBIÉN la cola —por si virar la sacaba—
+         y no se distingue del ruido (0,87 contra 0,89, con el mismo caso
+         raro), así que se quedó con el morro a secas. */
+      const mx = f.cx + Math.cos(f.ang)*f.esc*0.5;
+      const my = f.cy + Math.sin(f.ang)*f.esc*0.5;
+      const b = M.borde(mx, my);
       if (b[2] > 0.01){
         const dd = giroCorto(Math.atan2(b[1], b[0]), f.ang);
-        f.ang += dd * Math.min(1, b[2]*1.6*dt);
+        f.ang += dd * Math.min(1, b[2]*opt(p.vira, 1.6)*dt);
       }
       f.cx += Math.cos(f.ang)*f.vel*dt;
       f.cy += Math.sin(f.ang)*f.vel*dt;
