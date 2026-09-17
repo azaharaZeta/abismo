@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Abismo</title>
+<meta name="description" content="Aquí no llega el sol. Nadie está iluminado: cada cuerpo existe sólo hasta donde llega la luz que le dan, y el que tiende la trampa es el que vive más a oscuras.">
+<style>
+  html,body{margin:0;padding:0;height:100%;background:#000103;overflow:hidden;
+    -webkit-tap-highlight-color:transparent;touch-action:none;overscroll-behavior:none}
+  /* touch-action no se hereda: sin repetirlo en el lienzo, arrastrar
+     el dedo en un móvil hace scroll o zoom en vez de llegar como
+     pointermove */
+  #acuario{position:fixed;inset:0;display:block;width:100%;height:100%;
+    touch-action:none;user-select:none;-webkit-user-select:none}
+</style>
+</head>
+<body>
+<!-- La pieza entera es este lienzo: el motor y los valores de la
+     escena están en motor.js; las criaturas, en bichos.js. -->
+<canvas id="acuario"></canvas>
+<script src="motor.js"></script>
+<script src="bichos.js"></script>
+<script>Acuario.arranca();</script>
+
+<!-- PANEL DE PRUEBAS · no forma parte de la pieza: borra esta línea
+     y desaparece. Va al final porque lee la escena viva. Se abre con
+     la tecla P o con ?pruebas -->
+<script src="pruebas.js"></script>
+</body>
+</html>
