@@ -173,4 +173,4 @@ const M = {
      piezas: rape y medusa lo reparten ellos */
   salto,
 };
-export { M, borde, salto };
+export { M };

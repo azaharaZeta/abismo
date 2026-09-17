@@ -265,7 +265,7 @@ for (const m of MANDOS){
 }
 
 caja.appendChild(h('p', {className:'nota',
-  textContent:'los rangos [min,max] no salen aquí: se tocan por JSON en el evento, o en ABISMO dentro de motor.js.'}));
+  textContent:'los rangos [min,max] no salen aquí: se tocan por JSON en el evento, o en ABISMO dentro de escena.js.'}));
 
 /* ── refresco de lo que cambia solo ─────────────────────────────── */
 function pinta(){

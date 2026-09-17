@@ -139,10 +139,10 @@ function envejeceOndas(dt){
   }
 }
 
-/* El aviso de contacto lo pone `eventos.js` al cargarse: así el dedo no
-   tiene que saber que existen los eventos, ni al revés. */
+/* El aviso de contacto lo cablea `arranca()` en motor/bucle.js: así el
+   dedo no tiene que saber que existen los eventos, ni al revés. */
 let alContacto = () => {};
 function avisaContactos(fn){ alContacto = fn; }
 
-export { contactos, impulso, dibujaOndas, empuje, cableaTacto,
-         envejeceOndas, avisaContactos };
+export { dibujaOndas, empuje, cableaTacto, envejeceOndas,
+         avisaContactos };

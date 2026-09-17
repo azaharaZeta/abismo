@@ -10,8 +10,8 @@ import { mancha, pintaHalo, reparte } from '../bichos/comun.js';
 
    NO SE DIBUJA: se calla lo que hay. El cuerpo es una fila de campos
    `apaga` con el perfil de un animal, y un campo `apaga` además oscurece
-   el agua (ver pintaSombras en motor.js), que es lo único que hace que una
-   masa oscura se pueda leer en una escena aditiva.
+   el agua (ver pintaSombras en motor/agua.js), que es lo único que hace
+   que una masa oscura se pueda leer en una escena aditiva.
 
    Lo que lo hace amenazante no es el tamaño, son tres cosas:
 

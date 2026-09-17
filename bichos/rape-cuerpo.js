@@ -367,7 +367,7 @@ function ojo(g, f, gx, col, nuc, br, sh, p){
   /* el destello: cuánto coincide la mirada con la dirección de la luz que
      más lo alumbra. Al cubo, para que sea un destello y no un degradado:
      mirar «hacia ahí» no cuenta, cuenta mirar AHÍ. */
-  let rx = f.luzX - ex, ry = f.luzY - ey;
+  const rx = f.luzX - ex, ry = f.luzY - ey;
   const rl = Math.hypot(rx, ry) || 1;
   const retro = Math.max(0, (dx*rx + dy*ry)/rl);
   const dest = Math.pow(retro, 3);
@@ -644,6 +644,6 @@ function senuelo(g, f, gx, p, ebr){
     g.beginPath(); g.arc(f.x, f.y, nu, 0, TAU); g.fill();
   }
 }
-export { lomo, panza, flex, enPez, aMundo, centro, bocaLargo, adelante,
+export { enPez, aMundo, centro, bocaLargo, adelante,
          cuerpoPath, piel, visceras, aletas, volumen, ojo, quijadas,
          bocaPath, boca, barbilla, senuelo };

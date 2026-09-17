@@ -6,7 +6,7 @@ const {clamp, rnd, rango, rangoE, opt, TAU} = M;
    aparecen en sitios cualesquiera y a las medusas que caen dentro se les
    pinta el cuerpo cortado en BANDAS HORIZONTALES ESCALONADAS, cada una
    corrida lo suyo. Y la medusa no se enteró: la rotura la aplica el motor
-   al pintarla, con el campo `tajo` (ver `pintaBicho` en motor.js).
+   al pintarla, con el campo `tajo` (ver `pintaBicho` en motor/bucle.js).
 
    Es una avería del dibujante, no de la pantalla. Una franja negra a lo
    ancho o una línea desplazada son un fallo de la señal; que a una medusa

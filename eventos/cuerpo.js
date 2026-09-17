@@ -125,7 +125,6 @@ const CUERPO_MIEMBROS = [
   { x: 0.062, y:-0.256, lado: 1,
     largos: [0.200, 0.184], angulos: [2.30, -0.42],
     anchos: [0.040, 0.027, 0.012], fuerzas: [0.82, 0.70] },
-  /* y las piernas, juntas y algo dobladas */
   /* y las piernas, juntas y algo dobladas. El hueco de la cadera va a
      0,046 del eje y el muslo mide 0,050, o sea que las dos piernas se
      tocan justo en el eje y de ahí para abajo se separan: con el muslo a

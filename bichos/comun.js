@@ -91,9 +91,18 @@ const reparte = (i, n) => n > 1 ? i/(n-1) : 0.5;
    que girar de `desde` a `hasta` por el camino corto, con signo.
    `mezclaAng` promedia dos rumbos COMO VECTORES, que es la única forma
    que funciona —promediando radianes, 179° y −179° dan 0°—; `w` es cuánto
-   pesa el segundo. */
-const giroCorto = (hasta, desde) =>
-  ((hasta - desde + Math.PI*3) % TAU) - Math.PI;
+   pesa el segundo.
+
+   En `giroCorto` la vuelta se da a LOS DOS LADOS, y hace falta: el resto
+   de `%` se queda con el signo del dividendo, y `desde` es un rumbo que
+   se ACUMULA sumando y que nadie devuelve al rango —el de un pez linterna
+   anda por los −100 rad a los cinco minutos—. Corrigiendo por un lado
+   solo, pasado cierto `desde` lo que sale es el camino LARGO y el bicho
+   gira al revés. */
+const giroCorto = (hasta, desde) => {
+  const d = (hasta - desde) % TAU;
+  return d > Math.PI ? d - TAU : d < -Math.PI ? d + TAU : d;
+};
 function mezclaAng(a, b, w){
   const x = Math.cos(a)*(1-w) + Math.cos(b)*w;
   const y = Math.sin(a)*(1-w) + Math.sin(b)*w;
@@ -122,6 +131,6 @@ function silencio(M, x, y, L){
   }
   return v;
 }
-export { cuenta, porReparto, porPlano, reaccionDedo, reaccionBorde,
+export { porReparto, porPlano, reaccionDedo, reaccionBorde,
          paso, avanza, mancha, pintaHalo, reparte, giroCorto, mezclaAng,
          silencio };

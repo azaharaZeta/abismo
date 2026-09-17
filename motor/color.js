@@ -121,4 +121,4 @@ function eligeDePaleta(pal){
   return eligeColor(pal, pal.suma);
 }
 
-export { generaPaleta, resuelveEspectros, eligeDePaleta, halo, punto };
+export { resuelveEspectros, eligeDePaleta, halo, punto };

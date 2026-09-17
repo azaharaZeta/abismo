@@ -147,7 +147,7 @@ function tapa(f, M, L, p){
   const k = opt(p.tapa, 0);
   if (k < 0.004) return;
   /* EL CANTO VA DURO: la materia tiene canto, y el desvanecido largo es
-     para los eventos. El reglaje está en la escena, en motor.js. */
+     para los eventos. El reglaje está en escena.js. */
   const Lg = f.Lg, rot = -f.gx*f.ang;   // el mismo giro que enPez()
   const filo = opt(p.tapaFilo, 28);
   for (const T of TAPAS){

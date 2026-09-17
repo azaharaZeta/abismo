@@ -114,4 +114,4 @@ function escQueCabe(M, cx, cy, ang, quiere, gordo){
   return quiere*0.46;
 }
 
-export { anchoPez, contornoPez, formaObjetivo, escQueCabe };
+export { formaObjetivo, escQueCabe };

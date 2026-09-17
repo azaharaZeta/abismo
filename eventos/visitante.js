@@ -163,10 +163,13 @@ evento('visitante', {
       g.beginPath();
       for (let k=0;k<2;k++){
         const lado = k ? -1 : 1;
-        _ant[k*2]   = hx - e.dir*l*0.85 + nx*l*0.45*lado;
+        /* `+e.dir` y no `−`: el cuerpo cuelga del morro hacia −dir (ver
+           `pt`), así que restar mete las antenas DENTRO de los primeros
+           segmentos y dejan de decir por dónde va. */
+        _ant[k*2]   = hx + e.dir*l*0.85 + nx*l*0.45*lado;
         _ant[k*2+1] = hy + ny*l*0.45*lado + vai*l*0.25*lado;
         g.moveTo(hx, hy);
-        g.quadraticCurveTo(hx - e.dir*l*0.5, hy + ny*l*0.18*lado,
+        g.quadraticCurveTo(hx + e.dir*l*0.5, hy + ny*l*0.18*lado,
                            _ant[k*2], _ant[k*2+1]);
       }
       g.stroke();
@@ -188,9 +191,11 @@ evento('visitante', {
       const q = pt(1), tx = q[0], ty = q[1];
       const n = nrm(1), nx = n[0], ny = n[1];
       const l = base*gCola*4;
-      const cx = tx + e.dir*l*0.45 + nx*l*0.5;
+      /* hacia −dir, que es donde sigue el cuerpo: sumando, el filamento
+         se echa encima de los últimos segmentos y no cuelga de nada. */
+      const cx = tx - e.dir*l*0.45 + nx*l*0.5;
       const cy = ty + ny*l*0.5;
-      const fx = tx + e.dir*l, fy = ty + Math.sin(e.t*e.vel*1.3)*l*0.35;
+      const fx = tx - e.dir*l, fy = ty + Math.sin(e.t*e.vel*1.3)*l*0.35;
       const gr = g.createLinearGradient(tx, ty, fx, fy);
       gr.addColorStop(0.00, rgba(e.c.mid, Math.min(1, 0.26*br)));
       gr.addColorStop(1.00, rgba(e.c.mid, 0));

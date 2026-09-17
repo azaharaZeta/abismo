@@ -168,6 +168,16 @@ function dispara(nombre, extra){
   } else if (extra){
     gr.p = fusiona(gr.p, extra);
   }
+  /* un `espectroX` que llega en `extra` tiene que tirar su `paletaX`:
+     resuelveEspectros() respeta la paleta que ya esté puesta —es como se
+     anula un espectro sin borrarlo—, así que sin esto el color editado
+     desde el panel no se aplica nunca. Salvo que `extra` traiga también la
+     paleta: ahí manda ella, que es la regla de la casa. */
+  if (extra) for (const k in extra){
+    if (k.indexOf('espectro') !== 0) continue;
+    const destino = 'paleta' + k.slice(8);
+    if (extra[destino] === undefined) delete gr.p[destino];
+  }
   /* y sus espectros, que si no se queda sin `paleta`: los de la escena se
      resuelven al arrancar, pero los de un `def.prueba` no pasan por ahí y
      acaban en `M.color(undefined)`. */
