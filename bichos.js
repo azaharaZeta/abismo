@@ -1304,7 +1304,7 @@ function barbilla(g, f, gx, p, t, ebr){
    esca va pequeña y quemada: el núcleo blanco es lo que hace que un
    punto diminuto se lea como intenso, y sin él hay que agrandarlo —y
    entonces deja de ser un señuelo y pasa a ser una farola. */
-function senuelo(g, f, gx, p, ebr, t){
+function senuelo(g, f, gx, p, ebr){
   const Lg = f.Lg;
   const bi = aMundo(f, gx, Lg*0.10, -lomo(0.10)*Lg);
   const bix = bi[0], biy = bi[1];
@@ -2027,7 +2027,7 @@ A.especie('rape', {
        esca, así que va aquí y no dentro del bloque del cuerpo: tiene que
        verse también cuando el bicho está a oscuras, que es casi siempre */
     barbilla(g, f, gx, p, t, ebr);
-    senuelo(g, f, gx, p, ebr, t);
+    senuelo(g, f, gx, p, ebr);
   },
 });
 /* ══════════════════════════════════════════════════════════════════
@@ -2213,6 +2213,9 @@ A.especie('pezlinterna', {
     /* el desorden de la formación va aparte del del banco: son dos cosas
        distintas —una es cómo nadan solos y otra cómo obedecen— */
     const fdo = opt(p.formaDesorden, 0), fer = opt(p.formaError, 0);
+    /* su intervalo entre miradas, sorteado UNA vez: la primera mirada sale
+       de él, así que tiene que ser el mismo número */
+    const rea = rango((p.cardumen && p.cardumen.reacciona) || 0);
     return {
       /* TENDENCIA, no regla: el resto sigue sorteando de la paleta entera,
          así que entre los dominantes siguen cruzándose peces sueltos de
@@ -2242,8 +2245,8 @@ A.especie('pezlinterna', {
          todos a cero, los sesenta y ocho miran el mismo fotograma y el
          retraso deja de ser un retraso —vuelve a haber un banco que
          decide a la vez, sólo que a tirones. */
-      reacciona: rango((p.cardumen && p.cardumen.reacciona) || 0),
-      proxMira:  Math.random()*rango((p.cardumen && p.cardumen.reacciona) || 0),
+      reacciona: rea,
+      proxMira:  Math.random()*rea,
       fase: Math.random()*TAU,
       nFoto: rangoE(p.fotoforos),
       ilum: 0, cebada: false,
@@ -2740,6 +2743,11 @@ A.evento('contagio', {
    un poliqueto sin parapodios ya es otro animal, y ése es el punto. */
 const apendice = v => Math.max(0, 1 + rnd(-1.4, 1)*(v || 0));
 
+/* los de siempre: un punto del cuerpo, su normal y las dos puntas de las
+   antenas. Fuera del `dibuja` como el resto de los del fichero —dentro se
+   reservaban dos arrays por fotograma para nada. */
+const _vsP = [0,0], _vsN = [0,0], _ant = [0,0,0,0];
+
 A.evento('visitante', {
   exclusivo: false,
   cada: [45, 110], primero: [15, 40],
@@ -2785,23 +2793,21 @@ A.evento('visitante', {
 
     /* el punto `s` del cuerpo, 0 en la cabeza y 1 en la cola. La ondulación
        crece hacia atrás: la cabeza marca el rumbo y la cola lo obedece. */
-    const _v = [0,0];
     const pt = (s) => {
-      _v[0] = headX - e.dir*s*e.largo;
-      _v[1] = e.y + Math.sin(s*e.nOnda + e.t*e.vel)*e.amp*(0.35 + s*0.65);
-      return _v;
+      _vsP[0] = headX - e.dir*s*e.largo;
+      _vsP[1] = e.y + Math.sin(s*e.nOnda + e.t*e.vel)*e.amp*(0.35 + s*0.65);
+      return _vsP;
     };
     /* la normal del cuerpo en `s`, por diferencias finales: la analítica de
        esta curva es fácil de escribir y fácil de desincronizar del `pt` de
        arriba, y entonces las patas salen del sitio equivocado. */
-    const _n = [0,0];
     const nrm = (s) => {
       const h = 0.01;
       const a = pt(Math.max(0, s-h)), ax = a[0], ay = a[1];
       const b = pt(Math.min(1, s+h)), bx = b[0], by = b[1];
       const dx = bx-ax, dy = by-ay, d = Math.hypot(dx, dy) || 1;
-      _n[0] = -dy/d; _n[1] = dx/d;
-      return _n;
+      _vsN[0] = -dy/d; _vsN[1] = dx/d;
+      return _vsN;
     };
     /* EL PERFIL, y es lo que de verdad cambia de bicho a bicho. `merma`
        adelgaza hacia la cola —a 0,18 es un tubo, a 0,70 un cono— y `panza`
@@ -2872,21 +2878,26 @@ A.evento('visitante', {
       const vai = Math.sin(e.t*e.vel*1.7)*0.30;
       g.strokeStyle = rgba(e.c.mid, Math.min(1, 0.34*br));
       g.lineWidth = Math.max(0.5, base*0.26);
+      /* la punta de cada antena se calcula UNA vez y se guarda: la quieren
+         el trazo y el punto de luz de abajo, y tener la fórmula escrita
+         dos veces es la manera de que un día se despeguen y la luz deje de
+         estar en la punta de la antena. */
       g.beginPath();
-      for (const lado of [1, -1]){
-        const ex = hx - e.dir*l*0.85 + nx*l*0.45*lado;
-        const ey = hy + ny*l*0.45*lado + vai*l*0.25*lado;
+      for (let k=0;k<2;k++){
+        const lado = k ? -1 : 1;
+        _ant[k*2]   = hx - e.dir*l*0.85 + nx*l*0.45*lado;
+        _ant[k*2+1] = hy + ny*l*0.45*lado + vai*l*0.25*lado;
         g.moveTo(hx, hy);
-        g.quadraticCurveTo(hx - e.dir*l*0.5, hy + ny*l*0.18*lado, ex, ey);
+        g.quadraticCurveTo(hx - e.dir*l*0.5, hy + ny*l*0.18*lado,
+                           _ant[k*2], _ant[k*2+1]);
       }
       g.stroke();
       /* y la punta de cada antena enciende, como la barbilla del rape */
       const pr = Math.max(0.6, base*0.34);
       g.fillStyle = rgba(e.c.core, Math.min(1, 0.55*br));
       g.beginPath();
-      for (const lado of [1, -1]){
-        const ex = hx - e.dir*l*0.85 + nx*l*0.45*lado;
-        const ey = hy + ny*l*0.45*lado + vai*l*0.25*lado;
+      for (let k=0;k<2;k++){
+        const ex = _ant[k*2], ey = _ant[k*2+1];
         g.moveTo(ex + pr, ey);
         g.arc(ex, ey, pr, 0, TAU);
       }
@@ -4356,9 +4367,13 @@ A.evento('glitch', {
          paso, no tanto que el evento se quede en nada la mitad del rato */
       e.prox = e.hasta + rnd(0.05, 0.25);
     }
+    /* el que manda es `dura`, y sólo él: quedarse sin `saltos` antes de
+       tiempo deja al evento esperando y no lo mata —así el último paso no
+       se corta a media rotura—. Aquí estuvo un `|| e.quedan > 0` que no
+       hacía nada: la guarda de arriba lo mataba al fotograma siguiente. */
     if (e.roto && e.t > e.hasta){
       e.roto = false;
-      return e.t <= e.dura || e.quedan > 0;
+      return e.t <= e.dura;
     }
     if (!e.roto) return true;
 

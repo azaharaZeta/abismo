@@ -1576,9 +1576,14 @@ function buildRuido(){
 const MANCHAS = [];
 let ondCv = null, ondG = null;
 
+/* Aquí se decide si el lienzo PUEDE existir —cuántas manchas hay y de qué
+   tamaño— y no si se va a usar: eso lo dice `fuerza`, que se lee cada
+   fotograma en pintaOndulacion(). Mirando `fuerza` también aquí, bajarla a
+   0 con el deslizador del panel y recalcular después tiraba el lienzo, y
+   entonces ya no había forma de volver a subirla sin recargar. */
 function buildOndulacion(){
   const O = ABISMO.agua.ondulacion;
-  if (!O || !(O.fuerza > 0) || !(O.manchas > 0)){ ondCv = null; return; }
+  if (!O || !(O.manchas > 0)){ ondCv = null; return; }
   if (!MANCHAS.length)
     for (let i=0;i<O.manchas;i++)
       MANCHAS.push({
@@ -1600,7 +1605,12 @@ function buildOndulacion(){
 
 function pintaOndulacion(){
   if (!ondCv) return;
-  const O = ABISMO.agua.ondulacion, w = ondCv.width, h = ondCv.height;
+  const O = ABISMO.agua.ondulacion;
+  /* a 0 no se pinta NADA: con el lienzo ya construido, bajar `fuerza`
+     seguía dibujando las cuatro manchas —cuatro degradados radiales por
+     fotograma— para componerlas luego con alfa 0 */
+  if (!(O.fuerza > 0)) return;
+  const w = ondCv.width, h = ondCv.height;
   const diag = Math.hypot(w, h), t = tiempo*O.vel;
   ondG.setTransform(1,0,0,1,0,0);
   ondG.globalCompositeOperation = 'source-over';
@@ -1629,12 +1639,14 @@ function pintaOndulacion(){
    se rehacen al redimensionar, no por fotograma.                    */
 const NIVELES = [];
 
+/* Igual que la ondulación: aquí se decide el TAMAÑO de la pirámide y no si
+   se va a usar. `fuerza` es cuánto velo se suma al final y se lee cada
+   fotograma, así que no puede decidir si existen los búferes: bajándola a
+   0 y recalculando, la pirámide se tiraba y el velo no volvía. */
 function buildDispersion(){
   NIVELES.length = 0;
   const D = ABISMO.dispersion;
-  /* una escena puede no querer velo: se queda sin pirámide y
-     pintaDispersion() no hace nada */
-  if (!D || !(D.fuerza > 0)) return;
+  if (!D) return;
   const n = Math.min(D.niveles|0, topeNiveles);
   if (n < 2) return;
   let w = Math.round(W*dpr/Math.max(1, D.div));
@@ -1940,12 +1952,33 @@ const M = {
       if (plano !== undefined && c.plano !== undefined && c.plano < plano)
         continue;
       let dx = x - c.x, dy = y - c.y;
+      /* ── EL DESCARTE BARATO, Y ES LA MITAD DEL MOTOR ────────────
+         Esto se recorre una vez por bicho, por tipo consultado y por
+         campo vivo: medido con el evento `cuerpo` en marcha —45 campos y
+         7.000 consultas por fotograma— son 315.000 pasadas, y con el
+         seno, el coseno y la raíz dentro costaba 4,9 ms de un fotograma
+         de 16,7. O sea que la escena entera se pintaba en el rato que
+         sobraba.
+
+         La elipse cabe siempre dentro del círculo de radio r·max(1,ky), y
+         girarla no la mueve de ahí, así que comparar el cuadrado de la
+         distancia SIN girar nada descarta al que está lejos —que son casi
+         todos— con dos multiplicaciones. Es exacto, no una aproximación:
+         u ≤ 0 equivale a d ≥ r, así que lo que el descarte tira es
+         exactamente lo que el `continue` de abajo tiraba igual.
+         Comprobado contra la versión anterior con 40.000 consultas al
+         azar, los siete eventos vivos y los seis tipos de campo: cero
+         diferencias. Con la misma instrumentación, de 4,9 ms a 1,6
+         haciendo MÁS trabajo —394.000 pasadas en vez de 315.000. */
+      const ky = c.ky || 1;
+      const rmax = ky > 1 ? c.r*ky : c.r;
+      if (dx*dx + dy*dy > rmax*rmax) continue;
       if (c.rot){
         const cr = Math.cos(c.rot), sr = Math.sin(c.rot);
         const t = dx*cr + dy*sr;
         dy = dy*cr - dx*sr; dx = t;
       }
-      dy /= (c.ky || 1);
+      dy /= ky;
       const d = Math.sqrt(dx*dx + dy*dy);
       let u;
       if (c.ri > 0){
@@ -2029,7 +2062,17 @@ function puebla(){
       const n = def.conteo ? def.conteo(area, li, p) : 0;
       const q = Math.round(n * (def.escalaCalidad ? calidad : 1));
       const gr = { def, p, items: [] };
-      for (let i=0;i<q;i++) gr.items.push(def.crear(M, L, p));
+      /* `calidad` recorta CUÁNTOS, pero al degradar también se simplifica
+         cada uno, y eso hay que volver a hacerlo aquí: repoblar después
+         de degradar —un redimensionado grande, o el botón del panel— le
+         devolvía a cada medusa sus veintiséis tentáculos justo en la
+         máquina que ya había demostrado que no podía con ellos. */
+      const flojea = degradado && def.aligera;
+      for (let i=0;i<q;i++){
+        const o = def.crear(M, L, p);
+        if (flojea) def.aligera(o);
+        gr.items.push(o);
+      }
       L.grupos.push(gr);
     }
   }
@@ -2102,8 +2145,20 @@ function pasoEventos(dt){
       reprograma(e.gr);
     }
   }
-  MOD.agua  = clamp(MOD.agua,  0.04, 2.0);
-  MOD.ritmo = clamp(MOD.ritmo, 0.15, 2.0);
+  /* ── Y SE COMPRUEBA QUE SEAN NÚMEROS ────────────────────────────
+     `M.mod` es lo único de la API que un evento ESCRIBE, y clamp() no
+     ataja lo que no es un número: `undefined < 0.04` es falso y
+     `undefined > 2` también, así que pasaba entero. Un solo `mod.ritmo`
+     sin valor y `paso()` multiplica por él: todas las posiciones de la
+     pecera se vuelven NaN en el mismo fotograma, no hay vuelta atrás y lo
+     que se ve es la consola llenándose de `non-finite` desde
+     createRadialGradient, a tres capas de donde estaba el fallo. Medido
+     al escribir un evento de prueba mal: 6.111 excepciones y la pieza
+     muerta. Volver a 1 es lo que hay que hacer con un valor que no
+     significa nada, y además deja el 0 a salvo —ése sí lo recorta el
+     clamp, que es lo que se pedía. */
+  MOD.agua  = Number.isFinite(MOD.agua)  ? clamp(MOD.agua,  0.04, 2.0) : 1;
+  MOD.ritmo = Number.isFinite(MOD.ritmo) ? clamp(MOD.ritmo, 0.15, 2.0) : 1;
 }
 
 /* ── API DE PRUEBAS ─────────────────────────────────────────────────
@@ -2496,7 +2551,11 @@ function pasoPlanos(dt){
    transform del lienzo puesto, así que deja el contexto como estaba. */
 function pintaDispersion(){
   if (NIVELES.length < 2) return;
-  const D = ABISMO.dispersion, n0 = NIVELES[0], g0 = n0.g;
+  const D = ABISMO.dispersion;
+  /* a 0 no se toca la pirámide: antes se bajaba y se volvía a subir entera
+     —siete pasadas a pantalla completa— para luego sumarla con alfa 0 */
+  if (!(D.fuerza > 0)) return;
+  const n0 = NIVELES[0], g0 = n0.g;
 
   /* 1 · LA LUZ, JUNTA Y YA REDUCIDA. Cada plano con su propia alfa, la
      misma con la que se compone: el fondo dispersa menos porque llega

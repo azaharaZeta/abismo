@@ -25,8 +25,11 @@ const MANDOS = [
   {nombre:'velo · fuerza',  ruta:'dispersion.fuerza', min:0,   max:2,    paso:0.05, aplica:null},
   {nombre:'velo · caída',   ruta:'dispersion.caida',  min:0.2, max:0.95, paso:0.02, aplica:null},
   {nombre:'corriente',      ruta:'corriente.amplitud',min:0,   max:0.8,  paso:0.02, aplica:'calc'},
-  /* la ondulación de color del agua: a 0 vuelve a ser negro plano */
-  {nombre:'ondulación',     ruta:'agua.ondulacion.fuerza', min:0, max:2, paso:0.05, aplica:null},
+  /* la ondulación de color del agua: a 0 vuelve a ser negro plano.
+     `paso` 0,02 y no 0,05: un range redondea el valor inicial al múltiplo
+     de `paso` más cercano, así que con 0,05 el 0,32 de la escena entraba
+     como 0,30 y el número escrito al lado no era el del deslizador. */
+  {nombre:'ondulación',     ruta:'agua.ondulacion.fuerza', min:0, max:2, paso:0.02, aplica:null},
   /* cuánta luz del agua le quita un cuerpo: a 0, los eventos oscuros
      vuelven a depender sólo de las motas que faltan, y no basta */
   {nombre:'sombra en agua', ruta:'agua.sombra.fuerza', min:0, max:1, paso:0.05, aplica:null},
