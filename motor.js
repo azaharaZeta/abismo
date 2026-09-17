@@ -129,10 +129,15 @@ const ABISMO = {
 
   paleta: [AZUL, CIAN, HIELO, VERDOSO, PLATA],
   /* ── EL COLOR EXCEPCIONAL ─────────────────────────────────────────
-     El motor sólo lo OFRECE en M.raro; cada especie decide. Dos usos en
-     escalas distintas, y conviene no confundirlos: EL RAPE ROJO, uno y
-     sólo uno, que reparte puebla() y es un suceso; y LAS ASCUAS DEL
-     PLANCTON, sorteadas por mota, que no son un suceso sino temperatura. */
+     El motor sólo lo OFRECE en M.raro; cada especie decide. En esta pecera
+     lo coge una sola: LAS ASCUAS DEL PLANCTON, sorteadas por mota, que no
+     son un suceso sino temperatura.
+
+     El otro uso —EL RAPE ROJO, uno y sólo uno, repartido por puebla()— se
+     retiró al simplificar el color del rape: con todos ellos en el arco
+     morado-rojo-vino, un rape rojo ya no es excepción de nada. El reparto
+     de puebla() sigue en el motor y `raroProb` con él; para devolverlo
+     basta quitarle el `raro: false` a una especie con `aceptaRaro`. */
   raro: ROJO,
   raroProb: 0.30,                 // cada tres peceras, más o menos
 
@@ -232,12 +237,8 @@ const ABISMO = {
 
   /* ── EVENTOS ──────────────────────────────────────────────────────
      Cada entrada: {evento, plano?, ...parámetros}. Un `porContacto: 0..1`
-     deja que el dedo lo dispare. Ninguno dibuja gran cosa: el vacío no
-     dibuja NADA.
-
-     `mira`, `marea` y `vacio` están implementados y registrados, pero esta
-     pecera NO los pide. Se siguen pudiendo lanzar desde el panel de
-     pruebas; para devolverlos a la escena basta volver a listarlos.   */
+     deja que el dedo lo dispare. Ninguno dibuja gran cosa: el contagio no
+     dibuja NADA.                                                      */
   eventos: [
     /* la cadena de encendido: aquí el plancton es nieve marina, así que la
        onda se lee como un soplo que la prende al pasar */
@@ -299,7 +300,32 @@ const ABISMO = {
          cuerpo no emite nada. Ahora que el cuerpo sí se apaga —queda en 2
          de luminancia contra 8 del agua de alrededor— los puntos se leen
          sobre fondo oscuro y no hace falta que quemen. */
-      brillo: 0.32, fotoforos: 11 },
+      brillo: 0.32, fotoforos: 11,
+      /* ── EL OJO ──────────────────────────────────────────────────
+         Lo único de la bestia que tiene color, y por eso es lo único que
+         se lee como vivo: el resto de lo que emite es el canto de un
+         hueco y va del azul del agua. Rojo o morado, sorteado por
+         travesía —`tono` cruza el 0 por el rojo, igual que el arco del
+         rape, y corta en 366 por lo mismo: a 378 (18°) el tramo del
+         extremo salía ÁMBAR y el ojo parecía una farola—, y `tramos`
+         bajo porque el halo se cachea por entrada de paleta y aquí hay
+         un leviatán cada vez.
+
+         `giroGlow` NEGATIVO y no el +5 de la casa: con el +5 el halo del
+         extremo rojo se va al ámbar también. Con −6 el rojo tiene halo
+         rojo y el morado, halo violeta. */
+      espectroOjo: { tono: [272, 366], tramos: 10,
+                     sat: [0.86, 1.00], luz: [0.50, 0.64],
+                     satGlow: [0.82, 1.00], luzGlow: [0.24, 0.34],
+                     luzCore: [0.80, 0.90], giroGlow: -6 },
+      /* multiplica a `brillo`, así que el mando del panel lo apaga también.
+         Bastante por encima de 1, y no es contradictorio con «sutil»:
+         sutil es que sea PEQUEÑO. El leviatán vive en el plano del fondo,
+         que va a un tercio de resolución y al 58 % de alfa, así que a 1,1
+         el punto se disolvía en el borrón y no se leía que la sombra
+         tuviera un ojo; a 2,0 es un alfiler rojo y sigue sin alumbrar
+         nada. */
+      brilloOjo: 2.0 },
 
     /* el poliqueto que cruza el fondo cada tanto, tan tenue que casi no
        está. `patas`, `antenas` y `cola` son el detalle: a 0 vuelve a ser la
@@ -407,47 +433,38 @@ const ABISMO = {
          fogonazo se ve sobre todo la boca. No llega a 1 para dejar suelo —sin
          él el cuarto de atrás es un agujero. */
       proa: 0.90,
-      /* LA ESCA, DEL TONO DEL ANIMAL. Declara los MISMOS arcos y los mismos
-         `tramos` que `espectroCuerpo` y sólo cambia el brillo: generaPaleta
-         reparte el tono por índice de forma determinista, así que la entrada
-         i de una paleta y la i de la otra son el mismo tono, una quemada y la
-         otra a oscuras. `crear` sortea el cuerpo y lee la lámpara por su
-         índice. Si se toca un arco aquí, hay que tocarlo en los dos.
+      /* ── EL COLOR DEL RAPE ─────────────────────────────────────
+         UN ARCO, UN COLOR POR BICHO Y NINGUNA EXCEPCIÓN. Morado →
+         magenta → rojo → vino, y corta en 364 —o sea 4°— porque de ahí
+         para arriba el rojo se va al salmón: el tramo de 12° sale
+         (251, 86, 45) y en pantalla lee cobre, no sangre. El arco de
+         antes llegaba a 22°. Se sortea al nacer y
+         lo usan la esca, el cuerpo, la barbilla y la pupila: no hay un
+         color por componente, y la posición de la luz decide por dónde se
+         enciende, no de qué color es.
 
-         La corona SÍ sube, y es la excepción de la casa: el agua no se tiñe,
-         pero una lámpara tiene corona, y ahí vive el color cuando el centro
-         está quemado. `luzCore` teñido y no casi blanco: a 0,95 el centro
-         sale blanco y queda una bombilla con un aro de color. */
-      espectro: [
-        { tono: [272, 382], tramos: 18,
-          sat: [0.86, 1.00], luz: [0.68, 0.88],
-          satGlow: [0.78, 0.96], luzGlow: [0.32, 0.44],
-          luzCore: [0.76, 0.88], giroGlow: 6 },
-        { tono: [88, 152], tramos: 8, peso: 0.45,
-          sat: [0.86, 1.00], luz: [0.68, 0.88],
-          satGlow: [0.78, 0.96], luzGlow: [0.32, 0.44],
-          luzCore: [0.76, 0.88], giroGlow: 6 },
-      ],
-      /* ── Y EL ANIMAL CON EL SUYO ───────────────────────────────
-         El TONO del cuerpo es suyo y se sortea al nacer: la posición de la
-         luz decide por dónde se enciende, no de qué color es.
+         Antes eran DOS paletas atadas por índice —una lámpara quemada y
+         un animal a oscuras, más un arco verde de peso bajo— y un
+         `aceptaRaro` que pintaba de rojo a uno de cada tres. Fuera: con
+         todos los rapes en morado-rojo-vino, un «rape rojo excepcional»
+         no es la excepción de nada, y el apaño del índice compartido
+         obligaba a tocar cuatro arcos para cambiar uno.
 
-         Dos arcos: morado→magenta→rojo, que corta en 382 (22°) porque un
-         grado más se va al ámbar y un rape dorado no da miedo; y el verde
-         oscuro, con peso bajo para que sea el raro. `luz` por debajo de
-         0,6 en los dos: es lo que hace que se intuya.               */
-      espectroCuerpo: [
-        { tono: [272, 382], tramos: 18,
-          sat: [0.52, 0.92], luz:  [0.38, 0.52],
-          satGlow: [0.55, 0.85], luzGlow: [0.14, 0.24],
-          luzCore: [0.70, 0.84], giroGlow: 6 },
-        /* el verde va MÁS abajo: el ojo lo ve más claro que cualquier otro
-           tono a la misma luz, y con la `luz` del arco cálido salía hierba */
-        { tono: [88, 152], tramos: 8, peso: 0.45,
-          sat: [0.38, 0.72], luz:  [0.26, 0.38],
-          satGlow: [0.45, 0.75], luzGlow: [0.12, 0.22],
-          luzCore: [0.62, 0.76], giroGlow: 6 },
-      ],
+         Lo que sostiene ahora la diferencia entre EL FOCO y EL SUSURRO es
+         sólo el alfa —`brillo` 1,15 contra `cuerpo` 0,62— y el núcleo
+         blanco de la esca, así que estos números son un compromiso entre
+         los dos usos: `luz` y `luzGlow` a media altura, ni la lámpara de
+         antes (0,68-0,88 · 0,32-0,44) ni el animal (0,38-0,52 ·
+         0,14-0,24). `giroGlow` NEGATIVO, contra el +5 de la casa: el halo
+         de un rape rojo tirando al azul sale magenta y deja de ser
+         sangre. */
+      espectro: { tono: [268, 364], tramos: 18,
+                  sat: [0.66, 0.96], luz: [0.44, 0.58],
+                  satGlow: [0.66, 0.92], luzGlow: [0.22, 0.32],
+                  luzCore: [0.80, 0.90], giroGlow: -5 },
+      /* y fuera del sorteo del color excepcional: ya no hay excepción que
+         repartir, el arco entero es siniestro */
+      raro: false,
       /* punto pequeño y quemado, no mancha grande y suave */
       esca: 0.050,                // radio del señuelo, en largos
       difusion: 2.9,              // cuánto se derrama alrededor
@@ -613,12 +630,30 @@ const ABISMO = {
       reparto: [0.24, 0.34, 0.42],
       largo: [0.62, 1.05],
       /* El círculo entero de tono, porque fotóforos verdes, ámbar y rosados los
-         hay de verdad, y muchos tramos porque el banco tiene que leerse
-         moteado de color. `luzGlow` abajo: el bicho tiene color, el agua no. */
-      espectro: { tono: [0, 352], tramos: 40,
-                  sat: [0.88, 1.00], luz: [0.66, 0.84],
-                  satGlow: [0.58, 0.82], luzGlow: [0.20, 0.30],
+         hay de verdad, y bastantes tramos porque el banco tiene que leerse
+         moteado de color. `luzGlow` abajo: el bicho tiene color, el agua no.
+
+         SATURACIÓN A LA BAJA Y LUZ ARRIBA, que es lo que los vuelve
+         plateados: plateado no es un tono, es poco tono con mucha luz. Un
+         pelín, y medido contra lo que el ojo ve de verdad de un pez a
+         distancia, que es el HALO del fotóforo —el punto es `core` y sale
+         casi blanco pase lo que pase—. Por eso `satGlow` manda aquí más
+         que `sat`, y por eso no puede bajar mucho: a 0,34-0,58 el banco se
+         quedó blanco del todo y perdió el moteado, que es lo bonito. */
+      espectro: { tono: [0, 352], tramos: 32,
+                  sat: [0.60, 0.88], luz: [0.72, 0.88],
+                  satGlow: [0.44, 0.70], luzGlow: [0.20, 0.30],
                   giroGlow: 6 },
+      /* ── Y EL ORDEN EN EL SORTEO ──────────────────────────────
+         Uno o dos tonos mandan en toda la pecera y `tendencia` es qué
+         parte del banco se apunta; el resto sigue saliendo de la paleta
+         entera. Es una TENDENCIA: con 0,74 de cada cuatro peces hay uno
+         que va a lo suyo, así que el banco tiene un color —o dos— y
+         además moteado, en vez de tener los treinta y dos.
+
+         Se sortean al poblar, no aquí: escritos a mano serían los mismos
+         en todas las sesiones. Lo hace `siembra()` de la especie. */
+      dominantes: [1, 2], tendencia: 0.74,
       /* la hilera del vientre es lo único que se ve de lejos, así que es
          donde va el brillo: puntos de color quemados, no un cuerpo iluminado */
       fotoforos: [6, 10],
@@ -682,6 +717,12 @@ const ABISMO = {
    Acuario.especie(nombre, def) donde def es:
 
      conteo(area, plano, p)    → cuántos en ese plano (0..2)
+     siembra(M, p)             → opcional. Una vez por pecera y antes de
+                   crear a nadie, para los tres planos a la vez: es donde
+                   se sortea lo que toda la población COMPARTE y `crear`
+                   no puede decidir por su cuenta —los tonos dominantes de
+                   un banco, por ejemplo—. Escribe en `p`, que es la
+                   entrada de la escena.
      crear(M, L, p)            → el objeto; debe tener x, y
      actualiza(o, M, L, p, dt) → void
      dibuja(o, M, L, p, g)     → void, en el contexto del plano
@@ -1127,7 +1168,8 @@ const M = {
      `ri` convierte el disco en anillo, `ky` lo achata, `rot` lo gira y
      `filo` define el canto. `plano` es la guarda de profundidad: con él,
      sólo actúa sobre quien pregunta desde ese plano o desde uno más
-     lejano; sin él, sobre todos —una marea no tiene profundidad. */
+     lejano; sin él, sobre todos —un evento sin cuerpo no tiene
+     profundidad. */
   campo(tipo, x, y, plano){
     let vm = 0, mejor = null;
     for (let i=0;i<campos.length;i++){
@@ -1190,6 +1232,15 @@ function avisa(clave, texto){
 
 function puebla(){
   const area = W*H;
+
+  /* LO QUE COMPARTE TODA UNA POBLACIÓN se sortea aquí: una vez por pecera
+     y no una por plano. El banco de peces linterna vive repartido en los
+     tres planos, pero es UN banco visto desde tres distancias, así que los
+     tonos que lo mandan tienen que salir del mismo sorteo. */
+  for (const conf of ABISMO.bichos){
+    const def = ESPECIES[conf.especie];
+    if (def && def.siembra) def.siembra(M, paramsDe(conf));
+  }
 
   for (let li=0; li<PLANOS.length; li++){
     const L = PLANOS[li];
@@ -1484,8 +1535,8 @@ function pintaSombras(){
 
 function pintaAgua(){
   ctx.drawImage(agua, 0, 0, W, H);
-  /* la ondulación va DENTRO del agua: antes de la modulación, así que una
-     marea que baje también se la lleva */
+  /* la ondulación va DENTRO del agua: antes de la modulación, así que un
+     evento que oscurezca el agua también se la lleva */
   pintaOndulacion();
   /* y las sombras, encima de la ondulación: lo que tapa un cuerpo es el
      agua Y su color, no sólo la tira de base */

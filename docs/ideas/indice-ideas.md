@@ -23,11 +23,18 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 ## Ideas de usuario (pendientes de procesar)
 > Solo un humano edita esta sección. Texto breve; el detalle se desarrolla al crear la ficha.
 
-- Colores:
-   - pececitos de cardumen: los colores son todos preciosos. pero: son demasiados colores random a la vez,  aparecen todos los colores revueltos. poner un poco de orden en el random. los peces de cardumen tienen que tener un aspecto un pelín más plateado. los cardúmenes deben mostrar tendencia a coincidir en uno o dos colores. Tendencia. pueden mezclarse peces d distintos colores, pero evitemos que todos los colores surjan a la vez en los peces.
-   - rape: Simplificar el algoritmo de colores de los rapes. nada de especificar colores raros. y no asignar colores a componentes (esca, etc). simplemente establecer un rango de colores apropiados para los rapes (siempre tonos "siniestros, algo oscuros", morados, rojos, vino.. colores serios de depredador), y elegir el color random de cada rape al crearlo.
-- limpieza: `mira`, `marea` y `vacio` ya no los quiero. Borrarlos del todo. Igual con los filamentos del señuelo (`pelos`).  
+- Leviathan: hacer que su perfilado tenga también el mismo color random que su ojo.
+- El reparto del color excepcional de `puebla()` («uno y sólo uno en toda la pecera») se ha quedado sin candidatos: Quitarlo del motor.
+- Los peces tienen que huir del rape cuando éste caza una presa.
+- el rape se ilumina como dos veces cuando caza? revisar eso, tiene que iluminarse como una ráfaga violenta en la caza, y oscurecerse rápido de vuelta. revisar uqe no haya código espagueti ahí de pruebas pasadas.
+- eventos: meter carroña.
+- eventos: meter un cuerpo humano descendiendo
+-eventos: los pececitos se alinean todos haciendo la forma como un super pez, cogen más color, y se comen una medusa . se dispersan después.
+- eventos: glitch
 
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos que dejaron las ideas procesadas el 2026-09-17.
+
+
+- El leviatán es hoy el único evento pesado del abismo y va muy espaciado: la pecera se ha quedado con dos eventos ligeros. Elegir uno más del catálogo (`docs/ideas/idea-eventos-aleatorios.md`).
 

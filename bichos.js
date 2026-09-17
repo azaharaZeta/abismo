@@ -85,7 +85,7 @@ const reparte = (i, n) => n > 1 ? i/(n-1) : 0.5;
    necesita para que algo pueda apagarla, sin saber qué se lo apaga. Dos
    canales, y la diferencia está en quién los pone:
 
-     · `apaga` son los eventos —marea, vacío—. No tienen profundidad.
+     · `apaga` son los eventos —el leviatán—. No tienen profundidad.
      · `tapa` son CUERPOS. En aditivo no hay «encima», así que la oclusión
        va por el único camino que queda: no se añade negro, se le QUITA la
        luz al que estaba detrás. Que es lo que pasa de verdad.
@@ -531,15 +531,16 @@ A.especie('plancton', {
       m.glow = Math.max(m.glow, ce.peso);
       if (ce.c) m.lit = ce.c;
     }
-    /* y el vacío lo calla: el rastro se corta en seco. Se guarda en `cal`
-       porque el dibujo necesita el mismo número, y cada consulta recorre los
-       campos vivos: de plancton hay cientos. */
+    /* y lo que pase por encima lo calla: el rastro se corta en seco. Se
+       guarda en `cal`
+       porque el dibujo necesita el mismo número, y cada consulta
+       recorre los campos vivos: de plancton hay cientos. */
     const sl = m.cal = silencio(M, m.x, m.y, L);
     if (sl > 0.01) m.glow *= Math.pow(0.02, dt*sl);
 
     /* un cuerpo que pasa mueve agua: el plancton se aparta y eso deja una
-       onda de proa. Sin esto el vacío sólo quita luz y cuesta ver que lo que
-       pasa es algo y no una nube. */
+       onda de proa. Sin esto un cuerpo grande sólo quita luz y cuesta ver
+       que lo que pasa es algo y no una nube. */
     const ep = M.campo('empuja', m.x, m.y);
     if (ep){
       const dx = m.x - ep.x, dy = m.y - ep.y;
@@ -577,7 +578,7 @@ A.especie('plancton', {
 
   dibuja(m, M, L, p, g){
     const c = (m.glow > 0.05 && m.lit) ? m.lit : m.c;
-    /* el vacío no se dibuja: se lee porque AQUÍ no se dibuja nada */
+    /* lo que tapa no se dibuja: se lee porque AQUÍ no se dibuja nada */
     const sil = 1 - m.cal;
     if (sil < 0.02) return;
     const ha = (0.22*m.glow + (m.alto ? 0.15 : 0)) * sil;
@@ -1057,8 +1058,8 @@ function ojo(g, f, gx, col, nuc, br, sh, p){
   if (bp > 0.004)
     mancha(g, ex, ey, r*6, [
       [0.00, nuc, Math.min(1, 0.30*bp*fog)],
-      [0.30, f.cCuerpo.mid, 0.12*bp*fog],
-      [1.00, f.cCuerpo.glow, 0],
+      [0.30, f.c.mid, 0.12*bp*fog],
+      [1.00, f.c.glow, 0],
     ]);
   enPez(g, f, gx, () => {
     g.beginPath();
@@ -1224,8 +1225,9 @@ function boca(g, f, gx, p, gb, q){
 
 /* LA BARBILLA. Un apéndice luminoso colgando de la quijada, con sus
    ramas: Linophryne lo lleva, no es licencia. Lo que aporta son DOS
-   luces separadas con nada visible entre ellas —el mismo mecanismo que
-   el evento `mira`. Va tenue: si alumbrase revelaría al bicho. */
+   luces separadas con nada visible entre ellas, y entre las dos no se
+   dibuja nada: el hueco es lo que declara el tamaño de la cabeza. Va
+   tenue: si alumbrase revelaría al bicho. */
 const _pta = [];              // puntas de las ramas: x,y intercalados
 function barbilla(g, f, gx, p, t, ebr){
   const n = f.barbas;
@@ -1311,22 +1313,6 @@ function senuelo(g, f, gx, p, ebr, t){
     [0.55, f.c.mid, 0.12*ebr],
     [1.00, f.c.mid, 0],
   ]);
-  /* FILAMENTOS. Una esca no es una bola lisa: le salen pelos, y se mueven.
-     Van antes del núcleo para que el punto quemado quede encima. */
-  if (f.pelos){
-    g.strokeStyle = rgba(f.c.mid, 0.26*ebr);
-    g.lineWidth = Math.max(0.4, Lg*0.0055);
-    g.beginPath();
-    for (let i=0;i<f.pelos;i++){
-      const a = f.peloFase + i*TAU/f.pelos + Math.sin(t*0.74 + i*1.7)*0.30;
-      const l = re*(2.4 + 1.9*Math.abs(Math.sin(i*1.93 + 0.7)));
-      const cx = f.x + Math.cos(a - 0.6)*l*0.55;
-      const cy = f.y + Math.sin(a - 0.6)*l*0.55;
-      g.moveTo(f.x, f.y);
-      g.quadraticCurveTo(cx, cy, f.x + Math.cos(a)*l, f.y + Math.sin(a)*l);
-    }
-    g.stroke();
-  }
   g.fillStyle = rgba(f.c.mid, Math.min(1, 0.50*ebr));
   g.beginPath(); g.arc(f.x, f.y, re, 0, TAU); g.fill();
   /* EL PUNTO BLANCO: su tamaño decide si la esca se lee como color o como
@@ -1574,22 +1560,18 @@ A.especie('rape', {
        cola en +Lg */
     const dir = p.miraAlCentro ? (bx > M.W*0.5 ? 1 : -1)
                                : (Math.random() < 0.5 ? 1 : -1);
-    /* DOS COLORES Y UN SOLO TONO. `c` es la esca —lo que el motor reparte como
-       luz, con lo que tiñe al plancton, y lo que se lleva el color raro— y
-       `cCuerpo` es el animal, que no cambia con lo que lo alumbre. Los dos
-       espectros de la escena declaran los MISMOS arcos y los mismos `tramos`,
-       y generaPaleta reparte el tono por índice de forma determinista, así que
-       basta leer la lámpara por el índice del cuerpo para que la esca y las
-       barbas salgan del tono del bicho.
+    /* UN COLOR Y UNO SOLO, sorteado al nacer. Lo usan la esca —que es lo
+       que el motor reparte como luz y con lo que tiñe al plancton—, el
+       cuerpo, la barbilla y la pupila: ningún componente tiene color
+       propio, y lo que la luz de al lado decide es por dónde se enciende,
+       no de qué color es.
 
-       Se sortea el CUERPO porque es quien lleva los pesos —el arco verde es el
-       raro—. Si las dos paletas dejan de cuadrar, se sortea la lámpara aparte:
-       el tono deja de coincidir, pero nada se rompe. */
-    const palC = p.paletaCuerpo || p.paleta;
-    const cCuerpo = M.color(palC);
-    const iTono = palC.indexOf(cCuerpo);
+       Hubo dos paletas atadas por índice, una para la lámpara y otra para
+       el animal. La diferencia entre el foco y el susurro la sostienen
+       ahora sólo el alfa —`brillo` contra `cuerpo`— y el núcleo blanco de
+       la esca, que es donde de verdad estaba. */
     const f = {
-      c: p.paleta[iTono] || M.color(p.paleta), cCuerpo,
+      c: M.color(p.paleta),
       Lg, dir, gx: dir,
       bx, by,
       /* x,y son la esca: es lo que el motor reparte como luz, y no hay una
@@ -1605,8 +1587,6 @@ A.especie('rape', {
          y entonces no se dibuja ninguno: la especie sigue sirviendo para un
          rape pequeño y esquemático al fondo. */
       barbas:    p.barba ? rangoE(p.barbas || [3, 5]) : 0,
-      pelos:     rangoE(p.pelos || 0),
-      peloFase:  Math.random()*TAU,
       miomeros:  rangoE(p.miomeros || 0),
       radios:    rangoE(p.radios || 0),
       /* parpadeo de la esca, el tempo lento de la pieza */
@@ -1866,9 +1846,9 @@ A.especie('rape', {
     const t = M.t, Lg = f.Lg, sh = L.sharp;
     /* de perfil puro el pez no existe, pero el trazado no puede degenerar */
     const gx = Math.abs(f.gx) < 0.06 ? (f.gx < 0 ? -0.06 : 0.06) : f.gx;
-    /* el color del animal, sorteado al nacer y suyo: lo que la luz de al lado
+    /* el color del bicho, sorteado al nacer y suyo: lo que la luz de al lado
        decide es por dónde se enciende, no de qué color es */
-    const col = f.cCuerpo.mid, nuc = f.cCuerpo.core;
+    const col = f.c.mid, nuc = f.c.core;
     const sil = 1 - silencio(M, f.bx, f.by);
     /* DOS BRILLOS DISTINTOS: `brillo` es el del señuelo —el foco, lo único
        que tiene que quemar— y `cuerpo` el del animal, que se queda en un
@@ -1955,8 +1935,8 @@ A.especie('rape', {
        así que tiene que pintarse también cuando no hay cuerpo que pintar */
     ojo(g, f, gx, col, nuc, br, sh, p);
 
-    /* la esca también se calla: es lo único que se ve de un rape, así que si
-       el vacío no la apaga no hay vacío que valga.
+    /* la esca también se calla: es lo único que se ve de un rape, así que
+       un cuerpo que pase por delante y no la apague no tapa nada.
 
        Mientras mastica va recogida junto a la boca y más viva. Con su propio
        número y no con `masticaLuz` porque son dos escalas —una es lo que
@@ -2075,11 +2055,38 @@ A.especie('pezlinterna', {
   escalaCalidad: true,
   conteo: porReparto,
 
+  /* ── LOS TONOS QUE MANDAN ─────────────────────────────────────
+     Sorteados una vez por pecera, no por pez: con un tono por pez y el
+     círculo entero de la paleta salían los cuarenta a la vez y el banco
+     se leía como confeti. Aquí se eligen uno o dos y en `crear` la
+     mayoría se apunta a ellos.
+
+     Va en `siembra` y no en `crear` porque el banco se reparte en los
+     tres planos y es UN banco: sorteándolo por plano saldrían hasta seis
+     tonos mandando, que es justo lo que se quería quitar.
+
+     Y se sortea CADA VEZ que se puebla en vez de escribirlo en la escena:
+     los pesos de un espectro son fijos, así que un dominante escrito a
+     mano sería el mismo en todas las sesiones. Lo que se pide es una
+     tendencia, no una identidad. */
+  siembra(M, p){
+    const n = rangoE(opt(p.dominantes, 0));
+    if (!(n > 0) || !p.paleta){ p.mandan = null; return; }
+    p.mandan = [];
+    for (let i=0;i<n;i++) p.mandan.push(M.color(p.paleta));
+  },
+
   crear(M, L, p){
     const Lg = rango(p.largo) * M.U * L.scale;
     const dso = opt(p.desorden, 0);
     return {
-      c: M.color(p.paleta), Lg,
+      /* TENDENCIA, no regla: el resto sigue sorteando de la paleta entera,
+         así que entre los dominantes siguen cruzándose peces sueltos de
+         cualquier tono. Sin ese resto el banco es monocromo y pierde el
+         moteado, que es lo que lo hacía bonito. */
+      c: (p.mandan && Math.random() < opt(p.tendencia, 0))
+         ? M.elige(p.mandan) : M.color(p.paleta),
+      Lg,
       x: rnd(0,M.W), y: rnd(0,M.H),
       /* como emisor es débil y NO es un señuelo: los demás peces linterna no
          deben perseguirse entre ellos */
@@ -2313,83 +2320,6 @@ A.especie('pezlinterna', {
    región donde lo que había se calla. Se lee el volumen por el hueco.
    ══════════════════════════════════════════════════════════════════ */
 
-/* ── EL QUE MIRA ────────────────────────────────────────────────────
-   Dos luces junto al canto, muy separadas. Pestañean una vez
-   desacompasadas y se apagan. Lo que ES el evento no son los dos puntos,
-   es la distancia entre ellos: `separacion`.                        */
-A.evento('mira', {
-  exclusivo: true,
-  cada: [90, 240], primero: [25, 75],
-  /* valores con los que funciona si la pecera no lo configura: los usa el
-     panel de pruebas, no la pieza */
-  prueba: { separacion: [10, 24], radio: [0.30, 0.55], dura: [13, 22],
-            brillo: 1.5, acerca: 0.55 },
-  arranca(M, p){
-    const ang = rnd(-0.55, 0.55);
-    const r   = rango(p.radio || [0.30, 0.55]) * M.U;
-    const ac  = opt(p.acerca, 0.55);
-    /* LOS DOS OJOS TIENEN QUE CABER: todo el evento es que se vean DOS y lo
-       lejos que están, así que la separación se recorta a lo que quepa
-       —contando lo que crecen al acercarse— y el centro se sortea dentro. */
-    let sep = rango(p.separacion) * M.U;
-    const g = 1 + ac;                       // lo que crece hasta el final
-    const bx = r*2.4*g, by = r*2.4*g;       // sitio que pide un ojo
-    const cax = Math.max(0, M.W*0.5 - bx), cay = Math.max(0, M.H*0.5 - by);
-    const ux = Math.abs(Math.cos(ang)), uy = Math.abs(Math.sin(ang));
-    const tope = Math.min(ux > 0.01 ? cax*2/(ux*g) : Infinity,
-                          uy > 0.01 ? cay*2/(uy*g) : Infinity);
-    sep = Math.min(sep, tope);
-    const hx = ux*sep*0.5*g, hy = uy*sep*0.5*g;
-    return {
-      x: rnd(hx + bx, M.W - hx - bx),
-      y: rnd(Math.max(hy + by, M.H*0.18), Math.min(M.H - hy - by, M.H*0.82)),
-      /* `ac` es cuánto crece a lo largo de su vida: SE ACERCA. Dos luces
-         quietas se miran; dos luces que crecen vienen hacia ti. */
-      ang, sep, r, ac,
-      c:   M.color(p.paleta),
-      dura: rango(p.dura),
-      /* cuándo pestañea cada ojo, en fracción de su vida */
-      p1: rnd(0.32, 0.60), p2: rnd(0.32, 0.60),
-      /* casi quietos pero no clavados: una luz perfectamente inmóvil se lee
-         como un píxel muerto, no como algo que está ahí */
-      vx: rnd(-0.03, 0.03)*M.U, vy: rnd(-0.02, 0.02)*M.U,
-    };
-  },
-  actualiza(e, M, p, dt){
-    e.x += e.vx*dt; e.y += e.vy*dt;
-    return e.t < e.dura;
-  },
-  dibuja(e, M, p, g){
-    const u = e.t/e.dura;
-    /* entra despacio y se va de golpe: el corte al final deja la sensación de
-       que se ha ido, no de que se ha desvanecido */
-    const fade = Math.min(1, Math.sin(Math.pow(u, 0.7)*Math.PI)*3.2);
-    if (fade <= 0.004) return;
-    /* crecen y se separan con el tiempo: viene hacia el cristal */
-    const cerca = 1 + e.ac*u;
-    const rr = e.r*cerca;
-    const dx = Math.cos(e.ang)*e.sep*0.5*cerca, dy = Math.sin(e.ang)*e.sep*0.5*cerca;
-    const cerrado = pf => { const d = e.t - pf*e.dura; return d > 0 && d < 0.20; };
-    /* `pintaOjo` y no `ojo`: `ojo()` es el del rape, ahí arriba */
-    const pintaOjo = (ox, oy, off) => {
-      const a = fade * p.brillo * (off ? 0.04 : 1);
-      if (a < 0.004) return;
-      mancha(g, ox, oy, rr*9, [
-        [0.00, e.c.glow, 0.50*a], [0.16, e.c.glow, 0.20*a],
-        [0.46, e.c.glow, 0.055*a], [1.00, e.c.glow, 0],
-      ]);
-      mancha(g, ox, oy, rr*2.4, [
-        [0.00, e.c.core, Math.min(1, a)], [0.26, e.c.mid, 0.70*a],
-        [0.62, e.c.mid, 0.18*a], [1.00, e.c.mid, 0],
-      ]);
-      g.fillStyle = rgba(e.c.core, Math.min(1, a));
-      g.beginPath(); g.arc(ox, oy, Math.max(1, rr*0.55), 0, TAU); g.fill();
-    };
-    pintaOjo(e.x - dx, e.y - dy, cerrado(e.p1));
-    pintaOjo(e.x + dx, e.y + dy, cerrado(e.p2));
-  },
-});
-
 /* ── EL CONTAGIO ────────────────────────────────────────────────────
    No un fogonazo simultáneo: una reacción en cadena. El evento no dibuja
    NADA —empuja un anillo de encendido y la luz que se ve es el propio
@@ -2416,81 +2346,6 @@ A.evento('contagio', {
     M.campos.push({ tipo:'enciende', x:e.x, y:e.y,
                     r: e.r, ri: Math.max(0.0001, e.r - M.U*p.salto),
                     fuerza: 1, filo: p.filo || 1, c: e.c });
-    return true;
-  },
-});
-
-/* ── LA MAREA ───────────────────────────────────────────────────────
-   Sin objeto: sólo cambia la escena. `hondura` positiva es EL DESCENSO —el
-   agua se va al negro, todo se ralentiza y los bichos se apagan— y
-   negativa es EL AMANECER: dos registros por una implementación.
-
-   Los canales que de verdad lo cuentan son `ritmo` y el campo de apagado;
-   `agua` apenas aporta, porque oscurecer un negro no hace nada.     */
-A.evento('marea', {
-  exclusivo: true,
-  cada: [200, 520], primero: [70, 180],
-  prueba: { hondura: [0.7, 0.9], entra: [4, 6], sostiene: [6, 10], sale: [5, 8] },
-  arranca(M, p){
-    return { e: rango(p.entra), s: rango(p.sostiene), l: rango(p.sale),
-             k: rango(p.hondura) };
-  },
-  actualiza(e, M, p, dt){
-    const t = e.t;
-    if (t > e.e + e.s + e.l) return false;
-    let u = t < e.e            ? t/e.e
-          : t < e.e + e.s      ? 1
-          : 1 - (t - e.e - e.s)/e.l;
-    u = suave(clamp(u, 0, 1));               // sin esquinas al entrar
-    const k = e.k * u;
-    /* el agua es el único canal que puede ir en los dos sentidos */
-    M.mod.agua  *= k > 0 ? (1 - k*0.82) : (1 - k*0.60);
-    M.mod.ritmo *= 1 - Math.max(0, k)*0.45;
-    /* Y AL BAJAR, un campo de apagado que cubre la escena entera. Sin esto el
-       descenso es casi invisible: el agua ya es negra y no hay haces de sol
-       que perder. */
-    if (k > 0)
-      M.campos.push({ tipo:'apaga', x:M.W*0.5, y:M.H*0.5,
-                      r: Math.hypot(M.W, M.H), fuerza: k*(p.apaga || 0.72),
-                      filo: 0.55 });
-    return true;
-  },
-});
-
-/* ── EL VACÍO ───────────────────────────────────────────────────────
-   No se dibuja nada. Una región enorme y lenta cruza el plano y dentro el
-   plancton se apaga y los bichos pierden brillo: se lee un cuerpo inmenso
-   por la forma del silencio.
-
-   `ancho` va en fracción del lado mayor y conviene pasar de 1: si cabe
-   entero en pantalla pasa a ser una mancha. `achata` lo vuelve elipse. */
-A.evento('vacio', {
-  exclusivo: true,
-  cada: [160, 460], primero: [45, 140],
-  prueba: { ancho: [1.15, 2.1], achata: 0.40, vel: [1.4, 2.6],
-            hondura: [0.85, 1.0], filo: 2.4 },
-  arranca(M, p){
-    const dir = Math.random() < 0.5 ? 1 : -1;
-    const w = Math.max(M.W, M.H) * rango(p.ancho);
-    return { dir, w,
-             x: dir > 0 ? -w : M.W + w,
-             y: rnd(0.22, 0.82) * M.H,
-             vel: rango(p.vel) * M.U,
-             hondura: rango(p.hondura) };
-  },
-  actualiza(e, M, p, dt){
-    e.x += e.dir * e.vel * dt;
-    if (e.dir > 0 ? e.x - e.w > M.W : e.x + e.w < 0) return false;
-    M.campos.push({ tipo:'apaga', x:e.x, y:e.y, r:e.w,
-                    ky: p.achata || 0.42,
-                    fuerza: e.hondura, filo: p.filo || 2.2 });
-    /* y mueve agua: el plancton se aparta por delante y deja una onda de
-       proa. El silencio dice que hay algo; esto dice que ese algo es un
-       cuerpo y no una nube. */
-    if (p.estela)
-      M.campos.push({ tipo:'empuja', x:e.x, y:e.y, r:e.w*1.15,
-                      ky: (p.achata || 0.42)*1.3,
-                      fuerza: p.estela, filo: 1.4 });
     return true;
   },
 });
@@ -2702,7 +2557,7 @@ A.evento('leviatan', {
             rumbo: [-0.22, 0.22], cadaRumbo: [9, 20], velRumbo: 0.25,
             hondura: [0.94, 1.0], filo: 2.2, penumbra: 1.3, segmentos: 22,
             espinas: 10, cresta: 0.55,
-            brillo: 0.32, fotoforos: 11, plano: 0 },
+            brillo: 0.32, fotoforos: 11, brilloOjo: 2.0, plano: 0 },
   arranca(M, p){
     const dir = Math.random() < 0.5 ? 1 : -1;
     /* EL RUMBO. `base` es el lado por el que cruza y `ang` el rumbo real,
@@ -2734,6 +2589,12 @@ A.evento('leviatan', {
       hondura: rango(p.hondura),
       fase:   Math.random()*TAU,
       c:      M.color(p.paleta),
+      /* EL OJO TIENE COLOR PROPIO. Todo lo demás que emite —la cresta, los
+         fotóforos, el filo de la caudal— va del color del agua, porque son
+         el canto de un hueco. El ojo no: es lo único vivo ahí dentro, y se
+         sortea al nacer de su propia paleta. Sin `paletaOjo` se queda con
+         el color del cuerpo y nada cambia. */
+      cOjo:   M.color(p.paletaOjo || p.paleta),
     };
   },
   actualiza(e, M, p, dt){
@@ -2866,15 +2727,36 @@ A.evento('leviatan', {
     }
 
     /* EL OJO, junto al cráneo. Un punto basta para que el resto del hueco
-       se lea como cabeza, y es lo único que dice hacia dónde mira. */
-    const qo = levPunto(e, 0.075, _lvQ), ao = levAngulo(e, 0.075);
-    const semiO = e.grosor*levPerfil(0.075);
-    const ox = qo[0] - Math.sin(ao)*semiO*0.42;
-    const oy = qo[1] + Math.cos(ao)*semiO*0.42;
-    const Ro = M.U*0.38;
-    g.globalAlpha = Math.min(1, br*0.55);
-    g.drawImage(M.halo(e.c), ox-Ro, oy-Ro, Ro*2, Ro*2);
-    g.globalAlpha = 1;
+       se lea como cabeza, y es lo único que dice hacia dónde mira.
+
+       Va en `cOjo` —rojo o morado— contra el azul de todo lo demás, y con
+       su propio brillo: es el único sitio de la bestia donde se permite
+       color, así que tiene que poder subirse sin encender la cresta.
+       `brilloOjo` multiplica al `brillo` general y no lo sustituye, para
+       que el mando de «leviatán · luz» a 0 lo apague también: a oscuras
+       del todo el bicho vuelve a ser sólo el hueco. */
+    const bo = br * opt(p.brilloOjo, 0);
+    if (bo > 0.004){
+      const qo = levPunto(e, 0.075, _lvQ), ao = levAngulo(e, 0.075);
+      const semiO = e.grosor*levPerfil(0.075);
+      const ox = qo[0] - Math.sin(ao)*semiO*0.42;
+      const oy = qo[1] + Math.cos(ao)*semiO*0.42;
+      /* LATE, muy despacio y desacompasado del coletazo: un punto de alfa
+         constante se lee como un píxel muerto y no como un ojo. */
+      const lat = 0.70 + 0.30*Math.sin(M.t*0.42 + e.fase);
+      const Ro = M.U*0.38;
+      g.globalAlpha = Math.min(1, bo*lat);
+      g.drawImage(M.halo(e.cOjo), ox-Ro, oy-Ro, Ro*2, Ro*2);
+      g.globalAlpha = 1;
+      /* y el corazón, chico y quemado. Es lo mismo que hace la esca del
+         rape: lo que convierte una mancha de color en un punto INTENSO es
+         el núcleo, no el radio. */
+      mancha(g, ox, oy, M.U*0.11, [
+        [0.00, e.cOjo.core, Math.min(1, 0.80*bo*lat)],
+        [0.34, e.cOjo.mid,  0.50*bo*lat],
+        [1.00, e.cOjo.mid,  0],
+      ]);
+    }
 
     /* y el filo de la caudal: dos trazos en las puntas de la horquilla */
     const qc = levPunto(e, 0.99, _lvQ), ac = levAngulo(e, 0.99);

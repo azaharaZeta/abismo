@@ -32,6 +32,8 @@ const MANDOS = [
   {nombre:'sombra en agua', ruta:'agua.sombra.fuerza', min:0, max:1, paso:0.05, aplica:null},
   /* y lo que emite el leviatán: a 0 sólo se le ve por el hueco */
   {nombre:'leviatán · luz', ruta:'eventos.@leviatan.brillo', min:0, max:0.8, paso:0.02, aplica:null},
+  /* el ojo multiplica a la luz de arriba, así que ésta a 0 lo apaga también */
+  {nombre:'leviatán · ojo', ruta:'eventos.@leviatan.brilloOjo', min:0, max:4, paso:0.1, aplica:null},
   /* el tamaño de TODO: la unidad de escena sale de aquí */
   {nombre:'escala',         ruta:'escala',            min:10,  max:60,   paso:1,    aplica:'nueva'},
 
@@ -95,6 +97,16 @@ const CSS = `
   border:1px solid #17394a;border-radius:4px;font:inherit;padding:4px;
   resize:vertical}
 #pr .vivo{color:#7fd6a0}
+/* la X, pegada arriba a la derecha. Es sticky y no absolute porque el
+   panel scrollea y con absolute el botón se va con el contenido: la
+   forma de cerrar tiene que estar a mano siempre. Flota para no gastar
+   una fila entera encima del primer título. (Y sin comillas inversas en
+   este comentario: todo el CSS vive dentro de una plantilla.) */
+#pr-cerrar{position:sticky;top:0;float:right;z-index:2;
+  background:rgba(4,10,16,.93);border:none;color:#4e7f92;
+  font:13px/1 ui-monospace,monospace;padding:2px 3px;margin:-1px -4px 0 4px;
+  cursor:pointer}
+#pr-cerrar:hover{background:rgba(4,10,16,.93);border:none;color:#d98a8a}
 #pr .nota{color:#3f6473;margin:5px 0 0;line-height:1.5}
 /* el tirador es casi invisible hasta que te acercas: meter un botón a la
    vista en una escena que va de oscuridad la rompe */
@@ -115,6 +127,14 @@ const caja = document.createElement('div');
 caja.id = 'pr';
 document.body.appendChild(caja);
 
+/* Primer hijo del panel: flotando a la derecha se coloca en la línea del
+   primer título sin empujarlo. */
+const cerrar = document.createElement('button');
+cerrar.id = 'pr-cerrar';
+cerrar.textContent = '×';
+cerrar.title = 'cerrar el panel (P)';
+caja.appendChild(cerrar);
+
 const tirador = document.createElement('div');
 tirador.id = 'pr-tirador';
 tirador.textContent = 'PRUEBAS · P';
@@ -127,6 +147,7 @@ const alterna = () => {
   tirador.style.display = abierto ? 'none' : '';
 };
 tirador.addEventListener('click', alterna);
+cerrar.addEventListener('click', alterna);
 addEventListener('keydown', e => {
   if (e.key !== 'p' && e.key !== 'P') return;
   /* la P PELADA: ⌘P y Ctrl+P son «imprimir», y con ellos el panel se abría
@@ -171,6 +192,11 @@ let areaJSON = null, etiqJSON = null, elegido = null;
     if (conf){
       const p = Object.assign({}, conf.params || conf);
       delete p.evento; delete p.params;
+      /* fuera las paletas ya resueltas: son decenas de tripletas de RGB
+         que tapan los parámetros de verdad, y al relanzar se conservan
+         igual porque dispara() FUSIONA lo que se escriba aquí encima de
+         los que ya tenía el evento. El espectro que las genera sí se ve. */
+      for (const k in p) if (k.indexOf('paleta') === 0) delete p[k];
       return p;
     }
     return Object.assign({}, A.EVENTOS[n].prueba || {});

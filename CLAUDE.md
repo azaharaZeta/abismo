@@ -140,10 +140,13 @@ niveles del velo. El velo nunca se quita: es lo que hace que esto sea agua.
 
 **Un bicho nuevo**: `Acuario.especie('nombre', def)` en
 [bichos.js](bichos.js) + una entrada `{especie: 'nombre', …}` en
-`ABISMO.bichos`. El contrato completo de `def` (`conteo`, `crear`,
-`actualiza`, `dibuja`, `campos`, y las banderas `luz`, `presa`,
+`ABISMO.bichos`. El contrato completo de `def` (`conteo`, `siembra`,
+`crear`, `actualiza`, `dibuja`, `campos`, y las banderas `luz`, `presa`,
 `cardumen`, `aceptaRaro`, `escalaCalidad`, `aligera`) está documentado en
 el comentario de **REGISTRO DE ESPECIES** en [motor.js](motor.js).
+`siembra(M, p)` es el único que corre una vez por pecera en vez de por
+bicho: es donde va lo que toda la población comparte —los tonos que
+mandan en el banco salen de ahí.
 
 **Un evento nuevo**: `Acuario.evento('nombre', def)` (`exclusivo`, `cada`,
 `primero`, `arranca`, `actualiza`, `dibuja`) + entrada en
@@ -153,8 +156,8 @@ panel aunque la escena no lo configure. Los mejores eventos **no dibujan
 nada** — apagan.
 
 Un evento o especie puede estar registrado y **no** estar en la escena
-(hoy: `mira`, `marea`, `vacio`). Se siguen lanzando desde el panel; para
-devolverlos basta volver a listarlos en `ABISMO.eventos`.
+(hoy no hay ninguno). Se siguen lanzando desde el panel; para devolverlos
+basta volver a listarlos en `ABISMO.eventos`.
 
 **Un mando nuevo en el panel**: añade una fila a `MANDOS` en
 [pruebas.js](pruebas.js) con la ruta dentro de `ABISMO`. Los tramos

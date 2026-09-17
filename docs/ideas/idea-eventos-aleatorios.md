@@ -1,13 +1,20 @@
 # Idea: Eventos aleatorios
 
-**Estado: EN CURSO** — arquitectura hecha; 5 implementados de 16.
+**Estado: EN CURSO** — arquitectura hecha; 3 implementaciones vivas de 16 eventos.
 El catálogo restante sigue vivo aquí; este fichero registra el estado de cada uno.
 **Empezada:** 2026-09-15 · **primera tanda:** 2026-09-15 · **última revisión:** 2026-09-17
 
-> **2026-09-17.** El usuario quitó `mira`, `marea` y `vacio` de la escena del abismo,
-> pidió más detalle en el `visitante` y encargó un leviatán (E-16, abajo). Los tres
-> quitados siguen implementados y registrados: lo que cambió es que la pecera no los
-> pide. Se lanzan desde el panel de pruebas y vuelven listándolos en `ABISMO.eventos`.
+> **2026-09-17 (mañana).** El usuario quitó `mira`, `marea` y `vacio` de la escena del
+> abismo, pidió más detalle en el `visitante` y encargó un leviatán (E-16, abajo). Los
+> tres quitados siguieron implementados y registrados: lo que cambió fue que la pecera
+> no los pedía.
+>
+> **2026-09-17 (tarde). Los tres están BORRADOS**, no sólo fuera de la escena: «`mira`,
+> `marea` y `vacio` ya no los quiero. Borrarlos del todo». Con ellos se fueron E-01,
+> E-03, E-07 y E-15 —E-07 y E-15 eran el mismo `marea` con el signo de `hondura`
+> cambiado—. El diseño de los cuatro sigue escrito abajo y su mecanismo sigue en el
+> motor: si alguna vez se quieren de vuelta, hay que volver a escribir el registro,
+> no el motor. El leviatán (E-16) hace hoy lo que hacía el vacío, y mejor.
 
 **Enunciado original (del índice):** «General: Eventos aleatorios: Crear varios,
 distintos, parametrizables y usables o no en cada pecera.»
@@ -78,7 +85,8 @@ de la manta y la estampida. Si solo se implementa una cosa nueva, que sea ésta.
 
 ## Siniestros
 
-### E-01 · El vacío  ·  mec. C  ·  ⭐ la joya
+### E-01 · El vacío  ·  mec. C  ·  **borrado** (2026-09-17)
+Lo hizo E-16, que es esto mismo con anatomía. Descripción original:
 No se dibuja nada. Una región enorme y lenta cruza un plano y, dentro de ella, el
 plancton **se apaga** y los bichos pierden brillo. Se lee un cuerpo inmenso por la
 forma del silencio. Nunca cabe entero en pantalla, así que no se ve *qué* es: se ve
@@ -105,7 +113,8 @@ que ahí abajo nunca dejó de pasar nada.
 *Parámetros:* `dura` · `escalonado` (si mueren juntas o en cascada) · `vuelta`
 (rampa de reencendido) · `residuo` (si el plancton conserva algo de brillo).
 
-### E-03 · El que mira  ·  mec. A  ·  ⭐ barato y demoledor
+### E-03 · El que mira  ·  mec. A  ·  **borrado** (2026-09-17)
+Descripción original:
 Dos luces aparecen cerca del canto del encuadre, **muy separadas entre sí**. No se
 mueven. Al cabo de un rato pestañean una vez, desacompasadas. Se apagan.
 
@@ -150,7 +159,8 @@ Dura tres segundos y deja la pecera medio vacía un rato largo.
 *Parámetros:* `desde` (borde o ángulo) · `fuerza` · `dura` · `secuela` (cuánto tardan
 en volver a encenderse).
 
-### E-07 · El descenso  ·  mec. B
+### E-07 · El descenso  ·  mec. B  ·  **borrado** (2026-09-17)
+Descripción original:
 Sin objeto. Los tonos del agua derivan hacia la entrada más oscura, la viñeta se
 cierra, los haces mueren y todo se ralentiza (`drift` a la baja). Se sostiene. Vuelve.
 Como si la pecera bajara doscientos metros y regresara.
@@ -428,7 +438,8 @@ Lluvia sobre el agua, sin una línea de dibujo nueva.
 *Parámetros:* `intensidad` (impactos/s) · `franja` (hasta dónde caen) · `dura` ·
 `arrecia` (si sube y baja).
 
-### E-15 · Nubes / El amanecer  ·  mec. B
+### E-15 · Nubes / El amanecer  ·  mec. B  ·  **borrado** (2026-09-17, con `marea`)
+Descripción original:
 El alfa de los haces baja y sube, despacio y desigual: la pecera respira. Con los
 parámetros al revés —tonos hacia la entrada más clara y haces reforzados— **es el
 amanecer**, y sale del mismo mecanismo que E-07. Dos registros opuestos por una sola
@@ -440,9 +451,10 @@ implementación.
 
 ## Reparto sugerido por pecera
 
-- **Abismo (hoy):** E-09 `contagio`, el `visitante` y E-16 `leviatan`.
+- **Abismo (hoy):** E-09 `contagio`, el `visitante` y E-16 `leviatan`. Son los tres
+  únicos eventos que existen hoy: el resto de la tabla está por escribir o borrado.
 - **Abismo (propuesto):** sumarle E-02, E-04 y E-06 · y E-08 de fondo.
-- **Medusas:** E-09, E-13, E-14, E-15 · y E-10 si se quiere algo grande.
+- **Medusas:** E-09, E-13, E-14 · y E-10 si se quiere algo grande.
 - **Una pecera alegre futura:** E-09, E-10, E-11, E-12, E-15.
 - **En ninguna por defecto:** todas. `eventos: []` y la pecera se queda como está hoy.
 
@@ -462,13 +474,13 @@ En este orden, porque cada paso paga el siguiente y el primero no necesita motor
 
 | | evento | mec. | estado |
 |---|---|---|---|
-| E-01 | El vacío | C | **hecho** · registrado, fuera de la escena desde 2026-09-17 |
+| E-01 | El vacío | C | **borrado** el 2026-09-17 · lo hace E-16, con anatomía |
 | E-02 | El apagón | D | pendiente |
-| E-03 | El que mira | A | **hecho** · registrado, fuera de la escena desde 2026-09-17 |
+| E-03 | El que mira | A | **borrado** el 2026-09-17 |
 | E-04 | La caída | A | pendiente |
 | E-05 | El engaño | A | pendiente |
 | E-06 | La estampida | C | pendiente |
-| E-07 | El descenso | B | **hecho** · `marea` con hondura > 0; fuera de la escena desde 2026-09-17 |
+| E-07 | El descenso | B | **borrado** el 2026-09-17 con `marea` |
 | E-08 | Nevada | B | pendiente |
 | E-09 | El contagio | D | **hecho** · en las dos piezas, y con el dedo |
 | E-10 | La manta | A+C | pendiente |
@@ -476,13 +488,12 @@ En este orden, porque cada paso paga el siguiente y el primero no necesita motor
 | E-12 | La ascensión | A | pendiente |
 | E-13 | El velo | A | pendiente |
 | E-14 | Lluvia | E | pendiente |
-| E-15 | El amanecer | B | **hecho** · el mismo `marea` con hondura < 0; sin pecera que lo use |
+| E-15 | El amanecer | B | **borrado** el 2026-09-17 con `marea`; nunca tuvo pecera |
 | E-16 | El leviatán | C | **hecho** · en `abismo`, plano 0 |
 
-Los seis hechos salen de **cinco implementaciones**: `marea` da el descenso y el
-amanecer con el signo de `hondura` cambiado, como estaba previsto.
-
-**En la escena del abismo quedan dos:** `contagio` y `visitante`, más `leviatan`.
+Quedan **tres implementaciones vivas** —`contagio`, `visitante` y `leviatan`—, y las
+tres están en la escena del abismo. Llegó a haber seis eventos hechos con cinco
+implementaciones; cuatro se borraron el 2026-09-17 a petición del usuario.
 
 ## Arquitectura, tal como quedó
 
@@ -565,6 +576,9 @@ Coste: **ninguno medible** — 8,3 ms de mediana con los 17 degradados del levia
   es justo lo que declara el tamaño de lo que no se dibuja.
 - Exclusividad correcta: `mira`, `vacio` y `marea` exclusivos; `contagio` en paralelo.
 
+(Tres de los cuatro verificados aquí se borraron después. Se deja la medición porque
+es lo que dice que el mecanismo funcionaba, y el mecanismo sigue en el motor.)
+
 ## Siguiente acción
 
 Elegir de la tabla los siguientes. `E-06 La estampida` y `E-10 La manta` ya casi están
@@ -573,5 +587,5 @@ plano, o sea que a la manta sólo le falta el tipo `empuja` —que `vacio` ya us
 estampida un `asusta`. `E-14 Lluvia` es prácticamente gratis (mecanismo E).
 
 `E-02 El apagón` sigue siendo el de más efecto por línea de código, y ahora más: con
-`mira`, `marea` y `vacio` fuera de la escena, el abismo se ha quedado con dos eventos
-ligeros y un leviatán muy espaciado.
+`mira`, `marea` y `vacio` borrados, el abismo se ha quedado con dos eventos ligeros y
+un leviatán muy espaciado, y no hay ya nada registrado fuera de la escena.
