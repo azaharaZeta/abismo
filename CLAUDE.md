@@ -10,9 +10,18 @@ dependencias, sin tests automáticos: tres ficheros JS cargados por
 `index.html` con `<script>` planos.
 
 **El código, los comentarios y los identificadores están en castellano.**
-Mantenlo así. El estilo de comentario de la casa no describe *qué* hace una
-línea, sino *por qué* está y qué se probó antes (con números medidos cuando
-los hay). Al tocar un valor ajustado a mano, actualiza su comentario.
+Mantenlo así.
+
+Los comentarios van **escuetos** y sólo si aportan algo para mantener esto:
+el *por qué* de una decisión que no se deduce del código, las unidades y
+convenciones de un parámetro, los acoplamientos entre dos valores, y las
+trampas —el orden en que tiene que pasar algo, un array compartido que hay
+que consumir en el acto—. Un número medido va si acota una decisión futura
+(«por encima de X deja de leerse», «esto cuesta Y ms»).
+
+Fuera: narrar lo que la línea ya dice, y el histórico —«antes era», «se
+probó», «subido de A a B», tablas de tandas de ajuste—. Si un valor cambia,
+se actualiza su comentario; no se añade de dónde venía.
 
 ## Ejecutar
 

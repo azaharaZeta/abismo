@@ -20,15 +20,13 @@ const P = A.pruebas;
      'calc'  · hay que recalcular (corriente, planos, tamaño del lienzo)
      'nueva' · hace falta población nueva                             */
 const MANDOS = [
-  /* EL AGUA. `fuerza` es cuánto velo hay y `caida` cuánto se ensancha; el
-     segundo es el que levanta el cuadro entero. */
+  /* EL AGUA. Los dos del velo están explicados en ABISMO.dispersion. */
   {nombre:'velo · fuerza',  ruta:'dispersion.fuerza', min:0,   max:2,    paso:0.05, aplica:null},
   {nombre:'velo · caída',   ruta:'dispersion.caida',  min:0.2, max:0.95, paso:0.02, aplica:null},
   {nombre:'corriente',      ruta:'corriente.amplitud',min:0,   max:0.8,  paso:0.02, aplica:'calc'},
-  /* la ondulación de color del agua: a 0 vuelve a ser negro plano.
-     `paso` 0,02 y no 0,05: un range redondea el valor inicial al múltiplo
-     de `paso` más cercano, así que con 0,05 el 0,32 de la escena entraba
-     como 0,30 y el número escrito al lado no era el del deslizador. */
+  /* la ondulación de color del agua: a 0 vuelve a ser negro plano. `paso`
+     0,02 y no 0,05 porque un range redondea el valor inicial al múltiplo
+     de `paso`, y con 0,05 el 0,32 de la escena entra como 0,30. */
   {nombre:'ondulación',     ruta:'agua.ondulacion.fuerza', min:0, max:2, paso:0.02, aplica:null},
   /* cuánta luz del agua le quita un cuerpo: a 0, los eventos oscuros
      vuelven a depender sólo de las motas que faltan, y no basta */
@@ -100,11 +98,10 @@ const CSS = `
   border:1px solid #17394a;border-radius:4px;font:inherit;padding:4px;
   resize:vertical}
 #pr .vivo{color:#7fd6a0}
-/* la X, pegada arriba a la derecha. Es sticky y no absolute porque el
-   panel scrollea y con absolute el botón se va con el contenido: la
-   forma de cerrar tiene que estar a mano siempre. Flota para no gastar
-   una fila entera encima del primer título. (Y sin comillas inversas en
-   este comentario: todo el CSS vive dentro de una plantilla.) */
+/* la X: sticky y no absolute porque el panel scrollea y con absolute el
+   botón se iría con el contenido. Flota para no gastar una fila entera
+   encima del primer título. Sin comillas inversas aquí: esto va dentro
+   de una plantilla. */
 #pr-cerrar{position:sticky;top:0;float:right;z-index:2;
   background:rgba(4,10,16,.93);border:none;color:#4e7f92;
   font:13px/1 ui-monospace,monospace;padding:2px 3px;margin:-1px -4px 0 4px;
