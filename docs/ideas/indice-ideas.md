@@ -23,7 +23,10 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 ## Ideas de usuario (pendientes de procesar)
 > Solo un humano edita esta sección. Texto breve; el detalle se desarrolla al crear la ficha.
 
-*(vacío)*
+- peces: ajustar cantidad, tamaño y color: Menos peces, más grandes, y más coloridos
+- al pasar el dedo, los peces y medusas apenas se mueven, deberían apartarse con más velocidad 
+- 
+
 
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos que dejaron las ideas procesadas el 2026-09-17 y el 2026-09-18.

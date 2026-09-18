@@ -140,12 +140,14 @@ evento('leviatan', {
                       rot: ang, fuerza: e.hondura*0.9, filo });
     }
     /* LA QUIJADA, un lóbulo bajo el cráneo: es lo que convierte el morro
-       en una cabeza con boca y no en una punta. */
+       en una cabeza con boca y no en una punta. Va por el lado de la
+       panza —el +normal del eje—, igual que el hilo y el ojo: por el otro
+       es un bulto en la cabeza. */
     const qj = levPunto(e, 0.085, _lvQ), aj = levAngulo(e, 0.085);
     const semiJ = e.grosor*levPerfil(0.085);
     M.campos.push({ tipo:'apaga', plano,
-                    x: qj[0] + Math.sin(aj)*semiJ*0.75,
-                    y: qj[1] - Math.cos(aj)*semiJ*0.75,
+                    x: qj[0] - Math.sin(aj)*semiJ*0.75,
+                    y: qj[1] + Math.cos(aj)*semiJ*0.75,
                     r: e.largo*0.055*pen, ky: 0.85,
                     rot: aj + e.dir*0.25, fuerza: e.hondura, filo });
     /* Y LA CAUDAL, ahorquillada: dos lóbulos altos al final */
@@ -356,9 +358,17 @@ function levCresta(s, n, cresta){
 }
 
 const _lvA = [0,0], _lvB = [0,0];
+/* SIEMPRE HACIA LA DERECHA, y no de morro a cola: de este ángulo lo que se
+   usa es su NORMAL (−sen, cos), y de ella salen el lado de la panza —el
+   hilo encendido, la quijada, el ojo— y el del lomo —la cresta oscura—.
+   Atada al morro se da la vuelta al cruzar en el otro sentido y el bicho
+   sale boca abajo. Cruzando hacia la derecha el cuerpo va DETRÁS del
+   morro, así que ahí la tangente de morro a cola apunta a la izquierda y
+   hay que invertirla. */
 function levAngulo(e, s){
   const h = 0.004;
   const a = levPunto(e, Math.max(0, s-h), _lvA);
   const b = levPunto(e, Math.min(1, s+h), _lvB);
-  return Math.atan2(b[1]-a[1], b[0]-a[0]);
+  return e.dir > 0 ? Math.atan2(a[1]-b[1], a[0]-b[0])
+                   : Math.atan2(b[1]-a[1], b[0]-a[0]);
 }

@@ -6,7 +6,11 @@
    ══════════════════════════════════════════════════════════════════ */
 :root{
   --marco: 12px;                /* el grueso de la chapa */
-  --pie:   46px;                /* la franja de abajo */
+  /* LA FRANJA DE ABAJO, y en proporción al alto DEL CUADRO, no en píxeles
+     fijos: 46 px de una ventana de 760 son el 6 % de la pieza, y los
+     mismos 46 en un móvil son el 15 % —girado el cuadro tiene 390 px de
+     alto, y tumbado unos 330—. El suelo lo pone el botón, que mide 26. */
+  --pie:   clamp(34px, 6.5%, 46px);
   --filo:  #102c38;             /* el filo apagado */
   --filo2: #2a5c70;             /* el filo que coge luz */
   --tinta: #5d8899;
@@ -26,7 +30,11 @@ html,body{margin:0;padding:0;height:100%;background:#000103;overflow:hidden;
      pantalla: girado no son lo mismo */
   container-type:inline-size;
   padding:var(--marco);
-  padding-bottom:calc(var(--marco) + env(safe-area-inset-bottom,0px));
+  /* el hueco del indicador del móvil, pero la chapa como mucho DOBLA: 34
+     px de hueco negro en un canto y tres finos en los otros dejan de
+     leerse como un marco */
+  padding-bottom:calc(var(--marco)
+                      + min(env(safe-area-inset-bottom,0px), var(--marco)));
   /* chapa mojada: el degradado sube un poco por arriba y por abajo, que
      es por donde daría la luz que no hay */
   background:linear-gradient(180deg,#0a1218,#050a0e 22%,#03070a 78%,#080f14);
@@ -79,7 +87,11 @@ html,body{margin:0;padding:0;height:100%;background:#000103;overflow:hidden;
    los botones. La primera se queda vacía a propósito —es lo que impide
    que los botones empujen al título fuera del centro. */
 #pie{
-  flex:0 0 var(--pie);
+  /* `min-height:0` y no el `auto` de un elemento flexible: el grueso de la
+     franja lo manda el cuadro. Con `auto`, un contenido más alto de lo
+     previsto —Safari con un tamaño mínimo de letra, o el zoom de sólo
+     texto— empuja y engorda la banda de abajo. */
+  flex:0 0 var(--pie);min-height:0;
   /* `minmax(0,1fr)` y no `1fr`: con `1fr` a secas la columna de los
      botones no baja de su ancho mínimo, se lleva más que la vacía de la
      izquierda y el título deja de caer en el centro de la pantalla. */
@@ -122,10 +134,11 @@ html,body{margin:0;padding:0;height:100%;background:#000103;overflow:hidden;
 }
 #pie button:active{background:#040d12;transform:translateY(1px)}
 
-/* En pantalla estrecha la chapa adelgaza y los botones encogen: eso
-   depende del aparato. */
-@media (max-width:560px){
-  :root{--marco:8px;--pie:50px}
+/* En pantalla estrecha —o BAJA, que un móvil tumbado tiene 330 px de alto
+   y ahí la chapa y los botones de una ventana grande se comen la pieza— la
+   chapa adelgaza y los botones encogen: eso depende del aparato. */
+@media (max-width:560px), (max-height:560px){
+  :root{--marco:8px}
   #pie button{padding:7px 8px;font-size:10px;letter-spacing:.1em}
 }
 
@@ -167,6 +180,7 @@ html,body{margin:0;padding:0;height:100%;background:#000103;overflow:hidden;
     /* el hueco del indicador sigue en el canto de abajo de la PANTALLA,
        que con el vuelco es el lado derecho del cuadro */
     padding-bottom:var(--marco);
-    padding-right:calc(var(--marco) + env(safe-area-inset-bottom,0px));
+    padding-right:calc(var(--marco)
+                       + min(env(safe-area-inset-bottom,0px), var(--marco)));
   }
 }
