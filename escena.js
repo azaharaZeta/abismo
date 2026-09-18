@@ -102,12 +102,15 @@ export const ABISMO = {
   /* ── TRES PLANOS: fondo, medio, frente ────────────────────────────
      La distancia se lee por cuatro avisos a la vez: más pequeño
      (`scale`), más borroso (`resDiv`), más tenue (`alpha`) y más lento
-     (`drift`). `sharp` atenúa los núcleos casi blancos; `tScale` es el
-     largo de los tentáculos de la medusa. */
+     (`drift`). `sharp` atenúa los núcleos casi blancos, y hace falta:
+     con los tres a 1 los bichos del fondo salen con el canto marcado y
+     dejan de estar lejos.
+
+     Aquí no va nada que use una sola especie. */
   planos: [
-    {resDiv:3, alpha:0.58, scale:0.40, sharp:0.35, tScale:0.62, drift:0.44},
-    {resDiv:2, alpha:0.86, scale:0.74, sharp:0.78, tScale:0.85, drift:0.72},
-    {resDiv:1, alpha:1.00, scale:1.32, sharp:1.00, tScale:1.00, drift:1.00},
+    {resDiv:3, alpha:0.58, scale:0.40, sharp:0.35, drift:0.44},
+    {resDiv:2, alpha:0.86, scale:0.74, sharp:0.78, drift:0.72},
+    {resDiv:1, alpha:1.00, scale:1.32, sharp:1.00, drift:1.00},
   ],
 
   /* El zoom de la pieza: la unidad de mundo sale de sqrt(área)/escala.
@@ -127,10 +130,10 @@ export const ABISMO = {
      aquí. Lo que se ha hecho es subir el suelo hasta que el móvil llega a
      donde estaba el monitor.
 
-     Lo que NO crece con él es el plancton y el copépodo: sus radios van
-     en píxeles y no en U, así que al bajar `escala` quedan relativamente
-     más finos. Y su CUENTA va por área en píxeles, o sea que tampoco se
-     entera; el banco sí, porque se cuenta a pelo (ver `total`). */
+     Y AHORA VALE PARA TODO: no queda ni un tamaño en píxeles ni un conteo
+     por área de pantalla. Cada población es un número absoluto y cada
+     tamaño un múltiplo de U, así que la pecera es la misma en un móvil y
+     en un monitor —sólo cambia cuántos píxeles le toca a cada cosa. */
   escala: 18,
   maxPx: 4.6e6,                   // tope de píxeles de lienzo
 
@@ -509,7 +512,10 @@ export const ABISMO = {
     /* nieve marina: mucha, lenta y casi apagada. Sólo existe de verdad
        cuando una esca pasa cerca. */
     { especie: 'plancton',
-      total: {cada:1150, min:340, max:1150},
+      /* CUÁNTAS MOTAS HAY, y son ésas en cualquier pantalla. El cuadro
+         enseña siempre 324 U² de mar, así que la cuenta no puede depender
+         de los píxeles que tenga el aparato. */
+      total: 600,
       reparto: [0.50, 0.32, 0.18],
       /* Dos arcos de tono: el frío ancho y un segundo cálido con peso
          bajo, unas pocas motas ámbar entre cientos de azules. Las ascuas
@@ -525,7 +531,10 @@ export const ABISMO = {
       ],
       /* variedad de tamaño y de brillo: es lo que evita que tanta mota se
          lea como una textura regular */
-      radio: [0.28,1.50], alfa: [0.025,0.14], alfaAlto: [0.16,0.42],
+      /* en U, como todo lo demás: a 0,0060-0,0323 una mota mide de 0,28 a
+         1,5 px en una ventana de escritorio y algo menos en un móvil, que
+         es lo que toca —el px del móvil mide la mitad. */
+      radio: [0.0060, 0.0323], alfa: [0.025,0.14], alfaAlto: [0.16,0.42],
       destacadas: 0.07,
       /* LA ASCUA: el color excepcional, y es de esta especie y de nadie
          más. `raro` es con qué probabilidad le toca a una mota. */
@@ -556,9 +565,7 @@ export const ABISMO = {
     /* LAS MEDUSAS. El otro foco que se mueve: grandes, encendidas en todo
        su volumen, y lo que hacen es ALUMBRAR DE PASO. Pocas y lentas. */
     { especie: 'medusa',
-      por: [ {cada:480000, min:1, max:3},
-             {cada:600000, min:1, max:2},
-             {cada:900000, min:0, max:1} ],
+      por: [1, 1, 1],
       /* Frío y tirando a violeta, para no competir con el moteado del
          banco. `luzCore` por debajo del 0,95 de la casa: la campana son
          nueve capas aditivas de `core`, y con 0,95 esas nueve suman
@@ -568,6 +575,11 @@ export const ABISMO = {
                   satGlow: [0.45, 0.75], luzGlow: [0.14, 0.24],
                   luzCore: [0.84, 0.90] },
       radio: [0.55, 1.35],
+      /* El largo de los tentáculos por plano: al fondo la nube se recoge
+         además de encogerse, o la medusa lejana arrastra una melena tan
+         larga como la de cerca. Vive aquí y no en `ABISMO.planos` porque
+         no lo usa nadie más. */
+      tent: [0.62, 0.85, 1.00],
       nTent: [12, 26], canales: [7, 11], brazos: [3, 5],
       periodo: [2.6, 4.8], empuje: 2.4, arrastre: 0.28,
       flota: [0.55, 1.45], patrulla: [0.06, 0.42],
@@ -616,7 +628,7 @@ export const ABISMO = {
     },
 
     { especie: 'copepodo',
-      total: {cada:70000, min:4, max:12},
+      total: 10,
       reparto: [0.30, 0.40, 0.30],
       /* un trazo de medio milímetro: pálido y frío, no un organismo de color */
       espectro: { tono: [176, 232], tramos: 8,
@@ -629,9 +641,7 @@ export const ABISMO = {
       /* Uno, y dos en pantalla grande. Ninguno al fondo: un rape lejano es
          una mancha sin dientes, barbilla ni ojo. Números sueltos porque
          por área esto no se puede decir. */
-      por: [ 0,
-             {cada:1400000, min:0, max:1},
-             1 ],
+      por: [0, 0, 1],
       /* GRANDE: es lo que sostiene el detalle —miómeros, cristalino,
          dientes y barbilla no existen por debajo de cierto tamaño—. En el
          plano de delante, un quinto del ancho del cuadro. */

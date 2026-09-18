@@ -51,7 +51,7 @@ CLAUDE.md. La constante `ROJO` se queda donde está, arriba con las demás.
 La idea de «la pecera tiene un color excepcional que cualquiera puede coger». Es una
 idea bonita y por eso esto va el último: **si mañana el copépodo o el banco quieren
 ascuas, devolverla cuesta lo mismo que quitarla.** El criterio que aplicaría es el que
-la casa ya usa para `tScale` (ver [simpl-07](../idea-planos-menos-mandos-simpl-07.md)):
+la casa ya usa para `tScale` (ver [simpl-07](idea-planos-menos-mandos-simpl-07.md)):
 un mando de escena con un solo consumidor pertenece a ese consumidor.
 
 ## Nota: esto NO se aplica a `M.cardumen()`

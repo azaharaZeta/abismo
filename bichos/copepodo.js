@@ -48,22 +48,26 @@ especie('copepodo', {
     const sp = Math.sqrt(d.vx*d.vx + d.vy*d.vy), S = L.scale;
     const sil = 1 - silencio(M, d.x, d.y, L);
     if (sil < 0.02) return;
-    if (sp < M.U*0.06){                        // parado: apenas un punto
+    /* los tres tamaños del trazo van en U y no en píxeles, como todo lo
+       demás: un copépodo tiene que subtender lo mismo en cualquier
+       pantalla. Son centésimas de U porque es medio milímetro de bicho. */
+    const U = M.U;
+    if (sp < U*0.06){                          // parado: apenas un punto
       g.fillStyle = rgba(d.c.mid, 0.11*sil);
-      g.beginPath(); g.arc(d.x, d.y, 0.9*S, 0, TAU); g.fill();
+      g.beginPath(); g.arc(d.x, d.y, U*0.01939*S, 0, TAU); g.fill();
       return;
     }
     /* trazo de la posición anterior a la actual, con brillo según la
        velocidad. La cola son 50 ms de recorrido: a 60 fps el paso de
        un solo frame sería un punto, no un trazo. */
-    const a = clamp(0.10 + sp/(M.U*9), 0.10, 0.78)*sil, k = 0.05;
+    const a = clamp(0.10 + sp/(U*9), 0.10, 0.78)*sil, k = 0.05;
     g.strokeStyle = rgba(d.c.mid, a);
-    g.lineWidth = 1.4*S;
+    g.lineWidth = U*0.03016*S;
     g.beginPath();
     g.moveTo(d.x - d.vx*k, d.y - d.vy*k);
     g.lineTo(d.x, d.y);
     g.stroke();
     g.fillStyle = rgba(d.c.core, a*0.7);
-    g.beginPath(); g.arc(d.x, d.y, 1.3*S, 0, TAU); g.fill();
+    g.beginPath(); g.arc(d.x, d.y, U*0.02801*S, 0, TAU); g.fill();
   },
 });

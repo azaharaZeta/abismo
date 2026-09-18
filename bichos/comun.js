@@ -8,16 +8,17 @@ import { M } from '../motor.js';
 const {rgba, clamp, opt, TAU} = M;
 
 /* ── CONTEO ─────────────────────────────────────────────────────────
-   Cuenta a partir del área: {cada, min, max}. Un número suelto son ESE
-   número y punto, que es como se pide «uno, y uno siempre»: un total de 1
-   repartido en porcentajes se redondea a cero en los tres planos. */
-const cuenta = (area, r) => typeof r === 'number' ? r
-                          : Math.round(clamp(area/r.cada, r.min, r.max));
+   CUÁNTOS HAY, Y SON NÚMEROS ABSOLUTOS. No se cuenta por área de pantalla:
+   el cuadro enseña siempre `escala`×`escala` U de mundo —el mismo trozo de
+   mar en un móvil que en un monitor—, así que la población tiene que ser la
+   misma. Contando por píxeles, la misma pecera salía con el doble de motas
+   en una pantalla que en otra. Del tamaño se encarga U, y del coste en
+   pantalla grande, `maxPx`. */
 /* un total para toda la escena, repartido por planos en porcentajes */
-const porReparto = (area, li, p) => Math.round(cuenta(area, p.total) * p.reparto[li]);
+const porReparto = (li, p) => Math.round(p.total * p.reparto[li]);
 /* un conteo propio por plano: para los pocos y grandes, donde redondear
    un porcentaje deja planos vacíos */
-const porPlano   = (area, li, p) => cuenta(area, p.por[li]);
+const porPlano   = (li, p) => p.por[li];
 
 /* ── FÍSICA COMPARTIDA ──────────────────────────────────────────────
    Las tres piezas de los que se mueven: apartarse del dedo, resistirse al

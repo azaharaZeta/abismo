@@ -1,12 +1,12 @@
 # Idea: un solo convenio de escala, y el conteo en U
 
-**Estado: PROPUESTA** · analizada el 2026-09-18 · sin tocar código
+**Estado: IMPLEMENTADA** · analizada el 2026-09-18 · ejecutada el 2026-09-19
 **Origen:** análisis de complejidad funcional del 2026-09-18 · **recomendación 4 de 12**
-**Recoge el cabo que dejó** [idea-tamanos-movil](archivo/idea-tamanos-movil.md), que
+**Recoge el cabo que dejó** [idea-tamanos-movil](idea-tamanos-movil.md), que
 lo dejó analizado y sin ejecutar «porque no es un problema mientras `escala` no se
 toque». **`escala` se ha tocado** (26 → 18).
-**Hermanas:** [idea-tamanos-vista](archivo/idea-tamanos-vista.md),
-[idea-banco-cantidad-tamano-color](archivo/idea-banco-cantidad-tamano-color.md)
+**Hermanas:** [idea-tamanos-vista](idea-tamanos-vista.md),
+[idea-banco-cantidad-tamano-color](idea-banco-cantidad-tamano-color.md)
 
 ## Lo que se observó: hay dos convenios y ninguno está declarado como el convenio
 
@@ -83,6 +83,24 @@ y el rape sí: hoy el cuadro lleva algo más del doble de superficie de cuerpo q
 Puede estar bien —el commit se llamaba «escala más grande» y era la intención— pero
 conviene saber que esa parte del aviso ya se ejecutó.
 
+## Revisión de saldo · 2026-09-18, después de ejecutar 01, 02, 03, 06, 11 y 12
+
+Las estimaciones de líneas de este análisis salieron **sistemáticamente
+optimistas**: prometían −130 líneas de código entre las seis primeras y el
+saldo real fue **+10**. El motivo es siempre el mismo y conviene tenerlo
+delante al leer lo que sigue:
+
+- **Extraer** un helper no ahorra. La versión general necesita más
+  parámetros que cualquiera de los casos que sustituye, y la casa pide que
+  venga explicada: `M.luzEn` quitó 27 líneas de tres sitios y costó 31.
+- **Sustituir** un mecanismo por otro más simple ahorra poco: la floración
+  sin paleta gemela salió en −7.
+- **Borrar** es lo único que ahorra de verdad.
+
+Lo que sí se cumplió fue lo otro —conceptos fuera del vocabulario, una sola
+implementación de la regla de la casa, 66 % menos de pasadas de campo—, así
+que el criterio para decidir estas seis **no debería ser el tamaño**.
+
 ## Siguiente acción
 
 1. Empezar por el **copépodo**, que son 12 bichos y cuatro números: es el ensayo
@@ -91,5 +109,74 @@ conviene saber que esa parte del aviso ya se ejecutó.
    móvil con el emulador de viewport.
 3. Sólo entonces colapsar `cuenta`/`porReparto`/`porPlano` y limpiar el contrato.
 
-Saldo estimado: **−25 líneas**, un argumento menos en el contrato de especie y la
-promesa de `escala` cumplida por todas las especies.
+Saldo MEDIDO: **≈ −2 líneas de código.** El bloque de conteo entero de
+`comun.js` son 4 líneas y los tres `{cada,min,max}` de la escena caben en las
+mismas líneas que los números que los sustituyen.
+
+**Ésta no es una idea de tamaño: es la única de las seis que arregla un
+DEFECTO.** Hoy la densidad de la pecera depende del aparato —el móvil va un
+45 % más denso de plancton, medido en
+[idea-tamanos-movil](idea-tamanos-movil.md)— y eso contradice
+directamente lo que promete `escala` y lo que ya se arregló para el banco.
+El precio es que el cambio SE VE en escritorio, así que el número nuevo hay
+que elegirlo mirando.
+
+## Hecho
+
+**Estado: IMPLEMENTADA** · 2026-09-19. Un solo convenio: **población en
+números absolutos y tamaños en U**, sin excepciones.
+
+### Lo que cambia en la escena
+
+| | antes | ahora |
+|---|---|---|
+| plancton | `total: {cada:1150, min:340, max:1150}` | `total: 600` |
+| copépodo | `total: {cada:70000, min:4, max:12}` | `total: 10` |
+| medusa | `por: [{cada:480000,…},{cada:600000,…},{cada:900000,…}]` | `por: [1, 1, 1]` |
+| rape | `por: [0, {cada:1400000,…}, 1]` | `por: [0, 0, 1]` |
+| radio del plancton | `[0.28, 1.50]` px | `[0.0060, 0.0323]` U |
+| trazo del copépodo | `0.9·S`, `1.4·S`, `1.3·S` px | `U·0.01939·S`, `U·0.03016·S`, `U·0.02801·S` |
+
+Con eso `cuenta()` desaparece, `porReparto` y `porPlano` quedan en una línea
+cada uno y **el contrato de especie pierde un argumento**: `conteo(plano, p)`.
+`puebla()` ya no calcula el área.
+
+Los tres `{cada, min, max}` no se echan de menos: en las dos pantallas que
+importan el resultado lo decidía una de las dos pinzas del `clamp`, o sea que
+el mecanismo no estaba haciendo su trabajo.
+
+### El número se eligió mirando, como se acordó
+
+Se partió del valor de escritorio de hoy —607 motas en 1000×698— para que ahí
+no cambiara nada, se miró la pieza en las dos cajas, y se dejó en **600**: es
+indistinguible y es un número ELEGIDO, no uno heredado de una ventana
+concreta. Un 607 en la escena invita a preguntar de dónde sale, y la
+respuesta sería histórico.
+
+### Medido
+
+| | escritorio 1000×698 | móvil 359×750 |
+|---|---|---|
+| U | 46,4 | 28,8 |
+| mundo que se ve | 324 U² | 325 U² |
+| plancton ANTES | 607 | **340** |
+| plancton AHORA | 600 | **600** |
+| copépodo ANTES / AHORA | 10 / 10 | **4** / 10 |
+| medusa ANTES / AHORA | 3 / 3 | **2** / 3 |
+
+Las dos cajas enseñan el mismo trozo de mar y ahora tienen la misma
+población. Comprobado en pantalla en las dos: el escritorio no cambia y el
+móvil deja de ir apretado —tiene más motas pero cada una ocupa lo que le toca
+(U es un 38 % menor), así que la cobertura baja un 22 % respecto a antes, que
+era justo el 45 % de exceso que documentaba
+[idea-tamanos-movil](idea-tamanos-movil.md).
+
+Cinco tiradas del arnés, cero NaN.
+
+### Saldo
+
+**−6 líneas de código**, un argumento menos en el contrato de especie y, lo
+que de verdad importaba, **el defecto cerrado**: ya no hay ningún tamaño en
+píxeles ni ningún conteo por área de pantalla. El comentario de `escala` que
+documentaba la excepción del plancton y el copépodo ya no hace falta y se ha
+sustituido por la regla.

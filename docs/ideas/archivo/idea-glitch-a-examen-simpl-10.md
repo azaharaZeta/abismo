@@ -1,7 +1,7 @@
 # Idea: el glitch a examen — ¿se gana el sitio?
 
-**Estado: PROPUESTA — DECISIÓN DE OBRA, NO DE INGENIERÍA** · analizada el 2026-09-18 ·
-sin tocar código
+**Estado: DESCARTADA — EL GLITCH SE QUEDA** · analizada el 2026-09-18 ·
+decidida el 2026-09-19 · **no se tocó código**
 **Origen:** análisis de complejidad funcional del 2026-09-18 · **recomendación 10 de 12**
 
 ## Lo que se observó
@@ -10,15 +10,19 @@ El glitch es, con diferencia, **la funcionalidad con peor relación complejidad 
 píxeles** de la pieza. No porque esté mal escrito —está limpio y bien argumentado—
 sino por dónde toca y por lo poco que se ve.
 
-| capa | dónde | líneas |
-|---|---|---|
-| el evento | [eventos/glitch.js](../../eventos/glitch.js) | 114 |
-| `pintaBicho` | [bucle.js:330-410](../../motor/bucle.js) | ~81 (51 de código, 30 de comentario) |
-| el reglaje | [escena.js:438-474](../../escena.js) | 37 |
-| la bandera `rompible` | contrato de especie, [registro.js:15](../../motor/registro.js) + [medusa.js:197](../../bichos/medusa.js) | — |
-| el tipo de campo `tajo` | lo empuja el glitch, lo lee **el motor** | — |
+| capa | dónde | total | código |
+|---|---|---|---|
+| el evento | [eventos/glitch.js](../../../eventos/glitch.js) | 115 | 57 |
+| `pintaBicho` (quedaría en 1 línea) | [bucle.js](../../../motor/bucle.js) | 81 | 33 |
+| el reglaje | [escena.js](../../../escena.js) | 38 | 9 |
+| la bandera `rompible` | [registro.js](../../../motor/registro.js) + [medusa.js](../../../bichos/medusa.js) | ~10 | 1 |
+| el tipo de campo `tajo` | lo empuja el glitch, lo lee **el motor** | — | — |
+| **borrarlo entero** | | **≈ −244** | **≈ −100** |
 
-≈ **230 líneas y dos conceptos de motor** (`rompible`, `tajo`).
+Contado, no estimado (2026-09-18). **Y es, de largo, lo que más volumen queda
+por quitar en toda la pieza:** de las seis ideas que siguen abiertas, ésta
+sola es el 80 % del ahorro posible. Las otras cinco suman ≈ −25 líneas de
+código entre todas.
 
 ### Y es el único caso especial en el camino de dibujo de TODOS los bichos
 
@@ -74,3 +78,26 @@ Si la respuesta es «no lo echaría de menos», **B y entero**, no C.
 
 Verlo. Lanzar `glitch` desde el panel tres o cuatro veces seguidas, mirarlo, y
 decidir. Esta ficha no necesita más análisis.
+
+## Resuelto
+
+**Decisión del usuario (2026-09-19): opción A, se queda. No se toca nada.**
+
+El recuento estaba bien —≈100 líneas de código, dos conceptos de motor y el
+único caso especial en el camino de dibujo de todos los bichos— y aun así la
+respuesta es que no sobra. Queda escrito para que no se vuelva a abrir:
+
+**el glitch no se mide por líneas por píxel.** Es la única cosa de la pieza
+que no pertenece al abismo, y ésa ES su idea: una franja negra a lo ancho
+sería un fallo de pantalla, pero que a una medusa se le desalinee la campana
+mientras la de al lado está perfecta dice que alguien está pintando esto. Eso
+vale sus cien líneas.
+
+Tampoco se va a la opción C (registrado y fuera de la escena): no habría
+ahorrado nada —`pintaBicho` y la bandera seguirían en el camino de dibujo—
+y habría dejado el evento a medio vivir.
+
+Lo que sí queda anotado del análisis, por si algún día se toca el reglaje:
+cada banda es un dibujo entero del bicho, así que subir `bandas` o `radio`
+multiplica el coste (0,050 ms por banda contra 0,069 ms de una medusa
+entera; peor caso medido, 2,6 ms sobre un fotograma de 8,3).

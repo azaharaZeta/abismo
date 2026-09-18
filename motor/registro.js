@@ -1,7 +1,9 @@
 /* ── REGISTRO DE ESPECIES ───────────────────────────────────────────
    Acuario.especie(nombre, def) donde def es:
 
-     conteo(area, plano, p)    → cuántos en ese plano (0..2)
+     conteo(plano, p)          → cuántos en ese plano (0..2). Un número
+                   absoluto: el cuadro enseña el mismo trozo de mundo en
+                   cualquier pantalla, así que la población no va por área.
      siembra(M, p)             → opcional. Una vez por pecera, antes de
                    crear a nadie y para los tres planos a la vez: es donde
                    va lo que toda la población COMPARTE y `crear` no puede

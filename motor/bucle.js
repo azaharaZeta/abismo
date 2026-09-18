@@ -32,8 +32,6 @@ function avisa(clave, texto){
 }
 
 function puebla(){
-  const area = V.W*V.H;
-
   /* Lo que comparte toda una población se sortea aquí: una vez por pecera
      y no una por plano. El banco vive repartido en los tres planos pero es
      UN banco visto desde tres distancias, así que los tonos que lo mandan
@@ -59,7 +57,7 @@ function puebla(){
         if (!ok) continue;
       }
       const p = paramsDe(conf);
-      const n = def.conteo ? def.conteo(area, li, p) : 0;
+      const n = def.conteo ? def.conteo(li, p) : 0;
       const q = Math.round(n * (def.escalaCalidad ? V.calidad : 1));
       const gr = { def, p, items: [] };
       /* `calidad` entra AQUÍ además de en degradar(): repoblar después de

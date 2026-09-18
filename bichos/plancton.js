@@ -18,7 +18,7 @@ especie('plancton', {
               ? p.colorRaro : M.color(p.paleta);
     return { c, alto,
       x: rnd(0,M.W), y: rnd(0,M.H),
-      r: rango(p.radio)*Math.max(0.6, L.scale),
+      r: rango(p.radio)*M.U*Math.max(0.6, L.scale),
       a: alto ? rango(p.alfaAlto) : rango(p.alfa),
       ph: Math.random()*TAU, sp: rnd(0.25,0.8),
       glow: 0, lit: null, cal: 0, dedo: 0,
