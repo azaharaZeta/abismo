@@ -13,50 +13,47 @@ import { reinicia } from './motor.js';
 document.getElementById('reinicia')
   .addEventListener('click', () => reinicia());
 
-/* ── GIRAR EL MÓVIL ─────────────────────────────────────────────────
-   La pieza ya sale en horizontal con el móvil de pie: marco.css vuelca
-   el cuadro 90°. Este botón pide el giro DE VERDAD —pantalla completa y
-   orientación bloqueada—, que es lo único que endereza la imagen; en
-   cuanto el viewport se gira, el vuelco de la hoja deja de aplicar.
+/* ── TUMBAR EL CUADRO ───────────────────────────────────────────────
+   Con el móvil de pie la pieza sale VERTICAL, que es la forma que tiene
+   la pantalla. Este botón la tumba y la endereza: pone y quita `.tumbado`
+   en la raíz, y marco.css vuelca el cuadro 90° (ver `--giro` allí).
 
-   Automático no se puede: bloquear la orientación exige pantalla
-   completa y pedirla exige un gesto. Y donde la API no está —iOS no tiene ni `lock` ni pantalla
-   completa de documento— el botón NO SE PINTA: uno que no hace nada es
-   peor que no tenerlo.
+   Y PIDE PECERA NUEVA, que es la otra mitad del botón. El vuelco cambia
+   la FORMA del lienzo —de alto y estrecho a bajo y ancho— y la escena
+   está compuesta para la que había: las posiciones van en fracción de
+   pantalla y el tamaño de todo sale de sqrt(área). Un `resize` no salta
+   —la ventana no ha cambiado, sólo una clase—, así que hay que avisar a
+   mano. Es la única llamada al motor que sale de este fichero.
 
-   También se esconde en escritorio: ahí `lock` existe pero rechaza, y
-   quien está en un monitor no quiere que le pongan la pieza en pantalla
-   completa por tocar un botón que dice «girar». */
+   El botón sólo se pinta donde el vuelco hace algo: táctil, de mano y de
+   pie. Con el aparato ya tumbado el cuadro es horizontal por su cuenta y
+   la clase es inerte, así que ahí se esconde.
+
+   NO PIDE PANTALLA COMPLETA NI BLOQUEO DE ORIENTACIÓN. Los pedía, para
+   girar de verdad, y eso deja dos estados peleándose: con la orientación
+   bloqueada en horizontal esta consulta deja de valer, el botón se
+   esconde y el que mira se queda dentro de la pantalla completa sin nada
+   que pulsar. El vuelco de la hoja no necesita permiso y sale igual en
+   iOS, que es donde no había nada. */
 const girar = document.getElementById('girar');
 const raiz = document.documentElement;
-const puede = !!(raiz.requestFullscreen && screen.orientation &&
-                 screen.orientation.lock) &&
-              matchMedia('(hover:none) and (pointer:coarse)').matches;
+/* la MISMA condición que el vuelco de marco.css: si cambia allí, cambia
+   aquí, o el botón aparece donde no hace nada */
+const dePie = matchMedia('(orientation:portrait) and (hover:none)'
+                         + ' and (pointer:coarse) and (max-width:560px)');
 
-if (puede){
-  girar.hidden = false;
-  const etiqueta = () => {
-    girar.textContent = document.fullscreenElement ? 'salir' : 'girar';
-  };
-  document.addEventListener('fullscreenchange', etiqueta);
-  girar.addEventListener('click', async () => {
-    if (document.fullscreenElement){
-      /* SALIR PRIMERO y desbloquear después, y cada uno con su guarda: con
-         los dos en el mismo `try` y `unlock()` delante, un navegador en el
-         que `unlock()` lance deja el `exitFullscreen()` sin ejecutar y el
-         botón sin salida —la etiqueta sigue diciendo «salir» y cada
-         pulsación repite el mismo fallo. */
-      try { await document.exitFullscreen(); } catch { /* ya estaba fuera */ }
-      try { screen.orientation.unlock(); }    catch { /* no había bloqueo */ }
-    } else {
-      try {
-        await raiz.requestFullscreen({navigationUI: 'hide'});
-        /* el bloqueo puede fallar y la pantalla completa quedarse: no se
-           deshace, que es lo que el usuario acaba de pedir a medias */
-        await screen.orientation.lock('landscape');
-      } catch { /* el navegador ha dicho que no */ }
-    }
-    etiqueta();
-  });
+const etiqueta = () => {
+  girar.textContent = raiz.classList.contains('tumbado') ? 'enderezar' : 'tumbar';
+};
+const revisa = () => { girar.hidden = !dePie.matches; etiqueta(); };
+
+girar.addEventListener('click', () => {
+  raiz.classList.toggle('tumbado');
   etiqueta();
-}
+  /* pecera nueva para la caja nueva. `setup()` lee `clientWidth`, y leerlo
+     fuerza el cálculo de estilo, así que el motor ve ya la forma volcada. */
+  reinicia();
+});
+/* girar el aparato de verdad no cambia la clase: sólo deja de aplicarse */
+dePie.addEventListener('change', revisa);
+revisa();

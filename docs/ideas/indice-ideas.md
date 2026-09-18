@@ -22,9 +22,9 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 
 ## Ideas de usuario (pendientes de procesar)
 > Solo un humano edita esta sección. Texto breve; el detalle se desarrolla al crear la ficha.
-- los peces aletean más de lo que se mueven. revisarlo para que se les vea nadar fluido.
-- en movil, ahora queremos que sea siempre por defecto vertical, y solo poner en horizontal si se pulsa el botón de giro. al pulsar el botón de cambiar a horizontal / vertical, hay que recolocar o regenerar la escena, para que cuadre con la nueva forma de la pecera.
-- revisar si están correctos los tamaños de los sprites en movil: se ven los sprites pequeñísimos, pero lo mismo es un problema de resolución? revisar el motivo, y si es resolución, ver si se puede hacer que los tamaños sean independientes y se vean igual  en resoluciones altas.
+
+_(vacía: las tres pendientes se procesaron el 2026-09-18.)_
+
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos que dejaron las ideas procesadas el 2026-09-17 y el 2026-09-18.
 
@@ -33,6 +33,7 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 - Onda de proa: un campo `empuja` que el leviatán y el cuerpo pongan al pasar, para que el plancton se aparte y no sólo se apague. OJO: choca con que el plancton ya no se aparta del dedo —habría que decidir si un cuerpo enorme es otra cosa que un dedo—, y la mota se quedó sin velocidad, así que habría que devolvérsela.
 - `M.campo()` es un recorrido lineal de `campos` y el plancton lo consulta por mota: con los tres cuerpos del evento del cuerpo son 39 campos y cuesta medio milisegundo de fotograma. Si algún día hay más cosas que tapen, aquí entra una rejilla —la misma que le hará falta al cardumen.
 - `contagio` conserva `porContacto: 0.3`, o sea que tocar todavía puede lanzarlo: ahora se pisa con la onda de plancton del propio dedo.
-- Un `manifest.json` con `orientation: landscape` haría que, instalada en la pantalla de inicio, la pieza abra ya tumbada en Android (iOS no lo respeta). En el navegador ya lo cubre el vuelco del marco.
+- Un `manifest.json` con `orientation: portrait` y `display: standalone` dejaría la pieza instalable en la pantalla de inicio.
 - El leviatán vive en el plano del fondo —un tercio de resolución y 58 % de alfa—: si aun con la luz subida se ve poco, el único mando que queda es el plano, y eso le quita el «enorme y lejos», que es su tema.
+- La cola del rape va a reloj fijo (`velCola`) y no al avance, como ya hace el banco: a su crucero son unos 24 coletazos por largo de cuerpo. Puede estar bien —cimbrea sin ir a ninguna parte—, pero está sin decidir.
 - Los peces giran 92 °/s de media, o sea que casi nunca sostienen un rumbo. Se baja con `vira`, pero es el número que sostiene el cardumen —un pez que no vira no sigue al grupo— y mi medida de alineación (un parámetro global con ±0,16 de ruido a 38 peces) no distingue si lo rompe: haría falta medir la alineación por vecindario antes de tocarlo.

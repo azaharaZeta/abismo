@@ -117,13 +117,13 @@ const CSS = `
   cursor:pointer;user-select:none;opacity:.14;transition:opacity .3s ease}
 #pr-tirador:hover{opacity:1;color:#8fd3e8}
 @media (hover:none){#pr-tirador{opacity:.4}}
-/* Con el móvil de pie, marco.css vuelca el cuadro y su franja —título y
+/* Con el cuadro TUMBADO, marco.css lo vuelca y su franja —título y
    botones— cae justo en este canto. El tirador se va al extremo, que ahí
-   la franja está vacía. La condición es la de ese vuelco: si cambia
-   allí, cambia aquí. */
+   la franja está vacía. La condición es la de ese vuelco, clase incluida:
+   si cambia allí, cambia aquí. */
 @media (orientation:portrait) and (hover:none) and (pointer:coarse)
    and (max-width:560px){
-  #pr-tirador{top:0;transform:none}
+  :root.tumbado #pr-tirador{top:0;transform:none}
 }
 `;
 

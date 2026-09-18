@@ -1,6 +1,6 @@
 # Idea: los tamaños no pueden depender de la vista
 
-**Estado: EN CURSO** · **Empezada:** 2026-09-18
+**Estado: IMPLEMENTADA** · empezada y cerrada el 2026-09-18
 
 > «los tamaños relativos de distintos sprites y eventos son distintos en mobile
 > (vertical) que en pc. Veo por ejemplo que los leviatanes son estrechos, y que los

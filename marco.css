@@ -155,24 +155,30 @@ html,body{margin:0;padding:0;height:100%;background:#000103;overflow:hidden;
 }
 
 /* ── EL MÓVIL DE PIE ────────────────────────────────────────────────
-   La pieza es horizontal. Pedirle el giro al sistema exige pantalla
-   completa y un gesto —de eso va el botón «girar»— y en iOS no hay ni
-   una cosa ni la otra, así que donde no se puede girar el aparato se
-   gira el cuadro: el marco se maqueta con el alto y el ancho cambiados
-   y se vuelca 90°.
+   De pie, la pecera sale VERTICAL: el cuadro es el que da la pantalla y
+   la pieza se compone para él. Quien la quiera horizontal lo pide con el
+   botón de la franja, que pone `.tumbado` en la raíz; entonces el marco
+   se maqueta con el alto y el ancho cambiados y se vuelca 90°.
 
-   Al motor no le cambia nada, la caja del lienzo es la misma. El único
-   que tiene que deshacer el giro es el dedo, que llega en coordenadas
-   de pantalla: para eso lee `--giro` (motor/dedo.js).
+   EL VUELCO VIVE EN UNA CLASE y no en la consulta a secas porque es una
+   decisión del que mira y no del aparato. La consulta se queda delante
+   para que la clase no haga nada donde no toca: en un móvil YA tumbado el
+   cuadro es horizontal sin ayuda, y volcarlo encima lo pondría de pie.
+
+   Al motor no le cambia el marco de coordenadas, pero SÍ la FORMA de la
+   caja —de alta y estrecha a baja y ancha—, y la escena está compuesta
+   para la que había: de eso se encarga marco.js pidiendo pecera nueva. El
+   único que tiene que deshacer el giro es el dedo, que llega en
+   coordenadas de pantalla: para eso lee `--giro` (motor/dedo.js).
 
    Sólo en táctil y sólo de mano: una ventana estrecha de escritorio no
-   es un móvil de pie —y ahí nadie puede girar nada—, y una tableta de
-   pie tiene sitio de sobra para dejarla en paz. El corte de ancho es el
-   mismo de arriba: por debajo de eso, de pie, es un móvil. */
+   es un móvil de pie, y una tableta de pie tiene sitio de sobra para
+   dejarla en paz. El corte de ancho es el mismo de arriba: por debajo de
+   eso, de pie, es un móvil. */
 @media (orientation:portrait) and (hover:none) and (pointer:coarse)
    and (max-width:560px){
-  :root{--giro:90deg}
-  #marco{
+  :root.tumbado{--giro:90deg}
+  :root.tumbado #marco{
     inset:auto;top:50%;left:50%;
     width:100vh;height:100vw;         /* respaldo: el viewport sin barra */
     width:100dvh;height:100dvw;

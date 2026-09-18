@@ -1028,7 +1028,19 @@ export const ABISMO = {
       /* y cuánto tarda en voltear de un lado al otro, en 1/s: el escorzo
          del espejo (ver `dibuja`). A 7 tarda unas dos décimas. */
       volteo: 7,
-      aleteo: 17,
+      /* ── EL ALETEO VA CON EL AVANCE ──────────────────────────────
+         `zancada` es cuántos LARGOS DE CUERPO recorre por coletazo, y de
+         ahí sale la frecuencia: así el pez bate despacio al crucero y
+         deprisa en el dardo, que es lo que se lee como nadar. Un pez de
+         verdad hace un largo por coletazo, y entre 0,7 y 1,2 el nado
+         parece nado.
+
+         Iba a 17 rad/s FIJOS, o sea 2,7 coletazos por segundo con o sin
+         avance: medido, 7,5 coletazos por largo recorrido —el pez se
+         sacudía en el sitio—. Con 0,8 el crucero cae a medio coletazo por
+         segundo y los 17 rad/s de antes son ahora la frecuencia de quien
+         huye, que es donde tenían sentido. */
+      zancada: 0.8,               // largos de cuerpo por coletazo
       trago: 0.42,                // lo que tarda en entrar por la boca
       /* ── SE APARTA DEL DEDO ────────────────────────────────────
          No es huir, y la diferencia está en que NADIE LE TOCA EL RUMBO: el

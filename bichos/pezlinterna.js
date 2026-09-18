@@ -218,6 +218,10 @@ especie('pezlinterna', {
       reacciona: rea,
       proxMira:  Math.random()*rea,
       fase: Math.random()*TAU,
+      /* la fase de la cola va APARTE de `fase` y se ACUMULA: su frecuencia
+         depende de lo que el pez avanza, y una fase que sale de multiplicar
+         el reloj por una frecuencia variable salta cada vez que cambia. */
+      faseCola: Math.random()*TAU,
       nFoto: rangoE(p.fotoforos),
       ilum: 0, cebada: false,
       vx:0, vy:0,
@@ -402,6 +406,22 @@ especie('pezlinterna', {
 
     /* el desvío del dedo se SUMA al nado: ya es una velocidad */
     const nado = z.vel + z.tiron;
+    /* ── Y LA COLA BATE LO QUE TOCA A ESA VELOCIDAD ───────────────
+       La frecuencia sale de `zancada` —largos de cuerpo por coletazo—, no
+       de un número fijo: parado no bate, al crucero bate despacio y en el
+       dardo se acelera. Es lo único que hace que se lea como nado y no
+       como una sacudida.
+
+       Se ACUMULA la fase. Con `M.t*ω` y ω variable, cada cambio de
+       velocidad recoloca el seno entero y la cola da un latigazo.
+
+       Y CUENTA EL `drift` DEL PLANO, que es lo que de verdad avanza: `paso`
+       multiplica por él, así que un pez del fondo recorre el 44 % de su
+       `nado`. Sin esto bate el doble de lo que se mueve, que es la queja
+       otra vez y sólo en los planos de atrás. La corriente NO entra: el
+       pez no la nada, lo arrastra. */
+    const zan = opt(p.zancada, 0) * Lg;
+    if (zan > 0) z.faseCola += TAU*nado*L.drift*M.ritmo/zan * dt;
     avanza(z, M, L, dt, Math.cos(z.ang)*nado + z.dx,
                         Math.sin(z.ang)*nado + z.dy);
     /* éste sí sabe girar: se le pone el rumbo hacia dentro y su `vira` dibuja
@@ -447,7 +467,7 @@ especie('pezlinterna', {
        sólo cuando algo lo alumbraba, así que un pez a solas era una fila
        de puntos sobre nada. */
     const propia = p.foto * (0.75 + 0.45*z.ilum) * apaga * rl;
-    const cola = Math.sin(M.t*p.aleteo + z.fase);
+    const cola = Math.sin(z.faseCola);
 
     g.save();
     g.translate(z.x, z.y);
