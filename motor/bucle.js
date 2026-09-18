@@ -1,6 +1,7 @@
 import { ABISMO } from '../escena.js';
 import { clamp, opt, rango, fusiona } from './util.js';
-import { V, campos, MOD, reiniciaMod, frente, PLANOS } from './estado.js';
+import { V, vaciaCampos, indexaCampos,
+         MOD, reiniciaMod, frente, PLANOS } from './estado.js';
 import { ESPECIES, EVENTOS, especie, evento, paramsDe } from './registro.js';
 import { resuelveEspectros, resiembraPaletas, paletaDe } from './color.js';
 import { buildAgua, buildRuido, buildOndulacion, buildDispersion,
@@ -61,16 +62,11 @@ function puebla(){
       const n = def.conteo ? def.conteo(area, li, p) : 0;
       const q = Math.round(n * (def.escalaCalidad ? V.calidad : 1));
       const gr = { def, p, items: [] };
-      /* `calidad` recorta CUÁNTOS y `aligera` simplifica cada uno; las dos
-         cosas hay que rehacerlas aquí, o repoblar después de degradar
-         —redimensionado grande, botón del panel— le devuelve el detalle
-         completo a la máquina que ya demostró que no podía con él. */
-      const flojea = V.degradado && def.aligera;
-      for (let i=0;i<q;i++){
-        const o = def.crear(M, L, p);
-        if (flojea) def.aligera(o);
-        gr.items.push(o);
-      }
+      /* `calidad` entra AQUÍ además de en degradar(): repoblar después de
+         haber degradado —redimensionado grande, botón del panel— le
+         devolvería la población entera a la máquina que ya demostró que no
+         podía con ella. */
+      for (let i=0;i<q;i++) gr.items.push(def.crear(M, L, p));
       L.grupos.push(gr);
     }
   }
@@ -112,7 +108,7 @@ function reprograma(gr){
 
 function pasoEventos(dt){
   /* se rehacen: un evento que ya no está no tiene que borrar nada */
-  campos.length = 0;
+  vaciaCampos();
   reiniciaMod();
 
   let hayGrande = evVivos.some(e => e.def.exclusivo);
@@ -203,7 +199,7 @@ function para(nombre){
     evVivos.splice(i,1);
     reprograma(e.gr);
   }
-  campos.length = 0;
+  vaciaCampos();
   reiniciaMod();
 }
 
@@ -240,10 +236,9 @@ function degradar(){
   V.topeOndas = Math.max(1, Math.round(V.topeOndas*0.5));
   if (V.topeNiveles > 2){ V.topeNiveles = 2; buildDispersion(); }
   for (const L of PLANOS)
-    for (const gr of L.grupos){
-      if (gr.def.escalaCalidad) gr.items.length = Math.round(gr.items.length*V.calidad);
-      if (gr.def.aligera) for (const o of gr.items) gr.def.aligera(o);
-    }
+    for (const gr of L.grupos)
+      if (gr.def.escalaCalidad)
+        gr.items.length = Math.round(gr.items.length*V.calidad);
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -434,6 +429,12 @@ function pasoPlanos(dt){
     for (const gr of L.grupos)
       if (gr.def.campos)
         for (const o of gr.items) gr.def.campos(o, M, L, gr.p);
+
+  /* AQUÍ y no antes: es el último sitio del fotograma en que se empuja un
+     campo, y el primero es éste el que tiene que ver todos. `pintaSombras`
+     corre antes y no pasa por el índice —recorre `campos` a pelo—, que es
+     lo correcto: el agua sólo la tapan los `apaga` de los eventos. */
+  indexaCampos();
 
   for (const L of PLANOS){
     const g = abrePlano(L);

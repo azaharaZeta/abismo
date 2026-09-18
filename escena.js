@@ -20,10 +20,6 @@ export const ABISMO = {
   nombre: 'Abismo',
 
   paleta: [AZUL, CIAN, HIELO, VERDOSO, PLATA],
-  /* El color excepcional. El motor sólo lo OFRECE en M.raro; quien lo
-     quiera se lo coge, con su propia probabilidad. No hay reparto
-     automático. Hoy sólo lo usa el plancton, por mota. */
-  raro: ROJO,
 
   agua: {
     /* LA LUZ DE FONDO, multiplicador sobre la tira de abajo: a 0 el agua
@@ -530,7 +526,10 @@ export const ABISMO = {
       /* variedad de tamaño y de brillo: es lo que evita que tanta mota se
          lea como una textura regular */
       radio: [0.28,1.50], alfa: [0.025,0.14], alfaAlto: [0.16,0.42],
-      destacadas: 0.07, raro: 0.02,
+      destacadas: 0.07,
+      /* LA ASCUA: el color excepcional, y es de esta especie y de nadie
+         más. `raro` es con qué probabilidad le toca a una mota. */
+      raro: 0.02, colorRaro: ROJO,
       apaga: 0.78,                // el rastro dura lo suyo
       enciende: 3.8,
       /* ── LO QUE LE HACE EL DEDO ─────────────────────────────────

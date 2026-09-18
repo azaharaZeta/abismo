@@ -6,6 +6,7 @@
 import { M } from '../motor.js';
 const {rnd, rango, opt} = M;
 import { centro, aMundo } from './rape-cuerpo.js';
+import { hacia } from './comun.js';
 
 /* ── QUERENCIA DE BORDE ─────────────────────────────────────────────
    El rape no patrulla el centro: se arrima al canto y espera mirando
@@ -208,9 +209,9 @@ function mirada(f, M, L, p, dt){
   if (presa)              { tx = presa.x; ty = presa.y; }
   else if (f.ilum > 0.02) { tx = f.luzX;  ty = f.luzY;  }
   else                    { tx = f.x;     ty = f.y;     }
-  const k = Math.min(1, opt(p.velMira, 2.4)*dt);
-  f.miraX += (tx - f.miraX)*k;
-  f.miraY += (ty - f.miraY)*k;
+  const k = opt(p.velMira, 2.4);
+  f.miraX = hacia(f.miraX, tx, k, dt);
+  f.miraY = hacia(f.miraY, ty, k, dt);
 }
 
 /* ── LUZ RECIBIDA ───────────────────────────────────────────────────
@@ -244,6 +245,6 @@ function luzRecibida(f, M, L, p, dt){
        por el que se enciende es suyo, el tono es del bicho */
     if (w > mejor){ mejor = w; f.luzX = o.x; f.luzY = o.y; }
   }
-  f.ilum += (tot - f.ilum) * Math.min(1, 9*dt);     // sin parpadeos duros
+  f.ilum = hacia(f.ilum, tot, 9, dt);               // sin parpadeos duros
 }
 export { querencia, caza, camposRape, mirada, luzRecibida };

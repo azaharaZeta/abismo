@@ -14,7 +14,8 @@ especie('plancton', {
 
   crear(M, L, p){
     const alto = Math.random() < p.destacadas;
-    const c = (M.raro && Math.random() < p.raro) ? M.raro : M.color(p.paleta);
+    const c = (p.colorRaro && Math.random() < p.raro)
+              ? p.colorRaro : M.color(p.paleta);
     return { c, alto,
       x: rnd(0,M.W), y: rnd(0,M.H),
       r: rango(p.radio)*Math.max(0.6, L.scale),

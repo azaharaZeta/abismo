@@ -194,7 +194,6 @@ const MEDUSA = {
      tiempo a mirarla. La medusa no hace nada con esto —lo aplica el motor
      en pintaBicho()—, sólo declara que a ella se le puede hacer. */
   rompible: true,
-  aligera(j){ j.nT = Math.max(6, Math.round(j.nT*0.6)); },
   conteo: porPlano,
 
   crear(M, L, p){

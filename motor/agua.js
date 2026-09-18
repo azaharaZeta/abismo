@@ -141,6 +141,23 @@ function buildDispersion(){
   if (NIVELES.length < 2) NIVELES.length = 0;
 }
 
+/* SUMAR UNA IMAGEN CON FUERZA > 1. `globalAlpha` no sube de 1, así que
+   por encima hay que volver a pasarla, en varias vueltas. El tope de 3
+   pasadas es por si alguien escribe un 40: pasado el 2 ya está todo en
+   blanco. Lo piden los dos sitios que suman a pantalla completa —la tira
+   del agua y el velo—, y deja el contexto como estaba. */
+function sumaVeces(img, fuerza){
+  V.ctx.globalCompositeOperation = 'lighter';
+  let resto = Math.min(3, fuerza);
+  while (resto > 0.002){
+    V.ctx.globalAlpha = Math.min(1, resto);
+    V.ctx.drawImage(img, 0, 0, V.W, V.H);
+    resto -= 1;
+  }
+  V.ctx.globalAlpha = 1;
+  V.ctx.globalCompositeOperation = 'source-over';
+}
+
 /* ── LAS SOMBRAS EN EL AGUA ─────────────────────────────────────────
    Un campo `apaga` calla a los bichos; esto es la otra mitad, y le quita
    al AGUA su luz. En aditivo no se puede pintar un cuerpo oscuro encima
@@ -186,24 +203,13 @@ function pintaAgua(){
   pintaSombras();
   /* CUÁNTA LUZ DE FONDO HAY. Dos números y la misma cuenta: `brillo` es
      el de la pecera y `MOD.agua` el que le pone encima lo que esté
-     pasando, así que se multiplican. Por encima de 1 hay que volver a
-     pasar la tira, y en varias vueltas: `globalAlpha` no sube de 1.
-     El tope de 3 pasadas es por si alguien escribe un 40. */
+     pasando, así que se multiplican. Por debajo de 1 se apaga con negro;
+     por encima se vuelve a pasar la tira (ver `sumaVeces`). */
   const luz = MOD.agua * opt(ABISMO.agua.brillo, 1);
   if (luz < 0.999){
     V.ctx.fillStyle = 'rgba(0,0,0,'+(1-luz).toFixed(3)+')';
     V.ctx.fillRect(0, 0, V.W, V.H);
-  } else if (luz > 1.001){
-    V.ctx.globalCompositeOperation = 'lighter';
-    let resto = Math.min(3, luz - 1);
-    while (resto > 0.002){
-      V.ctx.globalAlpha = Math.min(1, resto);
-      V.ctx.drawImage(agua, 0, 0, V.W, V.H);
-      resto -= 1;
-    }
-    V.ctx.globalAlpha = 1;
-    V.ctx.globalCompositeOperation = 'source-over';
-  }
+  } else if (luz > 1.001) sumaVeces(agua, luz - 1);
 }
 
 /* ── EL VELO ────────────────────────────────────────────────────────
@@ -260,18 +266,9 @@ function pintaDispersion(){
     b.g.globalAlpha = 1;
   }
 
-  /* 4 · encima de la escena. Por encima de 1 se pasa otra vez, en varias
-     vueltas, porque `globalAlpha` no sube de 1. El tope de 3 pasadas es
-     por si alguien escribe un 40: pasado el 2 ya está todo en blanco. */
-  V.ctx.globalCompositeOperation = 'lighter';
-  let resto = Math.min(3, D.fuerza);
-  while (resto > 0.002){
-    V.ctx.globalAlpha = Math.min(1, resto);
-    V.ctx.drawImage(n0.cv, 0, 0, V.W, V.H);
-    resto -= 1;
-  }
-  V.ctx.globalAlpha = 1;
-  V.ctx.globalCompositeOperation = 'source-over';
+  /* 4 · encima de la escena, y con `fuerza` por encima de 1 en más de una
+     pasada (ver `sumaVeces`). */
+  sumaVeces(n0.cv, D.fuerza);
 }
 export { buildAgua, buildRuido, buildOndulacion, buildDispersion,
          resiembraAgua, pintaAgua, pintaDispersion, ruido, RUIDO };

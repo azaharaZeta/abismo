@@ -1,7 +1,7 @@
 import { ABISMO } from '../escena.js';
 import { TAU, rgba, clamp, opt, rnd, suave, elige, mezcla, rango,
          rangoE } from './util.js';
-import { V, campos, MOD, PLANOS, flujoX, flujoY } from './estado.js';
+import { V, campos, camposDe, MOD, PLANOS, flujoX, flujoY } from './estado.js';
 import { eligeDePaleta, halo, punto } from './color.js';
 import { empuje, luzDedo } from './dedo.js';
 
@@ -59,7 +59,6 @@ const M = {
   get W(){ return V.W; }, get H(){ return V.H; },
   get U(){ return V.U; }, get t(){ return V.t; },
   get paleta(){ return ABISMO.paleta; },
-  get raro(){ return ABISMO.raro; },
   empuje, luzDedo, borde, flujoX, flujoY, halo, punto,
   /* Un color respetando pesos. Úsalo en vez de elige(M.paleta) o los
      pesos no cuentan. La suma se cachea en el propio array. */
@@ -108,9 +107,11 @@ const M = {
      un dato cualquiera del que lo puso. */
   campo(tipo, x, y, plano){
     let vm = 0, mejor = null;
-    for (let i=0;i<campos.length;i++){
-      const c = campos[i];
-      if (c.tipo !== tipo) continue;
+    /* sólo los de ese tipo: los agrupa `indexaCampos()` una vez por
+       fotograma, así que aquí no se recorre lo que no puede valer */
+    const lista = camposDe(tipo);
+    for (let i=0;i<lista.length;i++){
+      const c = lista[i];
       if (plano !== undefined && c.plano !== undefined && c.plano < plano)
         continue;
       let dx = x - c.x, dy = y - c.y;

@@ -68,8 +68,8 @@ de estar modelado.
 Porque **el rape es el bicho que sostiene el tema de la obra** y su cuerpo es lo que
 no se ve casi nunca; cuando se ve, es el momento que hay que mirar. Un ahorro de
 0,1 ms no compensa estropear ese instante. Esto se toca sólo si hace falta fotograma,
-y antes están [simpl-03](idea-campos-por-tipo-simpl-03.md) y
-[simpl-06](idea-sin-aligera-simpl-06.md), que no cuestan nada visualmente.
+y antes están [simpl-03](archivo/idea-campos-por-tipo-simpl-03.md) y
+[simpl-06](archivo/idea-sin-aligera-simpl-06.md), que no cuestan nada visualmente.
 
 ## Siguiente acción
 

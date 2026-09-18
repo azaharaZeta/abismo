@@ -11,7 +11,8 @@
 
 import { M, especie } from '../motor.js';
 const {rgba, clamp, rnd, rango, rangoE, suave, opt, TAU} = M;
-import { porPlano, paso, reaccionBorde, silencio } from './comun.js';
+import { porPlano, paso, reaccionBorde, hacia, gxSano,
+         silencio } from './comun.js';
 import { enPez, aMundo, centro, bocaLargo, adelante, cuerpoPath, piel,
          visceras, aletas, volumen, ojo, quijadas, bocaPath, boca,
          barbilla, senuelo } from './rape-cuerpo.js';
@@ -24,7 +25,6 @@ especie('rape', {
   /* el cuerpo tapa y el bocado asusta: van en su propia pasada, antes de
      que se actualice nadie, o el plancton y el banco del fondo no los ven */
   campos: camposRape,
-  aligera(f){ f.dientes = Math.max(4, (f.dientes*0.6)|0); },
   conteo: porPlano,
 
   crear(M, L, p){
@@ -122,7 +122,7 @@ especie('rape', {
       f.objBrillo = rango(p.intensidad);
       f.proxBrillo = rango(p.parpadeo);
     }
-    f.brillo += (f.objBrillo - f.brillo) * Math.min(1, 1.6*dt);
+    f.brillo = hacia(f.brillo, f.objBrillo, 1.6, dt);
     /* ── LA RÁFAGA, Y NO HAY MÁS QUE UNA ──────────────────────────
        El bocado no enciende una luz aparte: es la esca, que durante un
        instante emite mucho más, y el cuerpo se enciende por el mismo
@@ -179,7 +179,7 @@ especie('rape', {
         * suave(clamp(f.ilum/Math.max(0.001, p.techo*0.5), 0, 1));
     /* con rampa: congelarse de un fotograma al siguiente es un salto, y lo
        que tiene que parecer es que se ha quedado quieto */
-    f.congela += (cong - f.congela) * Math.min(1, 3.2*dt);
+    f.congela = hacia(f.congela, cong, 3.2, dt);
     const vivo = 1 - f.congela;
 
     /* acecho y embestida; adelante es −dir (ver `adelante`) */
@@ -201,7 +201,7 @@ especie('rape', {
                        -p.topeInclina, p.topeInclina);
       f.angProx = rango(p.cadaInclina);
     }
-    f.ang += (f.angObj - f.ang) * Math.min(1, p.velInclina*dt);
+    f.ang = hacia(f.ang, f.angObj, p.velInclina, dt);
 
     const ad = adelante(f, f.gx);
     /* crucero: un empuje continuo y pequeño, o entre tirón y tirón se queda
@@ -231,7 +231,7 @@ especie('rape', {
     }
     /* el giro se anima pasando por cero: el pez queda de perfil un instante,
        que es como gira un pez. Un espejo instantáneo salta. */
-    f.gx += (f.dir - f.gx) * Math.min(1, p.velGiro*dt);
+    f.gx = hacia(f.gx, f.dir, p.velGiro, dt);
 
     /* deriva de acecho: casi nada, más un vaivén largo —y también se calla
        al congelarse, que es lo único que queda moviéndolo */
@@ -320,7 +320,7 @@ especie('rape', {
   dibuja(f, M, L, p, g){
     const t = M.t, Lg = f.Lg, sh = L.sharp;
     /* de perfil puro el pez no existe, pero el trazado no puede degenerar */
-    const gx = Math.abs(f.gx) < 0.06 ? (f.gx < 0 ? -0.06 : 0.06) : f.gx;
+    const gx = gxSano(f.gx, 0.06);
     const col = f.c.mid, nuc = f.c.core;
     const sil = 1 - silencio(M, f.bx, f.by);
     /* DOS BRILLOS DISTINTOS: `brillo` es el del señuelo —el foco, lo único

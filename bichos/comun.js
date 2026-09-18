@@ -110,6 +110,20 @@ function pintaHalo(g, M, c, x, y, R, a){
   g.globalAlpha = 1;
 }
 
+/* ── DOS CUENTAS QUE SE ESCRIBÍAN A MANO EN TODAS PARTES ────────────
+   `hacia` es la rampa exponencial hacia un objetivo, y el clamp a 1 es lo
+   que impide que un fotograma largo la pase de largo y oscile: sin él, un
+   `k*dt` de 1,4 deja el valor al otro lado del objetivo. Estaba copiada en
+   diez sitios y olvidarse del clamp no se ve hasta que la pestaña vuelve
+   de segundo plano.
+
+   `gxSano` es el suelo del espejo: `gx` es el lado al que mira un bicho y
+   pasa por 0 al voltear, pero de perfil puro el pez no existe y el trazado
+   no puede degenerar. El suelo lo pone cada especie —el rape es grande y
+   aguanta menos que un pez linterna. */
+const hacia = (v, obj, k, dt) => v + (obj - v)*Math.min(1, k*dt);
+const gxSano = (gx, suelo) => Math.abs(gx) < suelo ? (gx < 0 ? -suelo : suelo) : gx;
+
 /* posición de i dentro de una hilera de n, de 0 a 1. Con n=1 cae en el
    centro en vez de dar 0/0 = NaN, que borraba el bicho entero. */
 const reparte = (i, n) => n > 1 ? i/(n-1) : 0.5;
@@ -162,4 +176,4 @@ function silencio(M, x, y, L){
 }
 export { porReparto, porPlano, seAparta, reaccionBorde,
          paso, avanza, mancha, pintaHalo, reparte, giroCorto, mezclaAng,
-         silencio };
+         hacia, gxSano, silencio };

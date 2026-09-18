@@ -181,10 +181,10 @@ produce su `paletaX`. Cada entrada de paleta es `{core, mid, glow, peso}`:
 núcleo casi blanco, identidad, halo. Usa **`M.color(pal)`** y no
 `elige(pal)`, o los pesos no cuentan.
 
-`ABISMO.raro` es el color excepcional: el motor sólo lo **ofrece** en
-`M.raro` y quien lo quiera se lo coge. Hoy sólo lo usa el plancton, por
-mota y con su propia probabilidad (`raro: 0.02` en su entrada de escena).
-No hay ningún reparto automático.
+El color excepcional —la ascua roja de la nieve marina— es de la especie
+que lo usa y no del motor: vive en la entrada del plancton (`colorRaro`,
+con su `raro: 0.02`). Un color que sólo usa uno no es un concepto de la
+pecera.
 
 Los halos y puntos de luz están **pre-dibujados y cacheados en la propia
 entrada de paleta** (`M.halo(c)`, `M.punto(c)`): un degradado radial por
@@ -197,8 +197,7 @@ El coste es relleno: varias pasadas a pantalla completa por fotograma.
 `vigila()` lleva una media móvil del tiempo de fotograma y llama a
 `degradar()` **una sola vez y sin vuelta atrás** (subir y bajar la calidad
 oscila y se ve peor que ir lento): recorta población viva de las especies
-con `escalaCalidad`, llama a su `aligera(o)`, apaga el dither y baja
-niveles del velo. El velo nunca se quita: es lo que hace que esto sea agua.
+con `escalaCalidad`, apaga el dither y baja niveles del velo. El velo nunca se quita: es lo que hace que esto sea agua.
 
 ## Añadir cosas
 
@@ -206,7 +205,7 @@ niveles del velo. El velo nunca se quita: es lo que hace que esto sea agua.
 `especie('nombre', def)`, una línea en [catalogo.js](catalogo.js) y una
 entrada `{especie: 'nombre', …}` en `ABISMO.bichos`. El contrato completo de `def` (`conteo`, `siembra`,
 `crear`, `actualiza`, `dibuja`, `campos`, y las banderas `luz`, `presa`,
-`cardumen`, `rompible`, `escalaCalidad`, `aligera`) está documentado en
+`cardumen`, `rompible`, `escalaCalidad`) está documentado en
 **REGISTRO DE ESPECIES**, en [motor/registro.js](motor/registro.js).
 `siembra(M, p)` es el único que corre una vez por pecera en vez de por
 bicho: es donde va lo que toda la población comparte —los tonos que

@@ -19,8 +19,6 @@
                    entre ellos sin saber de qué especie son; necesita
                    x, y y ang. Dos especies que lo pidan hacen banco mixto.
      escalaCalidad → su población se puede recortar al degradar
-     aligera(o)  → simplificar un objeto al degradar. Se aplica también a
-                   los que nazcan después (ver puebla).
      campos(o, M, L, p) → opcional. Empujar campos a M.campos, como un
                    evento. Se llama para los tres planos ANTES de que se
                    actualice nadie, que es la única forma de que un campo
@@ -32,7 +30,7 @@
    el motor al consumirla, así que vale para un fotograma y no hay que
    acordarse de apagarla.
 
-   M es la escena viva: M.W M.H M.U M.t M.paleta M.raro y los métodos
+   M es la escena viva: M.W M.H M.U M.t M.paleta y los métodos
    M.color() M.empuje(x,y,banda) M.borde(x,y) M.flujoX(y,t) M.flujoY(x,t)
    M.envuelve(o,inset) M.salto(x,y,inset) M.campo(tipo,x,y,plano)
    M.luzDedo(x,y) M.halo(color) M.punto(color), más las utilidades M.rgba

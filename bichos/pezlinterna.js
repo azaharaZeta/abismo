@@ -9,7 +9,8 @@
 import { M, especie } from '../motor.js';
 const {rgba, clamp, mezcla, rnd, rango, rangoE, opt, TAU} = M;
 import { porReparto, pintaHalo, reparte, giroCorto, mezclaAng,
-         seAparta, reaccionBorde, avanza, silencio } from './comun.js';
+         seAparta, reaccionBorde, avanza, hacia, gxSano,
+         silencio } from './comun.js';
 
 /* ── EL CARDUMEN ────────────────────────────────────────────────────
    Tres reglas y ninguna más: no chocar, ir a la par y no quedarse solo.
@@ -239,9 +240,9 @@ especie('pezlinterna', {
       const f = z.tragado, T = p.trago || 0.45;
       z.trago += dt;
       const u = clamp(z.trago/T, 0, 1);
-      const k = Math.min(1, (4 + 14*u)*dt);
-      z.x += (f.bocaX - z.x)*k;
-      z.y += (f.bocaY - z.y)*k;
+      const k = 4 + 14*u;
+      z.x = hacia(z.x, f.bocaX, k, dt);
+      z.y = hacia(z.y, f.bocaY, k, dt);
       const dm = giroCorto(Math.atan2(f.bocaY - z.y, f.bocaX - z.x), z.ang);
       z.ang += clamp(dm, -9*dt, 9*dt);
       /* cuadrática y no lineal: llega entero y desaparece dentro. Con 1−u
@@ -251,7 +252,7 @@ especie('pezlinterna', {
       /* y se le sube la luz: dentro de esa boca están la esca recogida y el
          fogonazo, lo más brillante de la pieza. Sin esto la iluminación se
          congelaba en la del último frame libre y el bicho entraba a oscuras. */
-      z.ilum += (1.1 - z.ilum) * Math.min(1, 8*dt);
+      z.ilum = hacia(z.ilum, 1.1, 8, dt);
       if (u < 1 && f.ataque > 0) return;   // ni busca, ni huye, ni deriva
       z.tragado = null; f.tragando = null;
       z.comido = true;
@@ -373,12 +374,12 @@ especie('pezlinterna', {
        que hace que cambiar de sentido se vea como un pez que se escora y
        pasa de perfil, y no como un espejo instantáneo. Ver `dibuja`. */
     const lado = Math.cos(z.ang) < 0 ? -1 : 1;
-    z.gx += (lado - z.gx) * Math.min(1, opt(p.volteo, 7)*dt);
+    z.gx = hacia(z.gx, lado, opt(p.volteo, 7), dt);
 
     z.susto = Math.max(0, z.susto - dt);
     const objVel = M.U * (z.susto ? p.velSusto
                                   : (z.cebada ? p.velCebada : p.vel) * (z.brio || 1));
-    z.vel += (objVel - z.vel) * Math.min(1, 2.4*dt);
+    z.vel = hacia(z.vel, objVel, 2.4, dt);
 
     /* EL DEDO. Aquí NO se toca `susto` ni `angObj`: el susto es lo que
        reparte un rape al morder —triplica el viraje, sube el nado a
@@ -424,7 +425,7 @@ especie('pezlinterna', {
        de la oscuridad */
     const ob = cebo
       ? clamp(1.25/(1 + (Math.sqrt(md2)/(M.U*p.revelado))**2), 0, 1) : 0;
-    z.ilum += (ob - z.ilum) * Math.min(1, 7*dt);
+    z.ilum = hacia(z.ilum, ob, 7, dt);
   },
 
   dibuja(z, M, L, p, g){
@@ -471,7 +472,7 @@ especie('pezlinterna', {
        de lado se ve como un escorzo y no como un salto —cruzan la vertical
        media vez por segundo, así que saltando se vería—. Y no llega a cero:
        de perfil puro el pez no existe, pero el trazado no puede degenerar. */
-    const gx = Math.abs(z.gx) < 0.08 ? (z.gx < 0 ? -0.08 : 0.08) : z.gx;
+    const gx = gxSano(z.gx, 0.08);
     g.rotate(gx > 0 ? z.ang : z.ang + Math.PI);
     g.scale(gx, 1);
     if (men < 1) g.scale(Math.max(0.06, men), Math.max(0.06, men));
