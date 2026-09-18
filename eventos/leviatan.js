@@ -211,11 +211,12 @@ evento('leviatan', {
        a 0 los apaga con todo lo demás. */
     const ne = p.espinas|0, cre = opt(p.cresta, 0);
     const bl = br * opt(p.brilloLomo, 0);
+    const masa = levMasa(opt(p.penumbra, 1));
     if (bl > 0.002){
       const lx = [], ly = [];
       for (let i=0;i<=N;i++){
         const s = i/N, q = levPunto(e, s, _lvQ), a = levAngulo(e, s);
-        const semi = e.grosor*levPerfil(s)*levCresta(s, ne, cre);
+        const semi = e.grosor*levPerfil(s)*levCresta(s, ne, cre)*masa;
         lx.push(q[0] + Math.sin(a)*semi);
         ly.push(q[1] - Math.cos(a)*semi);
       }
@@ -235,7 +236,7 @@ evento('leviatan', {
       for (let i=0;i<ne;i++){
         const s = levEspina(i, ne);
         const q = levPunto(e, s, _lvQ), a = levAngulo(e, s);
-        const h = e.grosor*levPerfil(s)*(1 + levAlta(i)*cre);
+        const h = e.grosor*levPerfil(s)*(1 + levAlta(i)*cre)*masa;
         const x = q[0] + Math.sin(a)*h, y = q[1] - Math.cos(a)*h;
         /* desacompasadas entre ellas y con el coletazo, como los fotóforos:
            una hilera de puntos a alfa fijo se lee como una costura */
@@ -346,6 +347,18 @@ function levPerfil(s){
    unas cuatrocientas por fotograma y sólo mientras hay un leviatán. */
 const levEspina = (i, n) => 0.14 + 0.62*reparte(i, n);
 const levAlta = i => 0.55 + 0.45*Math.abs(Math.sin(i*2.3 + 1.1));
+/* HASTA DÓNDE LLEGA LA MASA del canto de arriba, en veces el alto del
+   diente: el campo que lo sierra se centra a 0,55·h y su semieje a lo ancho
+   es 0,9·h·penumbra, y el apagado deja de leerse como masa —por debajo de
+   0,45, que es el umbral con el que está ajustado el tamaño en la escena—
+   al 76 % de ese semieje con `filo` 2,2. Medido campo a campo: 1,45·h con
+   la penumbra en 1,3.
+
+   Lo usan los dos que pintan ese canto —el velo del lomo y la punta
+   encendida de cada diente—, y por eso está aquí: iban los dos a `h`, o
+   sea DENTRO del diente y a dos tercios de su altura, así que la luz no
+   seguía el contorno que dibuja la sombra. */
+const levMasa = pen => 0.55 + 0.69*pen;
 function levCresta(s, n, cresta){
   if (!(n > 0) || !(cresta > 0)) return 1;
   const media = 0.62/n;

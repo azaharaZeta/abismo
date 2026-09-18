@@ -1043,16 +1043,27 @@ export const ABISMO = {
          escala: el pánico es igual para todos. */
       desorden: 0.28,
 
-      /* ÁGILES: viran rápido, cambian de idea a menudo y el tirón del
-         nervio pesa. Un banco de peces lentos es una procesión. */
+      /* ÁGILES PERO NO NERVIOSOS, y la diferencia la marcan los cuatro
+         números del nervio, no `vira` —ése es el que sostiene el cardumen:
+         un pez que no puede virar no sigue al grupo—. Con el dardo cada
+         medio segundo el pez no nada, da sacudidas: medido, el 3,1 % de los
+         fotogramas tenían un salto de velocidad de más de un cuarto y la
+         media era 1,43 U/s contra un crucero de 0,66, o sea que el tirón
+         ERA el estado normal. Con estos valores, el 1,0 % y 1,23 U/s: el
+         dardo vuelve a ser un acento. */
       vel: 0.66, velCebada: 0.92, velSusto: 3.4,
       vira: [2.0, 3.8],           // rad/s: vira rápido y corrige a menudo
       rumbo: [0.6, 2.0],          // cambia de idea cada poco
-      /* NERVIO: tirones cortos por encima del crucero, con un desvío de
-         rumbo en el mismo instante. No va más lejos, va a sacudidas. */
-      nervio: [0.5, 1.6],         // U/s de tirón, se suma al nado
-      cadaNervio: [0.18, 0.75],   // cada cuánto le da
-      desvio: 0.5,                // radianes que tuerce al dárselo
+      /* NERVIO: un dardo corto por encima del crucero, con un desvío de
+         rumbo en el mismo instante. Es un ACENTO: a `cadaNervio` corto deja
+         de leerse como que el pez ha decidido algo. */
+      nervio: [0.35, 1.1],        // U/s de tirón, se suma al nado
+      cadaNervio: [0.7, 2.4],     // cada cuánto le da
+      nervioVuelve: 0.22,         // lo que le queda al tirón cada segundo
+      desvio: 0.28,               // radianes que tuerce al dárselo
+      /* y cuánto tarda en voltear de un lado al otro, en 1/s: el escorzo
+         del espejo (ver `dibuja`). A 7 tarda unas dos décimas. */
+      volteo: 7,
       aleteo: 17,
       trago: 0.42,                // lo que tarda en entrar por la boca
       /* ── SE APARTA DEL DEDO ────────────────────────────────────

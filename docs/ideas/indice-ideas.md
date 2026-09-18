@@ -22,10 +22,6 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 
 ## Ideas de usuario (pendientes de procesar)
 > Solo un humano edita esta sección. Texto breve; el detalle se desarrolla al crear la ficha.
-- el brillo de las espinas me gusta, pero no sigue el contorno de las espinas, revisalo
-- el evento super pez ya no lo queremos. cámbialo por un evento de super colores en los peces
-- nuevo evento : una medusa se reproduce por mitosis. para evitar que se llene de medusas el acuario, considera mantener un máximo y cuando haya de más, hacer que una se vaya disimuladamente fuera del marco y desaparezca, por ejemplo. pero antes de ejecutar, considera opciones, riesgos, complejidad, y vemos la mejor solución.
-- revisa la lógica de los peces para que naden con más naturalidad. a veces parece que tienen ataques de hipo, o nadan boca abajo, cosas así. no te líes con mecánicas demasiado complicadas, mira de refactorizar si es necesario para dejar also sencillo y resultón para peces y cardúmenes.
 
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos que dejaron las ideas procesadas el 2026-09-17 y el 2026-09-18.
@@ -37,3 +33,4 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 - `contagio` conserva `porContacto: 0.3`, o sea que tocar todavía puede lanzarlo: ahora se pisa con la onda de plancton del propio dedo.
 - Un `manifest.json` con `orientation: landscape` haría que, instalada en la pantalla de inicio, la pieza abra ya tumbada en Android (iOS no lo respeta). En el navegador ya lo cubre el vuelco del marco.
 - El leviatán vive en el plano del fondo —un tercio de resolución y 58 % de alfa—: si aun con la luz subida se ve poco, el único mando que queda es el plano, y eso le quita el «enorme y lejos», que es su tema.
+- Los peces giran 92 °/s de media, o sea que casi nunca sostienen un rumbo. Se baja con `vira`, pero es el número que sostiene el cardumen —un pez que no vira no sigue al grupo— y mi medida de alineación (un parámetro global con ±0,16 de ruido a 38 peces) no distingue si lo rompe: haría falta medir la alineación por vecindario antes de tocarlo.

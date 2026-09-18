@@ -183,6 +183,7 @@ especie('pezlinterna', {
     /* su intervalo entre miradas, sorteado UNA vez: la primera mirada sale
        de él, así que tiene que ser el mismo número */
     const rea = rango((p.cardumen && p.cardumen.reacciona) || 0);
+    const ang = Math.random()*TAU;
     return {
       /* TENDENCIA, no regla: el resto sigue sorteando de la paleta entera,
          así que entre los dominantes siguen cruzándose peces sueltos de
@@ -196,7 +197,10 @@ especie('pezlinterna', {
          deben perseguirse entre ellos */
       rLuz: Lg*p.alcanceLuz, luzI: p.emision, senuelo: false,
       rCuerpo: Lg*opt(p.alcanceCuerpo, 0.7),
-      ang: Math.random()*TAU, angObj: Math.random()*TAU,
+      ang, angObj: Math.random()*TAU,
+      /* A QUÉ LADO MIRA, de −1 a 1. Arranca ya puesto: de nacer a cero, los
+         primeros fotogramas se le ven voltear. Ver el espejo en `dibuja`. */
+      gx: Math.cos(ang) < 0 ? -1 : 1,
       vel: 0, prox: rnd(0.5, 4),
       vira: rango(p.vira),
       /* CADA PEZ, UN POCO DISTINTO. Sin esto todos nadan a la misma velocidad
@@ -478,12 +482,22 @@ especie('pezlinterna', {
         z.tiron = rango(p.nervio)*M.U*cal;
         z.angObj += rnd(-1,1)*(p.desvio || 0)*cal;
       }
-      z.tiron *= Math.pow(0.03, dt);
+      /* `nervioVuelve` es lo que le queda al tirón cada segundo, y es el
+         mando de que el dardo se lea como un DARDO y no como un hipo: a
+         0,03 se corta en un tercio de segundo y el pez da una sacudida; a
+         0,22 se va en dos tercios y el pez dardea y PLANEA. */
+      z.tiron *= Math.pow(opt(p.nervioVuelve, 0.03), dt);
     }
 
     const dd = giroCorto(z.angObj, z.ang);
     const giro = z.vira * (z.susto ? 3 : 1) * dt;
     z.ang += clamp(dd, -giro, giro);
+
+    /* EL VOLTEO. `gx` persigue el lado al que mira y tarda lo suyo: es lo
+       que hace que cambiar de sentido se vea como un pez que se escora y
+       pasa de perfil, y no como un espejo instantáneo. Ver `dibuja`. */
+    const lado = Math.cos(z.ang) < 0 ? -1 : 1;
+    z.gx += (lado - z.gx) * Math.min(1, opt(p.volteo, 7)*dt);
 
     z.susto = Math.max(0, z.susto - dt);
     const objVel = M.U * (z.susto ? p.velSusto
@@ -550,7 +564,21 @@ especie('pezlinterna', {
 
     g.save();
     g.translate(z.x, z.y);
-    g.rotate(z.ang);            // +x es hacia donde nada
+    /* ── SE ESPEJA, NO SE GIRA DEL TODO ──────────────────────────
+       `+x` es hacia donde nada, pero `+y` es su PANZA: girando el eje
+       entero, un pez con el rumbo a la izquierda sale BOCA ABAJO —la hilera
+       del vientre por encima y el ojo por debajo—, y pasa el 41 % del
+       tiempo. Hacia ese lado se le da media vuelta más y se espeja en x:
+       así el morro sigue el rumbo y la panza sigue mirando al fondo. Es lo
+       que hace `enPez()` con el rape.
+
+       El espejo va con `z.gx`, que se mueve despacio, o sea que el cambio
+       de lado se ve como un escorzo y no como un salto —cruzan la vertical
+       media vez por segundo, así que saltando se vería—. Y no llega a cero:
+       de perfil puro el pez no existe, pero el trazado no puede degenerar. */
+    const gx = Math.abs(z.gx) < 0.08 ? (z.gx < 0 ? -0.08 : 0.08) : z.gx;
+    g.rotate(gx > 0 ? z.ang : z.ang + Math.PI);
+    g.scale(gx, 1);
     if (men < 1) g.scale(Math.max(0.06, men), Math.max(0.06, men));
 
     /* El cuerpo. Se pinta siempre que haya ALGO que pintar, y ahora eso
