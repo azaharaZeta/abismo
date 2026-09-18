@@ -197,6 +197,34 @@ const N_MIEMBRO = CUERPO_MIEMBROS.map(
   Mi => Math.max(3, Math.round((Mi.largos[0] + Mi.largos[1]) / PASO_MIEMBRO)));
 const N_PIEL = N_TRONCO + N_MIEMBRO.reduce((a, b) => a + b, 0);
 
+/* LOS TRAMOS DE PIEL, en índices de `piel`: el tronco y cada miembro. Los
+   necesita el borde, que une muestras CONSECUTIVAS: la última del tronco y
+   la primera del brazo lo son en el array y están a medio cuerpo la una de
+   la otra.
+
+   Y CADA MIEMBRO EMPIEZA EN SU SEGUNDA MUESTRA: la primera es la raíz, que
+   nace DENTRO del tronco a propósito —es lo que hace que el brazo no salga
+   pegado al canto—, así que su «canto» cae en plena masa oscura. Con ella,
+   las dos muestras de una raíz se cosen en un trazo y el cuerpo sale con
+   una cremallera por el esternón. Va aquí y no en `bordeTapado`: eso es un
+   umbral para los cruces de verdad —el brazo por delante del hombro— y
+   bajarlo hasta tragarse las raíces se lleva también canto bueno. */
+const TRAMOS = (() => {
+  const t = [[0, N_TRONCO]];
+  let i = N_TRONCO;
+  for (const n of N_MIEMBRO){ t.push([i+1, i+n]); i += n; }
+  return t;
+})();
+
+/* ── LO QUE COMPARTE EL BORDE ───────────────────────────────────────
+   La luz que recibe cada muestra y el canto que sale de ella. En arrays de
+   módulo: se llenan y se consumen dentro de la misma llamada —un cuerpo
+   cada vez—, que es el convenio de la casa para no asignar por fotograma. */
+const _luzX = new Float32Array(N_PIEL), _luzY = new Float32Array(N_PIEL);
+const _luzC = new Array(N_PIEL).fill(null);
+const _cx = new Float32Array(N_PIEL), _cy = new Float32Array(N_PIEL);
+const _ca = new Float32Array(N_PIEL), _cc = new Array(N_PIEL).fill('');
+
 function cuerpoFlexion(b, ly, t){
   const peso = Math.min(1, Math.abs(ly)/0.40);
   return peso * (b.arqueo + b.onda*Math.sin(ly*b.k + b.fase + t*b.vOnda));
@@ -443,7 +471,24 @@ function cuerpoCampos(b, M, plano, pen, filo, vai){
    —el brazo por donde cruza el hombro— preguntándole al motor por su
    propio campo `apaga`: en el canto, el campo de esa misma muestra vale
    cero, así que lo que devuelva viene de otra parte. Sin esto salen rayas
-   por dentro de la masa oscura y el cuerpo se lee como un despiece. */
+   por dentro de la masa oscura y el cuerpo se lee como un despiece.
+
+   ── Y SE COSE, NO SE PUNTEA ─────────────────────────────────────────
+   Un trazo RECTO por muestra se lee TOSCO, y sobre todo en los miembros:
+   su paso es 0,075 del alto contra los 0,030 del tronco, así que cada
+   trazo de un brazo medía una décima parte del cuerpo —rayas rectas con
+   hueco entre ellas, y la última asomando medio paso más allá de la mano—.
+
+   Dos muestras seguidas encendidas se unen ahora con un TROZO DE CURVA, y
+   las tangentes son el EJE del cuerpo en cada punta, que `cuerpoCampos` ya
+   deja apuntado en `piel`: el canto sale con la curvatura que tiene el
+   cuerpo ahí, sin cuerdas, sin huecos y sin asomar por las puntas. El alfa
+   y el tinte van en un degradado de una muestra a la otra, así que tampoco
+   hay escalones de brillo de un trozo al siguiente.
+
+   Lo que NO cambia es cuántas muestras hay: el paso lo fija el coste de
+   `M.campo()` —ver arriba— y dibujar no cuesta nada. Suavizar es gratis;
+   muestrear más, no. */
 function pintaBordeCuerpo(b, M, p, g, plano){
   const gan = opt(p.borde, 0);
   if (!(gan > 0)) return;
@@ -453,93 +498,159 @@ function pintaBordeCuerpo(b, M, p, g, plano){
   const techo = opt(p.bordeTecho, 1);
   const T = p.bordeTono || [180, 196, 206], tinte = opt(p.bordeTinte, 0);
   const grosor = Math.max(0.5, M.U*opt(p.bordeGrosor, 0.05));
+  const tapado = opt(p.bordeTapado, 0.25);
   g.lineCap = 'round';
   g.lineWidth = grosor;
+
+  /* ── 1 · LA LUZ QUE LE LLEGA A CADA MUESTRA ──────────────────────
+     Una vez por muestra y no una por lado: es la parte que cuesta —recorre
+     los focos— y de ella salen los dos lados.
+
+     LA CURVA es la de `luzRecibida` —pow(1/(1+d²/r²), caida)— y NO la de
+     la carroña, que se corta en `r`: los radios de esta escena van de 16
+     px a 125 y un cuerpo baja por agua vacía, así que con corte el canto
+     sale todo o nada (medido: `alcance` 9 daba el 0 % de los fotogramas
+     con algo encendido y 13 el 100 %). Sin corte hay un hilo de luz a
+     cualquier distancia y sube cuando algo se acerca. */
   for (let i=0;i<N_PIEL;i++){
     const j = i*5;
-    const x = b.piel[j], y = b.piel[j+1], rot = b.piel[j+2];
-    const anc = b.piel[j+3], rl = b.piel[j+4];
-    if (!(anc > 0)) continue;
-    /* LA CURVA es la de `luzRecibida` —pow(1/(1+d²/r²), caida)— y NO la de
-       la carroña, que se corta en `r`: los radios de esta escena van de 16
-       px a 125 y un cuerpo baja por agua vacía, así que con corte el canto
-       sale todo o nada (medido: `alcance` 9 daba el 0 % de los fotogramas
-       con algo encendido y 13 el 100 %). Sin corte hay un hilo de luz a
-       cualquier distancia y sube cuando algo se acerca. */
+    _luzX[i] = _luzY[i] = 0; _luzC[i] = null;
+    if (!(b.piel[j+3] > 0)) continue;
+    const x = b.piel[j], y = b.piel[j+1];
     let lx = 0, ly = 0, mejor = 0, cm = null;
     for (const o of luces){
       const r = (o.rCuerpo || o.rLuz) * alc;
       if (!r) continue;
       const dx = o.x - x, dy = o.y - y, d2 = dx*dx + dy*dy;
-      const q = d2/(r*r);
-      const w = (o.luzI || 1) * Math.pow(1/(1 + q), caida);
+      const w = (o.luzI || 1) * Math.pow(1/(1 + d2/(r*r)), caida);
       if (w < 0.002) continue;
       const d = Math.sqrt(d2) || 1e-4;
       lx += dx/d*w; ly += dy/d*w;
       if (w > mejor){ mejor = w; cm = o.c; }
     }
-    if (Math.hypot(lx, ly) < 0.004) continue;
-    /* UN PUNTO DEL COLOR DE QUIEN LO ALUMBRA, y poco: con el gris a secas
-       el cuerpo se despega de la escena —sería lo único que no comparte
-       tono con nada— y teñido del todo vuelve a parecer otro bicho que
-       brilla. El tinte es del foco que más pesa EN ESTA MUESTRA, así que
-       un cuerpo entre dos medusas de colores distintos se tiñe distinto
-       de cada lado. */
-    let R = T[0], G = T[1], B = T[2];
-    if (tinte > 0 && cm && cm.mid){
-      R += (cm.mid[0] - R)*tinte;
-      G += (cm.mid[1] - G)*tinte;
-      B += (cm.mid[2] - B)*tinte;
-    }
-    const col = (R|0)+','+(G|0)+','+(B|0)+',';
-    /* el eje de la muestra y su normal: el canto está a `anc` de ahí, a un
-       lado y al otro */
-    const ex = Math.cos(rot), ey = Math.sin(rot);
-    const nx = -ey, ny = ex;
-    /* EL TRAZO MIDE EL PASO, no el ancho del cuerpo. Con el ancho, en el
-       tronco sobra —26 px de trazo para 7 de paso— y en los miembros falta
-       —7 para 18—: el canto de un brazo sale a rayitas. El paso es
-       `paso·LARGO_CAMPO`, y se estira un 30 % para que dos trazos seguidos
-       se pisen con la punta redonda. */
-    const largo = rl/LARGO_CAMPO*1.3;
+    _luzX[i] = lx; _luzY[i] = ly; _luzC[i] = cm;
+  }
+
+  /* ── 2 · EL CANTO, TRAMO A TRAMO Y LADO A LADO ──────────────────
+     Primero qué muestras de este lado miran a la luz y por dónde les cae
+     el canto, y después la costura: dos seguidas se unen con curva. El
+     tramo es lo que impide coser el tronco con un brazo. */
+  for (let t=0;t<TRAMOS.length;t++){
+    const ini = TRAMOS[t][0], fin = TRAMOS[t][1];
     for (let lado=-1;lado<=1;lado+=2){
-      /* ¿mira este lado a la luz? `cara` sale ya con la intensidad dentro.
-         La única puerta aquí es el signo —de espaldas no se enciende—; lo
-         flojo lo corta el alfa más abajo. Con una puerta en 0,01 se pierde
-         el caso normal: por agua vacía la luz que le llega vale unas cinco
-         milésimas, así que las dos caras la fallan y el cuerpo se queda
-         negro entero. */
-      const cara = nx*lado*lx + ny*lado*ly;
-      if (cara <= 0) continue;
-      /* JUSTO POR FUERA de la masa y no en el canto exacto. Un cuerpo
-         mojado tiene el reflejo en el borde, no dentro, y además es lo que
-         descuenta los falsos positivos de la prueba de abajo: en el canto
-         exacto, el trozo donde un brazo sale del hombro está medio
-         enterrado en el tronco y se descarta. Medido: de 82 trozos, 43 dan
-         la espalda a la luz —eso es lo que se quiere— y 15 salen
-         enterrados; un pelo por fuera, la mayoría de esos 15 son canto de
-         verdad. */
-      const fuera = anc + grosor*0.7;
-      const bx = x + nx*lado*fuera, by = y + ny*lado*fuera;
-      /* y si este trozo sigue enterrado en otra parte del cuerpo, no es
-         canto: es una raya por dentro de la masa oscura, y con ellas el
-         cuerpo se lee como un despiece */
-      const dentro = M.campo('apaga', bx, by, plano);
-      if (dentro && dentro.peso > opt(p.bordeTapado, 0.25)) continue;
-      /* EL TECHO, con rodilla blanda en vez de recorte. La luz que le llega
-         tiene un rango enorme —de 0,02 sin nada cerca a más de 1 con una
-         medusa al costado—, así que sin esto el canto se clava en alfa 1 y
-         el cuerpo pasa de hueco a figura recortada en blanco.
-         `cara/(1 + cara/techo)` sube recto al principio y se acerca al
-         techo sin llegar, así que siempre queda margen para ponerse más
-         vivo. */
-      const a = gan*cara/(1 + cara/techo);
-      if (a < 0.004) continue;
-      g.strokeStyle = 'rgba('+col+a.toFixed(3)+')';
-      g.beginPath();
-      g.moveTo(bx - ex*largo*0.5, by - ey*largo*0.5);
-      g.lineTo(bx + ex*largo*0.5, by + ey*largo*0.5);
-      g.stroke();
+      let vivos = 0;
+      for (let i=ini;i<fin;i++){
+        _ca[i] = 0;
+        const j = i*5, anc = b.piel[j+3];
+        if (!(anc > 0)) continue;
+        const lx = _luzX[i], ly = _luzY[i];
+        if (lx*lx + ly*ly < 1.6e-5) continue;       // 0,004 de módulo
+        /* el eje de la muestra y su normal hacia este lado: el canto está
+           a `anc` de ahí */
+        const rot = b.piel[j+2];
+        const nx = -Math.sin(rot)*lado, ny = Math.cos(rot)*lado;
+        /* ¿mira este lado a la luz? `cara` sale ya con la intensidad
+           dentro. La única puerta aquí es el signo —de espaldas no se
+           enciende—; lo flojo lo corta el alfa. Con una puerta en 0,01 se
+           pierde el caso normal: por agua vacía la luz que le llega vale
+           unas cinco milésimas, así que las dos caras la fallan y el
+           cuerpo se queda negro entero. */
+        const cara = nx*lx + ny*ly;
+        if (cara <= 0) continue;
+        /* EL TECHO, con rodilla blanda en vez de recorte. La luz que le
+           llega tiene un rango enorme —de 0,02 sin nada cerca a más de 1
+           con una medusa al costado—, así que sin esto el canto se clava
+           en alfa 1 y el cuerpo pasa de hueco a figura recortada en
+           blanco. `cara/(1 + cara/techo)` sube recto al principio y se
+           acerca al techo sin llegar, así que siempre queda margen para
+           ponerse más vivo. */
+        const a = gan*cara/(1 + cara/techo);
+        if (a < 0.004) continue;
+        /* JUSTO POR FUERA de la masa y no en el canto exacto. Un cuerpo
+           mojado tiene el reflejo en el borde, no dentro, y además es lo
+           que descuenta los falsos positivos de la prueba de abajo: en el
+           canto exacto, el trozo donde un brazo sale del hombro está medio
+           enterrado en el tronco y se descarta. Medido: de 82 trozos, 43
+           dan la espalda a la luz —eso es lo que se quiere— y 15 salen
+           enterrados; un pelo por fuera, la mayoría de esos 15 son canto
+           de verdad. */
+        const fuera = anc + grosor*0.7;
+        const cx = b.piel[j] + nx*fuera, cy = b.piel[j+1] + ny*fuera;
+        /* y si este trozo sigue enterrado en otra parte del cuerpo, no es
+           canto: es una raya por dentro de la masa oscura, y con ellas el
+           cuerpo se lee como un despiece */
+        const dentro = M.campo('apaga', cx, cy, plano);
+        if (dentro && dentro.peso > tapado) continue;
+        /* UN PUNTO DEL COLOR DE QUIEN LO ALUMBRA, y poco: con el gris a
+           secas el cuerpo se despega de la escena —sería lo único que no
+           comparte tono con nada— y teñido del todo vuelve a parecer otro
+           bicho que brilla. El tinte es del foco que más pesa EN ESTA
+           MUESTRA, así que un cuerpo entre dos medusas de colores
+           distintos se tiñe distinto de cada lado. */
+        let R = T[0], G = T[1], B = T[2];
+        const cm = _luzC[i];
+        if (tinte > 0 && cm && cm.mid){
+          R += (cm.mid[0] - R)*tinte;
+          G += (cm.mid[1] - G)*tinte;
+          B += (cm.mid[2] - B)*tinte;
+        }
+        _cx[i] = cx; _cy[i] = cy; _ca[i] = a;
+        _cc[i] = (R|0)+','+(G|0)+','+(B|0)+',';
+        vivos++;
+      }
+      if (!vivos) continue;
+      for (let i=ini;i<fin;i++){
+        if (!(_ca[i] > 0)) continue;
+        if (i+1 < fin && _ca[i+1] > 0)            cose(g, b, i, i+1);
+        else if (!(i > ini && _ca[i-1] > 0))      hilacha(g, b, i);
+      }
     }
   }
+}
+
+/* Un trozo de canto entre dos muestras seguidas. Cúbica de Hermite: las
+   tangentes son el eje del cuerpo en cada punta y el control va a un tercio
+   de la cuerda, que para los ángulos de aquí —el codo es el peor, 0,4
+   rad— no se distingue de un arco. */
+function cose(g, b, i, k){
+  const x0 = _cx[i], y0 = _cy[i], x1 = _cx[k], y1 = _cy[k];
+  const dx = x1 - x0, dy = y1 - y0, d2 = dx*dx + dy*dy;
+  if (d2 < 0.01) return;
+  const m = Math.sqrt(d2)/3;
+  let e0x = Math.cos(b.piel[i*5+2]), e0y = Math.sin(b.piel[i*5+2]);
+  let e1x = Math.cos(b.piel[k*5+2]), e1y = Math.sin(b.piel[k*5+2]);
+  /* el eje viene apuntando a lo suyo y no al recorrido —el tronco va de la
+     coronilla a los pies y un lado del canto se recorre al revés—, y con el
+     control hacia atrás el trozo hace un rizo */
+  if (e0x*dx + e0y*dy < 0){ e0x = -e0x; e0y = -e0y; }
+  if (e1x*dx + e1y*dy < 0){ e1x = -e1x; e1y = -e1y; }
+  const gr = g.createLinearGradient(x0, y0, x1, y1);
+  gr.addColorStop(0, 'rgba(' + _cc[i] + _ca[i].toFixed(3) + ')');
+  gr.addColorStop(1, 'rgba(' + _cc[k] + _ca[k].toFixed(3) + ')');
+  g.strokeStyle = gr;
+  g.beginPath();
+  g.moveTo(x0, y0);
+  g.bezierCurveTo(x0 + e0x*m, y0 + e0y*m, x1 - e1x*m, y1 - e1y*m, x1, y1);
+  g.stroke();
+}
+
+/* Una muestra sola —la de al lado da la espalda a la luz o está
+   enterrada—: un trazo del largo del paso que se apaga por los dos cabos.
+   A alfa plano vuelve a ser la raya suelta de antes. El largo sale del
+   semieje del campo y no del ancho del cuerpo: con el ancho, en el tronco
+   sobra el triple y en los miembros falta la mitad. */
+function hilacha(g, b, i){
+  const j = i*5, rot = b.piel[j+2];
+  const largo = b.piel[j+4]/LARGO_CAMPO*0.9;
+  const ex = Math.cos(rot)*largo*0.5, ey = Math.sin(rot)*largo*0.5;
+  const x0 = _cx[i] - ex, y0 = _cy[i] - ey, x1 = _cx[i] + ex, y1 = _cy[i] + ey;
+  const gr = g.createLinearGradient(x0, y0, x1, y1);
+  gr.addColorStop(0.00, 'rgba(' + _cc[i] + '0)');
+  gr.addColorStop(0.50, 'rgba(' + _cc[i] + _ca[i].toFixed(3) + ')');
+  gr.addColorStop(1.00, 'rgba(' + _cc[i] + '0)');
+  g.strokeStyle = gr;
+  g.beginPath();
+  g.moveTo(x0, y0);
+  g.lineTo(x1, y1);
+  g.stroke();
 }

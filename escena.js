@@ -176,8 +176,15 @@ export const ABISMO = {
          deja la panza lisa. Dientes desiguales. */
       espinas: 10, cresta: 0.55,
       /* `brillo` es SÓLO los dos cantos, los fotóforos y el ojo: el cuerpo
-         no emite nada. */
-      brillo: 0.32, fotoforos: 11,
+         no emite nada.
+
+         MEDIDO sobre negro, pintándolo a mano y contando píxeles: deja 400
+         píxeles por encima de 60 con un pico de 280 de 765. El mando de
+         que se LEA es el ÁREA encendida y no el pico: a la mitad de
+         `brillo` el pico casi no baja —250— y el área se queda en 32
+         píxeles, o sea doce veces menos. Más sitios con luz, no un punto
+         más brillante. */
+      brillo: 0.55, fotoforos: 16,
       /* ── SU COLOR ────────────────────────────────────────────────
          De aquí sale todo lo que emite: ojo, hilo de la cresta, fotóforos
          y filo de la caudal. Un color por travesía, no por componente, y
@@ -194,12 +201,15 @@ export const ABISMO = {
                   sat: [0.86, 1.00], luz: [0.50, 0.64],
                   satGlow: [0.82, 1.00], luzGlow: [0.24, 0.34],
                   luzCore: [0.80, 0.90], giroGlow: -6 },
-      /* multiplica a `brillo`, así que el mando del panel lo apaga también.
-         Por encima de 1 y no es contradictorio con «sutil»: el leviatán
-         vive en el plano del fondo, a un tercio de resolución y al 58 %
-         de alfa, así que a 1,1 el punto se disuelve en el borrón. A 2,0
-         es un alfiler rojo y sigue sin alumbrar nada. */
-      brilloOjo: 2.0,
+      /* multiplica a `brillo`, así que el mando del panel lo apaga también
+         y el que manda es el PRODUCTO de los dos. Por encima de 1 y no es
+         contradictorio con «sutil»: el leviatán vive en el plano del
+         fondo, a un tercio de resolución y al 58 % de alfa, así que por
+         debajo de 0,6 de producto el punto se disuelve en el borrón. A
+         0,7 es un alfiler rojo (185,55,40 el píxel más alto) y sigue sin
+         alumbrar nada; pasado 1,2 el núcleo se satura y el ojo deja de
+         ser rojo para ser una farola blanca. */
+      brilloOjo: 1.3,
       /* ── Y EL LOMO ───────────────────────────────────────────────
          Le dan color al canto de arriba, que sólo tenía la sierra oscura
          de los campos. Los dos van CORTOS a propósito —el leviatán es un
@@ -219,7 +229,7 @@ export const ABISMO = {
          es cuánto sube el píxel más alto. Contra el hilo de la panza, que
          sube 347 de 765, el lomo va a una trigésima parte y las espinas a
          una docena de veces menos. */
-      brilloLomo: 0.35, brilloEspinas: 1.4 },
+      brilloLomo: 0.55, brilloEspinas: 2.0 },
 
     /* ── LA CARROÑA ─────────────────────────────────────────────────
        Algo muerto que se hunde, y NO EMITE NADA: se ve sólo mientras pasa
@@ -408,9 +418,11 @@ export const ABISMO = {
                         se pinta. Sin esto salen rayas por dentro de la
                         masa oscura y el cuerpo se lee como un despiece.
 
-         Con estos valores, y medido sobre tres travesías enteras: de los
-         82 trozos de canto se encienden unos 30, 41 quedan de espaldas a
-         la luz y 11 enterrados. Que la mitad esté siempre negra es lo que
+         Con estos valores, medido sobre doce cuerpos con la luz dando por
+         los cuatro lados: de los 74 trozos de canto —las muestras de piel
+         por sus dos lados, menos las raíces de los miembros, que el borde
+         no mira— se encienden unos 27, 37 quedan de espaldas a la luz y 10
+         salen enterrados. Que la mitad esté siempre negra es lo que
          mantiene al cuerpo siendo un hueco; el alfa del trazo va de 0,04
          a 0,20, o sea que se ve siempre un poco y mucho más cuando algo
          lo encuentra. */
@@ -632,10 +644,15 @@ export const ABISMO = {
            pecera, así que su ladeo se va y vuelve en unos cinco segundos en
            vez de en tres.
 
-         MEDIDO: el ladeo se topa en 1,42 U/s, del orden del 1,2 que da su
-         propio pulso en el latigazo, y se va 0,46 U al segundo y medio y
-         1 U a los dos segundos. */
-      apartaDedo: 1.2, aparta: [0.7, 1.2], lag: [5, 9],
+         MEDIDO, tocando a dos U de una medusa del plano de delante: el
+         frente le pasa por encima en medio segundo, así que del tope no
+         coge más de la mitad, y de ahí salen los dos números —`apartaDedo`
+         pone el tope y `lag` cuánto de él se coge antes de que el frente se
+         vaya—. Se ladea 0,5 U a los 0,6 s, 1,8 a los 1,2 y 3,7 a los dos
+         segundos, o sea tres radios de campana. Las de los planos de atrás
+         se ladean menos: `drift` les recorta la velocidad —0,44 en el
+         fondo— igual que se la recorta al pulso. */
+      apartaDedo: 2.2, aparta: [0.7, 1.2], lag: [7, 12],
       apartaVuelve: 0.78,
       borde: 0.8,
     },
@@ -856,39 +873,43 @@ export const ABISMO = {
        cosas: de lejos, la única cosa viva y de colores que cruza el
        cuadro; de cerca, lo que ALUMBRA. */
     { especie: 'pezlinterna',
-      /* Muchos: el banco es el espectáculo, y con nueve peces no hay
-         banco, hay nueve peces. El tope alto es para pantallas grandes;
-         `escalaCalidad` los recorta si la máquina no da.
+      /* POCOS Y GRANDES, pero el banco sigue siendo el espectáculo, y lo
+         que lo hace banco es la DENSIDAD y no la cuenta: con estos y
+         `roce` a 3 U cada pez ve a 2,8 vecinos dentro de su `vista`. Por
+         debajo de una docena no hay banco, hay una docena de peces. El
+         tope alto es para pantallas grandes; `escalaCalidad` los recorta
+         si la máquina no da.
 
          OJO A CUÁL DE LOS TRES MANDA: a 1024×768 son 786.000 píxeles, o
-         sea 71 peces por área, así que el que corta es `max` y no `cada`.
+         sea 49 peces por área, así que el que corta es `max` y no `cada`.
          Para que el cambio se note en una pantalla chica, donde manda
          `cada`, hay que mover los dos. */
-      total: {cada:11000, min:24, max:60},
+      total: {cada:16000, min:15, max:38},
       /* cargado hacia delante: el banco que se tiene que leer como banco
          es el de cerca; el del fondo son motas */
       reparto: [0.24, 0.34, 0.42],
       /* `roce` (en el cardumen) va en U y no en largos, así que al crecer
          el bicho hay que subirlo CON ÉL o el banco se solapa. */
-      largo: [0.86, 1.44],
+      largo: [1.15, 1.92],
       /* El círculo entero de tono, porque fotóforos verdes, ámbar y
          rosados los hay de verdad, y bastantes tramos porque el banco
          tiene que leerse moteado de color. `luzGlow` abajo: el bicho tiene
          color, el agua no.
 
-         PLATEADO PERO NO GRIS, y el mando de eso es `luz` y NO `sat`: en
-         HSL las dos se pelean —a `luz` 0,85 un `sat` de 0,9 da
-         (182,251,182), un pastel con un 27 % de saturación real—. El
-         plateado sale subiendo `luz` un poco y bajando `sat` un poco; al
-         revés (`luz` 0,88 con `sat` al máximo) el banco sale blanco. Con
-         estos valores la saturación real del `mid` queda en 0,33-0,67.
+         COLOR Y NO PLATEADO, y el mando de eso es `luz` y NO `sat`: en HSL
+         las dos se pelean —a `luz` 0,85 un `sat` de 0,9 da (182,251,182),
+         un pastel con un 27 % de saturación real—. El color sale BAJANDO
+         `luz` hacia 0,5, que es donde el tono es puro; subiéndola se va a
+         plateado, y con `luz` 0,88 y `sat` al máximo el banco sale blanco.
+         Con estos valores la saturación real del `mid` queda en 0,56-0,91
+         y la del halo, en 0,82-0,96.
 
          `satGlow` va aparte y algo más bajo, porque de un pez a distancia
          lo que se ve es el HALO del fotóforo: el punto es `core` y sale
          casi blanco pase lo que pase. */
       espectro: { tono: [0, 352], tramos: 32,
-                  sat: [0.78, 1.00], luz: [0.64, 0.80],
-                  satGlow: [0.56, 0.82], luzGlow: [0.20, 0.30],
+                  sat: [0.88, 1.00], luz: [0.54, 0.70],
+                  satGlow: [0.70, 0.92], luzGlow: [0.20, 0.30],
                   giroGlow: 6 },
       /* ── Y EL ORDEN EN EL SORTEO ──────────────────────────────
          Uno o dos tonos mandan en toda la pecera y `tendencia` es qué
@@ -971,7 +992,7 @@ export const ABISMO = {
          toca. Una tanda tomada con la población recortada por
          `degradar()` da un banco más denso, más apretado y más redondo, y
          lleva a conclusiones falsas. */
-      cardumen: { vista: 4.2, roce: 2.25, propio: 0.40,
+      cardumen: { vista: 4.2, roce: 3.0, propio: 0.40,
                   aparta: 1.8, alinea: 1.6, junta: 0.9,
                   ciego: 1.9, reacciona: [0.18, 0.68] },
       /* Segundos de pánico cuando algo muerde al lado, a peso pleno del
@@ -1041,18 +1062,21 @@ export const ABISMO = {
 
            `apartaDedo`   la velocidad de ese desvío a plena onda, en U/s.
                           Es una VELOCIDAD y no una fuerza, y por eso se ve
-                          (ver `seAparta` en comun.js). A 1,4 el tope queda
-                          en 1,8 U/s, que está DENTRO de lo que el pez ya
-                          hace solo: su crucero es 0,66 pero con el tirón
-                          del nervio darda a 1,7-2,5, así que el desvío se
-                          lee como un viraje suyo. Por encima de 3 empieza a
-                          leerse como huida.
+                          (ver `seAparta` en comun.js). El tope no se
+                          alcanza: el frente cruza al pez en medio segundo y
+                          la rampa se queda a la mitad, así que a 2,8 el
+                          tope es 3,6 U/s y lo que de verdad hace son 1,4.
+                          Eso lo pone entre su crucero (0,66) y el dardo
+                          del nervio (1,7-2,5), así que sigue leyéndose como
+                          un viraje suyo y no como huida.
            `lag`          con cuánta gana lo coge, en 1/s, y NO PUEDE IR
                           BAJO: el frente cruza al pez en menos de un
                           segundo, y a 3 la rampa sólo llega al 13 % antes
                           de que el frente se vaya —el pez se aparta tres
                           segundos DESPUÉS del gesto, o sea que no se ve—.
-                          A 5-9 lo coge mientras el frente está encima.
+                          A 7-12 coge la mitad del tope mientras el frente
+                          está encima; es el otro mando del desvío, y el
+                          único que lo hace más SECO.
            `apartaVuelve` lo que le queda cada segundo cuando el frente se
                           va. A 0,70 se queda en la mitad en 1,9 s, así que
                           sigue deslizándose un rato y el hueco tarda tres o
@@ -1062,11 +1086,13 @@ export const ABISMO = {
          `aparta` es la gana de cada pez, así que el hueco se abre desigual
          y no como una cortina.
 
-         MEDIDO con el arnés de Node a 60 fps, cruzando el banco de lado a
-         lado en un segundo y medio: el pez al que más le toca se desvía
-         0,36 U a los 0,6 s, 0,69 al segundo y 0,93 a 1,2 —un tercio de su
-         largo— y el desvío se queda topado en 1,78 U/s. */
-      apartaDedo: 1.4, aparta: [0.7, 1.3], lag: [5, 9],
+         MEDIDO con el arnés de Node a 60 fps, un toque y los peces que
+         entran en la onda, contra la MISMA tirada tocando fuera del cuadro
+         —restando las dos se separa lo que hizo el dedo de la divergencia
+         caótica, que a los dos segundos ya manda—: el pez al que más le
+         toca se desvía 1,7 U a los 0,6 s y 2,5 a los 1,2 —un largo y
+         medio—, y la media de los alcanzados, 0,6 y 1,1. */
+      apartaDedo: 2.8, aparta: [0.7, 1.3], lag: [7, 12],
       apartaVuelve: 0.70,
       borde: 1.0,
     },
