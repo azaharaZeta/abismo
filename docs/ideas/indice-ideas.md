@@ -31,7 +31,6 @@ _(vacía: las tres pendientes se procesaron el 2026-09-18.)_
 - Evento `E-06 La estampida`: ya sólo le falta el registro, el campo `asusta` está hecho.
 - Evento `E-02 El apagón`: sigue siendo el de más efecto por línea de código.
 - Onda de proa: un campo `empuja` que el leviatán y el cuerpo pongan al pasar, para que el plancton se aparte y no sólo se apague. OJO: choca con que el plancton ya no se aparta del dedo —habría que decidir si un cuerpo enorme es otra cosa que un dedo—, y la mota se quedó sin velocidad, así que habría que devolvérsela.
-- `M.campo()` es un recorrido lineal de `campos` y el plancton lo consulta por mota: con los tres cuerpos del evento del cuerpo son 39 campos y cuesta medio milisegundo de fotograma. Si algún día hay más cosas que tapen, aquí entra una rejilla —la misma que le hará falta al cardumen.
 - `contagio` conserva `porContacto: 0.3`, o sea que tocar todavía puede lanzarlo: ahora se pisa con la onda de plancton del propio dedo.
 - Un `manifest.json` con `orientation: portrait` y `display: standalone` dejaría la pieza instalable en la pantalla de inicio.
 - El leviatán vive en el plano del fondo —un tercio de resolución y 58 % de alfa—: si aun con la luz subida se ve poco, el único mando que queda es el plano, y eso le quita el «enorme y lejos», que es su tema.
