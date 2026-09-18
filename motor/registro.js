@@ -28,7 +28,9 @@
                    Aquí no se dibuja ni se mueve nada.
 
    Un objeto puede ponerse `o.alFrente = true` en su actualiza(): ese
-   fotograma se pinta el último y en el plano de delante.
+   fotograma se pinta el último y en el plano de delante. La bandera la BAJA
+   el motor al consumirla, así que vale para un fotograma y no hay que
+   acordarse de apagarla.
 
    M es la escena viva: M.W M.H M.U M.t M.paleta M.raro y los métodos
    M.color() M.empuje(x,y,banda) M.borde(x,y) M.flujoX(y,t) M.flujoY(x,t)

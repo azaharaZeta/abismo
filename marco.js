@@ -14,9 +14,13 @@ document.getElementById('reinicia')
   .addEventListener('click', () => reinicia());
 
 /* ── GIRAR EL MÓVIL ─────────────────────────────────────────────────
-   Automático y limpio no se puede: bloquear la orientación exige
-   pantalla completa y pedirla exige un gesto, así que sin botón no hay
-   giro. Y donde la API no está —iOS no tiene ni `lock` ni pantalla
+   La pieza ya sale en horizontal con el móvil de pie: marco.css vuelca
+   el cuadro 90°. Este botón pide el giro DE VERDAD —pantalla completa y
+   orientación bloqueada—, que es lo único que endereza la imagen; en
+   cuanto el viewport se gira, el vuelco de la hoja deja de aplicar.
+
+   Automático no se puede: bloquear la orientación exige pantalla
+   completa y pedirla exige un gesto. Y donde la API no está —iOS no tiene ni `lock` ni pantalla
    completa de documento— el botón NO SE PINTA: uno que no hace nada es
    peor que no tenerlo.
 
@@ -36,17 +40,22 @@ if (puede){
   };
   document.addEventListener('fullscreenchange', etiqueta);
   girar.addEventListener('click', async () => {
-    try {
-      if (document.fullscreenElement){
-        screen.orientation.unlock();
-        await document.exitFullscreen();
-      } else {
+    if (document.fullscreenElement){
+      /* SALIR PRIMERO y desbloquear después, y cada uno con su guarda: con
+         los dos en el mismo `try` y `unlock()` delante, un navegador en el
+         que `unlock()` lance deja el `exitFullscreen()` sin ejecutar y el
+         botón sin salida —la etiqueta sigue diciendo «salir» y cada
+         pulsación repite el mismo fallo. */
+      try { await document.exitFullscreen(); } catch { /* ya estaba fuera */ }
+      try { screen.orientation.unlock(); }    catch { /* no había bloqueo */ }
+    } else {
+      try {
         await raiz.requestFullscreen({navigationUI: 'hide'});
         /* el bloqueo puede fallar y la pantalla completa quedarse: no se
            deshace, que es lo que el usuario acaba de pedir a medias */
         await screen.orientation.lock('landscape');
-      }
-    } catch { /* el navegador ha dicho que no */ }
+      } catch { /* el navegador ha dicho que no */ }
+    }
     etiqueta();
   });
   etiqueta();

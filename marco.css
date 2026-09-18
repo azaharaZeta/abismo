@@ -11,6 +11,8 @@
   --filo2: #2a5c70;             /* el filo que coge luz */
   --tinta: #5d8899;
   --viva:  #a9d3e2;
+  --giro:  0deg;                /* el vuelco del cuadro: lo pone el móvil
+                                   de pie y lo lee motor/dedo.js */
 }
 
 html,body{margin:0;padding:0;height:100%;background:#000103;overflow:hidden;
@@ -20,6 +22,9 @@ html,body{margin:0;padding:0;height:100%;background:#000103;overflow:hidden;
 #marco{
   position:fixed;inset:0;box-sizing:border-box;
   display:flex;flex-direction:column;
+  /* la franja se maqueta según lo ancho que sea EL CUADRO y no la
+     pantalla: girado no son lo mismo */
+  container-type:inline-size;
   padding:var(--marco);
   padding-bottom:calc(var(--marco) + env(safe-area-inset-bottom,0px));
   /* chapa mojada: el degradado sube un poco por arriba y por abajo, que
@@ -117,14 +122,51 @@ html,body{margin:0;padding:0;height:100%;background:#000103;overflow:hidden;
 }
 #pie button:active{background:#040d12;transform:translateY(1px)}
 
-/* En pantalla estrecha la chapa adelgaza, el título encoge y deja de ir
-   centrado: con los dos botones no cabe en el medio, y un título que se
-   descentra un poco según el ancho se lee como un fallo. */
+/* En pantalla estrecha la chapa adelgaza y los botones encogen: eso
+   depende del aparato. */
 @media (max-width:560px){
   :root{--marco:8px;--pie:50px}
+  #pie button{padding:7px 8px;font-size:10px;letter-spacing:.1em}
+}
+
+/* Y en cuadro estrecho el título encoge y deja de ir centrado: con los
+   dos botones no cabe en el medio, y un título que se descentra un poco
+   según el ancho se lee como un fallo. Va por el cuadro y no por la
+   pantalla porque el móvil de pie gira el marco: ahí el cuadro es el
+   ancho y la pantalla, la estrecha. */
+@container (max-width:560px){
   #pie{grid-template-columns:1fr auto;padding:0 6px}
   #titulo{grid-column:1;justify-self:start;
     font-size:12px;letter-spacing:.3em;text-indent:.3em}
   #mandos{grid-column:2}
-  #pie button{padding:7px 8px;font-size:10px;letter-spacing:.1em}
+}
+
+/* ── EL MÓVIL DE PIE ────────────────────────────────────────────────
+   La pieza es horizontal. Pedirle el giro al sistema exige pantalla
+   completa y un gesto —de eso va el botón «girar»— y en iOS no hay ni
+   una cosa ni la otra, así que donde no se puede girar el aparato se
+   gira el cuadro: el marco se maqueta con el alto y el ancho cambiados
+   y se vuelca 90°.
+
+   Al motor no le cambia nada, la caja del lienzo es la misma. El único
+   que tiene que deshacer el giro es el dedo, que llega en coordenadas
+   de pantalla: para eso lee `--giro` (motor/dedo.js).
+
+   Sólo en táctil y sólo de mano: una ventana estrecha de escritorio no
+   es un móvil de pie —y ahí nadie puede girar nada—, y una tableta de
+   pie tiene sitio de sobra para dejarla en paz. El corte de ancho es el
+   mismo de arriba: por debajo de eso, de pie, es un móvil. */
+@media (orientation:portrait) and (hover:none) and (pointer:coarse)
+   and (max-width:560px){
+  :root{--giro:90deg}
+  #marco{
+    inset:auto;top:50%;left:50%;
+    width:100vh;height:100vw;         /* respaldo: el viewport sin barra */
+    width:100dvh;height:100dvw;
+    transform:translate(-50%,-50%) rotate(var(--giro));
+    /* el hueco del indicador sigue en el canto de abajo de la PANTALLA,
+       que con el vuelco es el lado derecho del cuadro */
+    padding-bottom:var(--marco);
+    padding-right:calc(var(--marco) + env(safe-area-inset-bottom,0px));
+  }
 }

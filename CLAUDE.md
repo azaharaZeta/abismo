@@ -77,6 +77,12 @@ Cuatro separaciones, y son el punto:
    motor tiene que acordarse de recortar. `marco.js` no llama al motor
    más que para `reinicia()`.
 
+   Con el móvil **de pie** el marco se vuelca 90°, y ése es todo el
+   mecanismo para que la pieza salga siempre horizontal: el lienzo
+   conserva su caja y el motor no se entera. El único que tiene que
+   deshacer el giro es [motor/dedo.js](motor/dedo.js), que trae el
+   ángulo de la variable `--giro` de marco.css.
+
 Dentro del motor, el estado vivo va en el objeto `V` de
 [motor/estado.js](motor/estado.js) y no en variables sueltas: un `import`
 no se puede reasignar, así que `setup()` escribe en `V` y los demás módulos

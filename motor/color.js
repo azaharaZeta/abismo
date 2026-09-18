@@ -101,11 +101,16 @@ function punto(c){
    con más de un color. Y el valor puede ser UNA LISTA de espectros, que
    se concatenan con su `peso` cada uno: hay identidades que no caben en
    un solo arco de tono. */
+/* EL CONVENIO, y vive aquí solo: `espectroX` produce `paletaX`. Devuelve
+   null si la clave no es un espectro, así que quien recorra un objeto de
+   parámetros no tiene que saber cómo se forma el nombre. */
+const paletaDe = k => k.indexOf('espectro') === 0 ? 'paleta' + k.slice(8) : null;
+
 function resuelveEspectros(conf){
   const p = paramsDe(conf);
   for (const k in p){
-    if (k.indexOf('espectro') !== 0) continue;
-    const destino = 'paleta' + k.slice(8);
+    const destino = paletaDe(k);
+    if (!destino) continue;
     if (p[destino]) continue;
     const e = p[k];
     const pal = Array.isArray(e) ? [].concat(...e.map(generaPaleta))
@@ -119,6 +124,23 @@ function resuelveEspectros(conf){
 }
 
 
+/* Tira las paletas GENERADAS de una entrada y las vuelve a sortear, que es
+   lo que hace falta para otra pecera: se cachean en la propia entrada de
+   escena —y los halos, dentro de cada color—, así que sin esto la pecera
+   nueva sale con los colores de la vieja.
+
+   Sólo las generadas: una paleta ESCRITA A MANO en la escena es una
+   decisión y se queda. De ahí la marca `deEspectro`, que se pone y se lee
+   aquí y no sale del fichero. */
+function resiembraPaletas(conf){
+  const p = paramsDe(conf);
+  for (const k in p){
+    const destino = paletaDe(k);
+    if (destino && p[destino] && p[destino].deEspectro) delete p[destino];
+  }
+  resuelveEspectros(conf);
+}
+
 /* Un color de `pal` respetando pesos: úsalo en vez de elige(pal) o los
    pesos no cuentan. La suma se cachea en el propio array. */
 function eligeDePaleta(pal){
@@ -126,4 +148,5 @@ function eligeDePaleta(pal){
   return eligeColor(pal, pal.suma);
 }
 
-export { resuelveEspectros, eligeDePaleta, halo, punto };
+export { resuelveEspectros, resiembraPaletas, paletaDe, eligeDePaleta,
+         halo, punto };

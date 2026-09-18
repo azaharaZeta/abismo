@@ -2,20 +2,13 @@ import { M, evento } from '../motor.js';
 const {rnd, rango, opt} = M;
 
 /* ══════════════════════════════════════════════════════════════════
-   EVENTOS
-   Lo que le pasa a la escena cada tanto. Viven aquí y no en un archivo
-   aparte para reutilizar `mancha`, `rgba` y los rangos.
-
-   Los buenos apenas dibujan: en una escena aditiva no se puede pintar una
-   masa oscura —sumar nunca oscurece—, así que un cuerpo enorme es una
-   región donde lo que había se calla. Se lee el volumen por el hueco.
+   EL CONTAGIO
+   No un fogonazo simultáneo: una reacción en cadena. No dibuja NADA
+   —empuja un anillo de encendido y la luz que se ve es el propio plancton
+   prendiéndose—, así que la onda va por donde hay plancton y su frente se
+   lee cruzando el agua. Es el evento más corto de la pieza y el que mejor
+   explica por qué los buenos no dibujan.
    ══════════════════════════════════════════════════════════════════ */
-
-/* ── EL CONTAGIO ────────────────────────────────────────────────────
-   No un fogonazo simultáneo: una reacción en cadena. El evento no dibuja
-   NADA —empuja un anillo de encendido y la luz que se ve es el propio
-   plancton prendiéndose, así que la onda va por donde hay plancton y su
-   frente se lee cruzando el agua.                                   */
 evento('contagio', {
   exclusivo: false,
   cada: [50, 140], primero: [12, 45],

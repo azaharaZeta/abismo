@@ -86,8 +86,11 @@ Conviene no reinventarlo:
 - `L.presas` + `senuelo` — la caza y la atracción ya están escritas. Un evento puede
   **secuestrar** esas listas: carroña que entra en `L.presas`, escas falsas que
   entran en `L.luces` con `senuelo: true`, y los bichos hacen el resto sin tocarlos.
-- `impulso(x, y)` — las ondas del dedo son una función. Se puede llamar desde código.
-- `M.empuje / M.borde / M.flujoX / M.flujoY` y el `susto` / `huida` de cada especie.
+- `M.luzDedo(x, y)` — cuánto enciende el dedo en un punto. Un evento que quiera
+  prender plancton no necesita el dedo: empuja un campo `enciende`, que es el mismo
+  canal (ver el contagio).
+- `M.empuje / M.borde / M.flujoX / M.flujoY`, el `susto` de cada especie y su
+  `aparta` (el desvío del dedo, que `seAparta` deja en `dx, dy`).
 
 ## Los cinco mecanismos (y por qué importan)
 

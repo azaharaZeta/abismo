@@ -2,7 +2,7 @@ import { ABISMO } from '../escena.js';
 import { clamp, opt, rango, fusiona } from './util.js';
 import { V, campos, MOD, reiniciaMod, frente, PLANOS } from './estado.js';
 import { ESPECIES, EVENTOS, especie, evento, paramsDe } from './registro.js';
-import { resuelveEspectros } from './color.js';
+import { resuelveEspectros, resiembraPaletas, paletaDe } from './color.js';
 import { buildAgua, buildRuido, buildOndulacion, buildDispersion,
          resiembraAgua, pintaAgua, pintaDispersion,
          ruido, RUIDO } from './agua.js';
@@ -174,9 +174,8 @@ function dispara(nombre, extra){
      desde el panel no se aplica nunca. Salvo que `extra` traiga también la
      paleta: ahí manda ella, que es la regla de la casa. */
   if (extra) for (const k in extra){
-    if (k.indexOf('espectro') !== 0) continue;
-    const destino = 'paleta' + k.slice(8);
-    if (extra[destino] === undefined) delete gr.p[destino];
+    const destino = paletaDe(k);
+    if (destino && extra[destino] === undefined) delete gr.p[destino];
   }
   /* y sus espectros, que si no se queda sin `paleta`: los de la escena se
      resuelven al arrancar, pero los de un `def.prueba` no pasan por ahí y
@@ -294,11 +293,8 @@ function setup(repoblar){
    de reiniciar. Hay tres cosas que sobreviven a un `setup(true)` y que por
    tanto hay que tirar a mano, porque se sortean una sola vez:
 
-     · las PALETAS, que se cachean en la propia entrada de escena la
-       primera vez que se resuelve su espectro —y los halos, dentro de cada
-       color—. Sin tirarlas, la pecera nueva sale con los colores de la
-       vieja. Sólo las generadas: una paleta escrita a mano es una decisión
-       y se queda.
+     · las PALETAS: lo hace `resiembraPaletas()`, en motor/color.js, que es
+       donde vive el convenio de los espectros y su marca.
      · las MANCHAS de la ondulación del agua.
      · los RELOJES de los eventos.
 
@@ -307,20 +303,10 @@ function setup(repoblar){
    pregunta. Lo que sí se reinicia es la vigilancia, o los primeros
    fotogramas —lentos, como los de cualquier arranque— cuentan como
    máquina lenta. */
-function resiembraColores(conf){
-  const p = paramsDe(conf);
-  for (const k in p){
-    if (k.indexOf('espectro') !== 0) continue;
-    const destino = 'paleta' + k.slice(8);
-    if (p[destino] && p[destino].deEspectro) delete p[destino];
-  }
-  resuelveEspectros(conf);
-}
-
 function reinicia(){
   para();
-  ABISMO.bichos.forEach(resiembraColores);
-  ABISMO.eventos.forEach(resiembraColores);
+  ABISMO.bichos.forEach(resiembraPaletas);
+  ABISMO.eventos.forEach(resiembraPaletas);
   resiembraAgua();
   preparaEventos();
   V.t = 0;
@@ -467,9 +453,13 @@ function pasoPlanos(dt){
     for (const gr of L.grupos){
       const {def, p} = gr;
       for (const o of gr.items) def.actualiza(o, M, L, p, dt);
+      /* `alFrente` lo CONSUME el motor: se apunta y se baja la bandera, que
+         es lo que hace verdad el «ese fotograma» del contrato. Dejándola
+         puesta, una especie que escriba `o.alFrente = true` sin reasignarla
+         cada fotograma se quedaría delante el resto de la sesión. */
       for (const o of gr.items)
-        if (o.alFrente) frente.push({gr, L, o});   // se pinta luego, delante
-        else            pintaBicho(def, o, M, L, p, g);
+        if (o.alFrente){ o.alFrente = false; frente.push({gr, L, o}); }
+        else             pintaBicho(def, o, M, L, p, g);
     }
   }
 
