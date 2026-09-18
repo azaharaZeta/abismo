@@ -1,6 +1,25 @@
 # Idea: el móvil, vertical por defecto y tumbado a petición
 
-**Estado: IMPLEMENTADA** · empezada y cerrada el 2026-09-18
+**Estado: IMPLEMENTADA Y DESPUÉS RETIRADA A MEDIAS** · 2026-09-18
+
+> **Lo que queda en pie:** la pieza se compone para la caja que le dé la
+> pantalla, así que de pie sale vertical. Eso no ha cambiado.
+>
+> **Lo que se retiró el mismo día:** el botón y el vuelco de 90° por CSS.
+> «quita el botón de girar, ya no hace falta, porque será suficiente con girar
+> el movil». Con ellos se fueron la clase `.tumbado`, la variable `--giro`, el
+> desgiro del puntero de `motor/dedo.js` y la regla del tirador de `pruebas.js`.
+> Abajo se describe el mecanismo tal como fue; sirve para saber qué se quitó y
+> por qué el motor no tiene hoy ningún marco de coordenadas girado.
+>
+> **Y destapó el fallo de verdad**, que el vuelco por CSS escondía: al girar el
+> móvil DE VERDAD se intercambian ancho y alto, o sea que el ÁREA no cambia, y
+> la regla de `alRedimensionar()` sólo miraba el área. No repoblaba, y la
+> escena se quedaba compuesta para la caja anterior —«se queda todo mal
+> colocado en la resolución anterior»—. Ahora mira también la forma: por qué
+> lado es más largo el cuadro. La barra de URL del móvil no puede cruzar esa
+> línea, así que sigue sin repoblar por ella (medido: 8,3 % de área, no
+> repuebla; giro, 0,0 % de área, repuebla).
 
 **Enunciado original:** «en movil, ahora queremos que sea siempre por defecto
 vertical, y solo poner en horizontal si se pulsa el botón de giro. al pulsar el
@@ -83,8 +102,5 @@ se ha tocado.
 
 ## Lo que deja pendiente
 
-Nada que analizar. La condición del vuelco está escrita en **tres** sitios —
-`marco.css`, el `matchMedia` de `marco.js` y la regla del tirador en `pruebas.js` — y
-los tres lo dicen en su comentario: si cambia una, cambian las tres. No se ha
-unificado porque dos de ellas son CSS y la tercera es el andamio, que por las reglas
-de la casa no puede formar parte de la pieza.
+Nada. Al retirar el vuelco desapareció también lo único que quedaba apuntado aquí
+—la condición del vuelco repetida en tres sitios—: hoy no está en ninguno.

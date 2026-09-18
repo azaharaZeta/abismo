@@ -552,9 +552,21 @@ function alRedimensionar(){
     if (w === anchoPrev && h === altoPrev) return;
     /* en móvil, esconder la barra de URL dispara un resize: hay que
        redimensionar igual, pero repoblar por eso sería tirar la escena a
-       la vista del usuario */
+       la vista del usuario.
+
+       Y SE REPUEBLA TAMBIÉN AL VOLCAR, que el área no lo ve: girar el
+       móvil intercambia ancho y alto, así que el área es la MISMA y sólo
+       cambia la forma. Sin esta mitad, la población se queda sentada
+       donde la dejó la caja anterior —amontonada contra un canto y con la
+       mitad fuera— y el cristal la va metiendo durante minutos.
+
+       La comparación es «alto contra ancho», o sea por qué lado es más
+       largo el cuadro: la barra de URL sólo cambia el alto y no puede
+       cruzar esa línea salvo en un cuadro ya casi cuadrado, donde
+       repoblar tampoco molesta. */
     const antes = anchoPrev*altoPrev;
-    setup(Math.abs(w*h - antes) > antes*0.15);
+    const vuelca = (anchoPrev > altoPrev) !== (w > h);
+    setup(vuelca || Math.abs(w*h - antes) > antes*0.15);
   }, 180);
 }
 

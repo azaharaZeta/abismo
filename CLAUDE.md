@@ -69,7 +69,7 @@ Cuatro separaciones, y son el punto:
    ninguna: las busca por nombre en su registro.
 3. **la pieza ↔ el andamio.** [pruebas.js](pruebas.js) **no forma parte de
    la pieza**: borrar su `<script>` de `index.html` lo hace desaparecer.
-4. **el abismo ↔ el marco.** La chapa, el título y los dos botones son
+4. **el abismo ↔ el marco.** La chapa, el título y el botón son
    DOM ([marco.css](marco.css), [marco.js](marco.js)), no lienzo. De ahí
    sale gratis lo único que se le pide al marco —que el abismo no pinte
    por encima—: el lienzo es MÁS PEQUEÑO que la pantalla, así que no
@@ -77,20 +77,17 @@ Cuatro separaciones, y son el punto:
    motor tiene que acordarse de recortar. `marco.js` no llama al motor
    más que para `reinicia()`.
 
-   Con el móvil **de pie** la pecera sale VERTICAL: el cuadro es el que
-   da la pantalla. Quien la quiera horizontal lo pide con el botón
-   «tumbar», que pone `.tumbado` en la raíz y vuelca el marco 90° —el
-   lienzo conserva su marco de coordenadas y el motor no se entera de
-   que hay un giro—. El vuelco va en una CLASE y no en la consulta a
-   secas porque es decisión del que mira; la consulta sigue delante para
-   que no haga nada con el aparato ya tumbado.
+   El marco NO gira el cuadro y no hay por dónde pedírselo: la pieza es
+   la caja que le dé la pantalla —alta de pie, ancha tumbada— y para
+   verla apaisada se gira el móvil. El lienzo no tiene, por tanto,
+   ningún marco de coordenadas girado que nadie deba deshacer.
 
-   Dos cosas cuelgan de ahí. Volcar CAMBIA LA FORMA de la caja, y un
-   `resize` no salta —sólo ha cambiado una clase—, así que `marco.js`
-   pide `reinicia()`: la escena se compone para la caja que hay. Y el
-   único que tiene que deshacer el giro es
-   [motor/dedo.js](motor/dedo.js), que llega en coordenadas de pantalla
-   y trae el ángulo de la variable `--giro` de marco.css.
+   Lo que sí hay que atender es el GIRO DE VERDAD. Volcar el móvil
+   intercambia ancho y alto, así que el ÁREA no cambia: la regla de
+   `alRedimensionar()` que decide si repoblar no lo veía y la población
+   se quedaba compuesta para la caja anterior. Ahora mira también la
+   forma —por qué lado es más largo el cuadro—, que es lo único que
+   distingue un giro de la barra de URL del móvil escondiéndose.
 
 Dentro del motor, el estado vivo va en el objeto `V` de
 [motor/estado.js](motor/estado.js) y no en variables sueltas: un `import`

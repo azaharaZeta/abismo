@@ -15,8 +15,6 @@
   --filo2: #2a5c70;             /* el filo que coge luz */
   --tinta: #5d8899;
   --viva:  #a9d3e2;
-  --giro:  0deg;                /* el vuelco del cuadro: lo pone el móvil
-                                   de pie y lo lee motor/dedo.js */
 }
 
 html,body{margin:0;padding:0;height:100%;background:#000103;overflow:hidden;
@@ -142,51 +140,14 @@ html,body{margin:0;padding:0;height:100%;background:#000103;overflow:hidden;
   #pie button{padding:7px 8px;font-size:10px;letter-spacing:.1em}
 }
 
-/* Y en cuadro estrecho el título encoge y deja de ir centrado: con los
-   dos botones no cabe en el medio, y un título que se descentra un poco
-   según el ancho se lee como un fallo. Va por el cuadro y no por la
-   pantalla porque el móvil de pie gira el marco: ahí el cuadro es el
-   ancho y la pantalla, la estrecha. */
+/* Y en cuadro estrecho el título encoge y deja de ir centrado: con el
+   botón al lado no cabe en el medio, y un título que se descentra un poco
+   según el ancho se lee como un fallo. Va por el CUADRO y no por la
+   pantalla: lo que decide si el título cabe es el ancho de la franja, que
+   es el del cuadro y no el de la ventana —la chapa se lleva lo suyo. */
 @container (max-width:560px){
   #pie{grid-template-columns:1fr auto;padding:0 6px}
   #titulo{grid-column:1;justify-self:start;
     font-size:12px;letter-spacing:.3em;text-indent:.3em}
   #mandos{grid-column:2}
-}
-
-/* ── EL MÓVIL DE PIE ────────────────────────────────────────────────
-   De pie, la pecera sale VERTICAL: el cuadro es el que da la pantalla y
-   la pieza se compone para él. Quien la quiera horizontal lo pide con el
-   botón de la franja, que pone `.tumbado` en la raíz; entonces el marco
-   se maqueta con el alto y el ancho cambiados y se vuelca 90°.
-
-   EL VUELCO VIVE EN UNA CLASE y no en la consulta a secas porque es una
-   decisión del que mira y no del aparato. La consulta se queda delante
-   para que la clase no haga nada donde no toca: en un móvil YA tumbado el
-   cuadro es horizontal sin ayuda, y volcarlo encima lo pondría de pie.
-
-   Al motor no le cambia el marco de coordenadas, pero SÍ la FORMA de la
-   caja —de alta y estrecha a baja y ancha—, y la escena está compuesta
-   para la que había: de eso se encarga marco.js pidiendo pecera nueva. El
-   único que tiene que deshacer el giro es el dedo, que llega en
-   coordenadas de pantalla: para eso lee `--giro` (motor/dedo.js).
-
-   Sólo en táctil y sólo de mano: una ventana estrecha de escritorio no
-   es un móvil de pie, y una tableta de pie tiene sitio de sobra para
-   dejarla en paz. El corte de ancho es el mismo de arriba: por debajo de
-   eso, de pie, es un móvil. */
-@media (orientation:portrait) and (hover:none) and (pointer:coarse)
-   and (max-width:560px){
-  :root.tumbado{--giro:90deg}
-  :root.tumbado #marco{
-    inset:auto;top:50%;left:50%;
-    width:100vh;height:100vw;         /* respaldo: el viewport sin barra */
-    width:100dvh;height:100dvw;
-    transform:translate(-50%,-50%) rotate(var(--giro));
-    /* el hueco del indicador sigue en el canto de abajo de la PANTALLA,
-       que con el vuelco es el lado derecho del cuadro */
-    padding-bottom:var(--marco);
-    padding-right:calc(var(--marco)
-                       + min(env(safe-area-inset-bottom,0px), var(--marco)));
-  }
 }

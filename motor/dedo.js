@@ -111,29 +111,8 @@ function empuje(x, y, banda){
   return _emp;
 }
 
-/* ── EL CUADRO GIRADO ───────────────────────────────────────────────
-   Con el móvil de pie, el marco se vuelca 90° para que la pieza salga en
-   horizontal (`--giro` en marco.css). Al lienzo no le cambia nada —su
-   caja de maquetación es la misma—, pero el puntero llega en coordenadas
-   de pantalla, y ahí el eje x del lienzo baja y el eje y va hacia la
-   izquierda. Sólo 0 y 90°: es lo único que el marco pide.
-
-   Se lee al posar el dedo y no en cada movimiento: `getComputedStyle`
-   fuerza un cálculo de estilo, y un giro a media pasada cancela el
-   contacto de todas formas. */
-let giro = 0;
-function leeGiro(){
-  giro = parseFloat(getComputedStyle(document.documentElement)
-                    .getPropertyValue('--giro')) || 0;
-}
-function puntoCanvas(e){
-  const b = V.cv.getBoundingClientRect();
-  if (giro) return [e.clientY - b.top, b.right - e.clientX];
-  return [e.clientX - b.left, e.clientY - b.top];
-}
 function cableaTacto(){
   V.cv.addEventListener('pointerdown', e => {
-    leeGiro();
     const [x,y] = puntoCanvas(e);
     ultimos.set(e.pointerId, [x,y]);
     impulso(x,y);
@@ -156,6 +135,13 @@ function cableaTacto(){
    una que sobreviva enciende el plancton que se acaba de sembrar, y lo que
    se ve es un anillo de motas prendidas sin que nadie haya tocado. */
 function olvidaOndas(){ contactos.length = 0; }
+
+/* del puntero al lienzo, y no hay más: la caja del lienzo es la caja de
+   la pantalla, así que resta y ya */
+function puntoCanvas(e){
+  const b = V.cv.getBoundingClientRect();
+  return [e.clientX - b.left, e.clientY - b.top];
+}
 
 /* las ondas se apagan solas: cada una lleva su propia vida */
 function envejeceOndas(dt){
