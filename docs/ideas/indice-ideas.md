@@ -22,7 +22,9 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 
 ## Ideas de usuario (pendientes de procesar)
 > Solo un humano edita esta sección. Texto breve; el detalle se desarrolla al crear la ficha.
-
+- los peces aletean más de lo que se mueven. revisarlo para que se les vea nadar fluido.
+- en movil, ahora queremos que sea siempre por defecto vertical, y solo poner en horizontal si se pulsa el botón de giro. al pulsar el botón de cambiar a horizontal / vertical, hay que recolocar o regenerar la escena, para que cuadre con la nueva forma de la pecera.
+- revisar si están correctos los tamaños de los sprites en movil: se ven los sprites pequeñísimos, pero lo mismo es un problema de resolución? revisar el motivo, y si es resolución, ver si se puede hacer que los tamaños sean independientes y se vean igual  en resoluciones altas.
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos que dejaron las ideas procesadas el 2026-09-17 y el 2026-09-18.
 

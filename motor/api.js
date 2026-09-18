@@ -75,16 +75,15 @@ const M = {
      eventos se pintan después de los bichos; en un `actualiza` es la del
      anterior, que a la velocidad a la que se mueve esto da igual. */
   luces(plano){ const L = PLANOS[plano|0]; return L ? L.luces : VACIO; },
-  /* y quién hace banco, por lo mismo: el superpez necesita saber dónde
-     está el banco y hacia dónde iba para formarse ahí.
+  /* y quién hace banco, por lo mismo: un evento que quiera pasarle algo al
+     banco necesita saber dónde está.
 
      SIN `plano`, los tres planos juntos, y ésa es la forma de usarlo casi
      siempre: el banco vive repartido en los tres y un campo puesto en el
      plano de delante lo leen también los de atrás —la guarda sólo excluye
      a quien pregunta desde más cerca—, así que quien quiera saber «dónde
-     está el banco» tiene que mirarlo entero. Contando sólo el plano de
-     delante, el superpez veía 29 candidatos de los 68 que se le apuntaban
-     y nunca llegaba a partirse en dos.
+     está el banco» tiene que mirarlo entero: contando sólo el plano de
+     delante se ve el 42 % de los peces (`reparto`, en la escena).
 
      Devuelve un array NUEVO en ese caso: pídelo al arrancar un evento, no
      por fotograma. */

@@ -137,7 +137,57 @@ function topa(j, M, p){
   }
 }
 
-especie('medusa', {
+/* ── LA CRÍA DE LA GEMACIÓN ─────────────────────────────────────────
+   Tres tramos y una sola `u` de 0 a 1, que es todo lo que hace falta para
+   que se lea la historia: BROTA pegada al costado, SE SUELTA y SE VA
+   haciéndose pequeña. No hay medusa nueva en ningún momento: `esc` es su
+   tamaño respecto a su madre y `dx,dy` lo lejos que está, y con eso la
+   pinta `dibuja` llamándose a sí misma dentro de una transformación.
+
+   Lo de encogerse mientras se aleja no es para taparla: en esta pieza
+   pequeño ES lejos —así codifican la distancia los tres planos—, así que
+   se está yendo al fondo y no desapareciendo.
+
+   El reparto de la `u` importa: si el brote es corto no se lee que ha
+   salido de ella, y si la marcha es corta se lee como que se apaga. Con
+   30/20/50 sobre unos dieciocho segundos, brota en cinco, se suelta en
+   tres y tarda nueve en irse. */
+function gemar(j, p){
+  j.cria = { t: 0, vida: rango(p.gemaVida || 18),
+             escMax: rango(p.gemaEsc || 0.5),
+             lejos: rango(p.gemaLejos || 9) * j.r,
+             /* por el costado —perpendicular a su eje— y de ahí derecha:
+                una cría que cambia de rumbo no se lee como que se aleja */
+             ang: j.tilt + (Math.random() < 0.5 ? 1 : -1)*Math.PI*0.5
+                  + rnd(-0.4, 0.4),
+             d: 0, dx: 0, dy: 0, esc: 0 };
+}
+function pasoCria(j, dt){
+  const q = j.cria;
+  q.t += dt;
+  const u = q.t/q.vida;
+  if (u >= 1){ j.cria = null; return; }
+  const pegada = j.r*0.85, soltada = j.r*2.2;
+  if (u < 0.30){
+    const w = u/0.30;
+    q.esc = 0.10 + (q.escMax - 0.10)*w;
+    q.d = pegada*(0.55 + 0.45*w);
+  } else if (u < 0.50){
+    const w = (u - 0.30)/0.20;
+    q.esc = q.escMax;
+    q.d = pegada + (soltada - pegada)*w;
+  } else {
+    const w = (u - 0.50)/0.50;
+    /* el tamaño se va antes que la distancia (exponente > 1), así que
+       parece que se pierde en el agua y no que se ha ido del cuadro */
+    q.esc = q.escMax*Math.pow(1 - w, 1.3);
+    q.d = soltada + (q.lejos - soltada)*w;
+  }
+  q.dx = Math.cos(q.ang)*q.d;
+  q.dy = Math.sin(q.ang)*q.d;
+}
+
+const MEDUSA = {
   luz: true,
   /* Y SE LE PUEDE ROMPER EL DIBUJO: es el sprite más grande y el más
      lento, o sea el único en el que una escalera de bandas se ve y da
@@ -190,6 +240,8 @@ especie('medusa', {
       nC: rangoE(p.canales), nA: rangoE(p.brazos),
       cX: rango(p.ensancha), cY: rango(p.achata),
       hist: new Float32Array(HIST*3), head: 0, acc: 0,
+      /* la cría, mientras la tiene: ver `pasoCria` y el evento `gemacion` */
+      cria: null,
       tLen: new Int16Array(nT), tSeed: new Float32Array(nT),
       tAmp: new Float32Array(nT), tLat: new Float32Array(nT),
       /* CUÁNTO ALUMBRA, en dos alcances: `rLuz` a cuánto enciende plancton,
@@ -253,6 +305,24 @@ especie('medusa', {
     if (ld > 0) j.destello = Math.min(1, j.destello + 3.0*dt*ld);
     seAparta(j, M, p, M.empuje(j.x, j.y, j.r*1.6), dt);
 
+    /* ── LA GEMACIÓN ──────────────────────────────────────────────
+       Un campo `gema` es una orden en el agua y el cupo viaja en su `d`: la
+       primera que lo lee lo descuenta, así que sale UNA cría y no una por
+       medusa. Ni ella sabe quién la ha dado ni el evento sabe que hay
+       medusas. */
+    if (!j.cria){
+      const gm = M.campo('gema', j.x, j.y);
+      if (gm && gm.d && gm.d.quedan > 0){
+        /* se apunta con su radio, y del segundo fotograma en adelante se la
+           queda la mayor —o sea la más cercana, que el radio lleva dentro
+           la escala del plano—. Ver por qué en eventos/gemacion.js. */
+        if (j.r > gm.d.mejorR) gm.d.mejorR = j.r;
+        if (gm.d.lista && j.r >= gm.d.mejorR) gemar(j, p);
+      }
+    }
+    if (j.cria) pasoCria(j, dt);
+
+
     reaccionBorde(j, M, p, j.x, j.y, dt);
     avanza(j, M, L, dt, j.dx, j.dy);
     topa(j, M, p);
@@ -273,6 +343,24 @@ especie('medusa', {
   },
 
   dibuja(j, M, L, p, g){
+    /* LA CRÍA SE PINTA CON ESTA MISMA FUNCIÓN, dentro de una
+       transformación: es la misma medusa vista más pequeña y más lejos, y
+       cualquier otra forma de dibujarla sería un segundo sitio describiendo
+       la misma campana —el vicio que esta casa persigue—. Se aparta
+       `j.cria` durante la llamada o se llamaría a sí misma sin fin.
+
+       Va ANTES que la madre y da igual: en aditivo sumar es conmutativo. */
+    if (j.cria && j.cria.esc > 0.02){
+      const q = j.cria;
+      j.cria = null;
+      g.save();
+      g.translate(j.x + q.dx, j.y + q.dy);
+      g.scale(q.esc, q.esc);
+      g.translate(-j.x, -j.y);
+      MEDUSA.dibuja(j, M, L, p, g);
+      g.restore();
+      j.cria = q;
+    }
     const c = j.contract;
     const rx = j.r * j.ancho * (0.94 + j.cX*c);
     const ry = j.r * j.alto  * (1.10 - j.cY*c);
@@ -393,4 +481,5 @@ especie('medusa', {
 
     g.restore();
   },
-});
+};
+especie('medusa', MEDUSA);

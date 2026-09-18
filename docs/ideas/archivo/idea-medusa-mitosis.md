@@ -1,7 +1,7 @@
 # Idea: una medusa se reproduce por mitosis
 
-**Estado: EN CURSO** · analizada el 2026-09-18 · **sin implementar, a propósito: el
-encargo pedía ver opciones y riesgos antes**
+**Estado: IMPLEMENTADA (opción D, con la cría yéndose)** · analizada y ejecutada el
+2026-09-18
 **Enunciado original:** «nuevo evento: una medusa se reproduce por mitosis. para
 evitar que se llene de medusas el acuario, considera mantener un máximo y cuando haya
 de más, hacer que una se vaya disimuladamente fuera del marco y desaparezca, por
@@ -83,6 +83,63 @@ nueva en ningún momento.
    de verdad (con su reloj `cada`, y así se puede disparar desde el panel) que
    simplemente marca a una medusa: el evento no crea nada, despierta.
 
-## Pendiente
+## Hecho: la D con la cría yéndose
 
-Sin implementar, esperando la decisión sobre C.
+El usuario eligió la **D** con una vuelta que la arregla: en vez de reabsorberse, la
+segunda **se va haciéndose pequeña**. Y eso la pone por delante de la C por un motivo
+que esta ficha había infravalorado: **en esta pieza pequeño ES lejos** —los tres planos
+codifican la distancia como más pequeño, más borroso, más tenue y más lento—, así que
+una cría que se encoge mientras deriva no es un truco para tapar un borrado: es la
+gramática de la propia obra diciendo «se va al fondo». La C seguía necesitando el tope,
+las banderas de dormida y quitarle la contención a la que se iba; esto no necesita nada.
+
+Y no es mitosis: es **gemación**. Una medusa no se parte en dos —eso lo hace el pólipo,
+brotando— y además partir la campana no saldría: sumando luz, dos campanas solapadas se
+leen como una campana más brillante, no como dos.
+
+### La forma que se le ha dado
+
+- **`eventos/gemacion.js`** (61 líneas) no dibuja nada y no elige a nadie: empuja un
+  campo `gema` sobre todo el cuadro —una orden en el agua— con el cupo viajando en su
+  `d`, y se muere en cuanto alguien lo coge o a los seis segundos si no hay quien.
+- **La medusa se pinta a sí misma dos veces.** `dibuja` se llama con `j.cria` apartada,
+  dentro de un `translate`+`scale`: la cría es la MISMA campana vista más pequeña y más
+  lejos, así que no hay un segundo sitio describiendo la misma medusa. Para poder
+  llamarse, el def pasa a `const MEDUSA = {…}; especie('medusa', MEDUSA);`.
+- **`pasoCria`** lleva tres tramos sobre una sola `u` de 0 a 1: brota el 30 %, se
+  suelta el 20 %, se va el 50 %. El tamaño se va antes que la distancia (exponente
+  1,3), que es lo que hace que parezca perderse en el agua.
+- **Tres mandos en la escena**, en la entrada de la medusa: `gemaVida` [15, 24] s,
+  `gemaEsc` [0,42, 0,58] y `gemaLejos` [7, 11] radios.
+
+### La elección tarda un fotograma, y hace falta
+
+La primera versión gemaba **siempre una del fondo**: `pasoPlanos` recorre los planos
+del fondo al frente, así que la primera que preguntaba se lo quedaba, y era la más
+pequeña y borrosa de la pecera (medido: radio 0,43 U). Ahora en el primer fotograma
+cada medusa apunta su radio en el campo y del segundo en adelante se lo queda la mayor
+—o sea la más cercana, porque el radio lleva dentro la escala de su plano—. Medido: la
+madre pasa a ser la del plano de delante, radio 1,16 U.
+
+### Medido
+
+Arnés de Node, el evento lanzado sobre una pecera en reposo con cuatro medusas:
+
+| | |
+|---|---|
+| geman a la vez | **1** |
+| el evento, después | muerto (ha hecho su trabajo) |
+| la cría, al acabar | soltada; no queda nada |
+| recorrido | esc 0,10 → 0,50 pegada · 0,50 a 2,2 radios al soltarse · 0,24 a 5,2 · 0,06 a 7,6 · nada a 9,8 |
+
+Y lo que cuesta: una medusa se pinta en **0,118 ms** y la cría, dentro de la
+transformación, en **0,122** —o sea +0,12 ms mientras dura, sobre 16,7 de presupuesto,
+y cero cuando nadie está gemando—. Cero NaN.
+
+### Un detalle que salió bien por casualidad
+
+La cría se coloca **relativa a su madre** (`dx, dy` desde su posición actual), así que
+si la madre deriva, la cría deriva con ella. Eso además arregla lo de los tentáculos:
+se trazan desde el historial de por dónde ha pasado la campana, y la cría hereda el de
+su madre —con una posición absoluta, su rastro apuntaría a donde la madre estuvo y se
+leería como que va arrastrada.

@@ -556,6 +556,10 @@ está viendo— y con `cada` de cinco a diez minutos no pasa a ser decorado.
 `vaiven` · `hondura` · `filo` · `penumbra` · `plano`.
 
 ### E-18 · El superpez  ·  mec. nuevo  ·  **hecho** (2026-09-17, en cuatro pasadas)
+
+> **RETIRADO el 2026-09-18**, a petición del usuario, y sustituido por la
+> `floracion`. Con él se fueron `bichos/forma.js`, el campo `forma` y la rama de
+> formación del banco. Lo de abajo es el registro de lo que fue.
 Parte del banco, sin dejar de nadar cada uno a lo suyo, se encuentra un rato con forma de
 pez enorme —o se parte en dos y hace dos—, avanza, describe una curva y se deshace. **No caza nada, no va a ningún sitio y
 no le pasa nada a nadie: es una coincidencia que dura veinte segundos.** No dibuja ni un

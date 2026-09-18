@@ -18,4 +18,5 @@ import './eventos/leviatan.js';
 import './eventos/carrona.js';
 import './eventos/cuerpo.js';
 import './eventos/glitch.js';
-import './eventos/superpez.js';
+import './eventos/floracion.js';
+import './eventos/gemacion.js';

@@ -482,80 +482,35 @@ export const ABISMO = {
          salen medio rotos y eso se lee como que la imagen tiembla. */
       filo: 3 },
 
-    /* ── EL SUPERPEZ ────────────────────────────────────────────────
-       Parte del banco se encuentra un rato con forma de pez enorme —o de
-       dos—, avanza, describe una curva y se deshace. No caza nada y no va
-       a ningún sitio. No dibuja nada: manda un rato, y flojo, sobre una
-       población que ya estaba, y ni siquiera sobre toda.
+    /* ── LA FLORACIÓN ───────────────────────────────────────────────
+       Una onda de color que cruza el banco: al pez que le pasa el frente
+       por encima se le enciende SU tono saturado y se le va despacio. No
+       dibuja nada —lo que se ve son los peces— y no trae color: el color es
+       de cada pez (ver `espectroVivo` en el banco).
 
-       Va en el plano de DELANTE porque es donde vive el 42 % del banco y
-       porque una silueta hecha de puntos necesita los puntos nítidos: al
-       fondo, a un tercio de resolución, no se lee la forma.
+       `vel` va a la mitad que la del contagio y `salto` —el grosor del
+       anillo, en U— al doble: los peces son cuarenta en toda la pecera, así
+       que un frente rápido y fino no se lee como una ola, se lee como peces
+       sueltos cambiando. Con estos, la onda tarda unos ocho segundos en
+       cruzar el cuadro. */
+    { evento: 'floracion', vel: [1.6, 3.0], salto: 7.0,
+      alcance: [0.6, 1.1], filo: 1.4,
+      cada: [90, 210], primero: [25, 70] },
 
-       QUE PAREZCA CASUALIDAD es todo el evento, y aquí no hay ni un
-       número que empuje. El centro y el rumbo salen del propio banco
-       —centro de masa y rumbo medio—, así que nadie se desplaza a una
-       cita: la silueta aparece encima de ellos. Lo que hace que cuaje no
-       es la fuerza, es el TIEMPO: `entra` de ocho a catorce segundos.
+    /* ── LA GEMACIÓN ────────────────────────────────────────────────
+       Una medusa echa una cría por el costado y la cría se va haciéndose
+       pequeña. El evento no dibuja nada y no elige a nadie: empuja una
+       orden en el agua con cupo para UNA, y la primera medusa que la lee se
+       la queda (ver eventos/gemacion.js). Lo que dura la maniobra y lo
+       grande que sale la cría son de ella, no de aquí: están en su entrada,
+       abajo.
 
-       `minimo` es cuántos peces hacen falta POR SILUETA una vez aplicado
-       el cupo; con menos no hay evento, o hay una sola.
-
-       `vel` es lento —unos diez segundos para cruzar un tercio del
-       cuadro— y `giro` es la velocidad ANGULAR, que camina dentro de
-       `±giroMax`: a 0,10 rad/s son hasta 70° en doce segundos, una curva
-       abierta. Con un giro fijo describe un arco de compás y con un rumbo
-       objetivo sorteado da tirones; caminando, la curva se abre y se
-       cierra sola.
-
-       `sale` LARGO: la silueta se deshila descolgándose pez a pez —cada
-       uno tiene su umbral, ver `formaDesorden` en el banco— y eso
-       necesita rampa. No hay ningún empujón al final: un banco que
-       estalla no se deshace casualmente. */
-    { evento: 'superpez', plano: 2,
-      cada: [200, 440], primero: [70, 190],
-      /* En U, y los dos van juntos: `largoMin` es el suelo por debajo del
-         cual una silueta se descarta, así que si no baja con `largo`,
-         `escQueCabe` se queda sin sitio donde encoger. A once U cabe; a
-         diecisiete no —`escQueCabe` la coloca con el 87 % dentro AL NACER,
-         pero después nada varias U por segundo y no hay borde que la
-         contenga. */
-      largo: [9.7, 13.2], largoMin: 6.24,
-      /* ── CUÁNTOS Y CUÁNTAS ─────────────────────────────────────
-         `reparto` es la fracción del banco que entra en la silueta, y no
-         es 1 a propósito: los que quedan fuera siguen nadando a lo suyo
-         por encima de la forma, y eso es la mitad de lo que la hace
-         parecer una casualidad en vez de una coreografía. Se sortea por
-         travesía, así que unas salen casi completas y otras a medias.
-
-         `reparto` y `largo` TIENEN QUE MOVERSE JUNTOS: lo que cierra el
-         canto es la densidad por PERÍMETRO —que vale 3,9·`esc`—, así que
-         bajar los peces sin bajar el tamaño deja la silueta hecha de
-         guiones sueltos. Con estos valores quedan unos 47 px entre peces
-         del canto con una silueta y 66 con dos; un pez de este plano mide
-         52, así que con DOS el canto nunca cierra del todo.
-
-         `superpeces` es cuántas siluetas: una o dos. Dos sólo si hay
-         peces para las dos —`minimo` por cabeza— y partiendo el banco por
-         donde se partiría solo, por el costado de su propio rumbo. Cada
-         una mide menos: el largo se divide por la raíz del número, que es
-         lo que mantiene la densidad por perímetro.
-
-         `redondez` es lo gorda que sale CADA silueta, sorteado por ella:
-         a 0,70 un pez fusiforme y a 1,55 uno de cuerpo alto, casi un
-         disco. Con dos en pantalla, que no se parezcan es lo que dice que
-         son dos bichos y no un efecto duplicado. */
-      superpeces: [1, 2], reparto: [0.40, 0.68], redondez: [0.70, 1.55],
-      minimo: 10,
-      entra: [8, 14], nada: [7, 13], sale: [4, 7],
-      /* `vira` es con cuánta gana se tuerce hacia dentro cuando el MORRO
-         de la silueta se acerca al canto (se mide en el morro y no en el
-         centro: ver el evento). Tiene que poder más que su propio
-         `giroMax`, que es lo único que se le impone a este evento. */
-      vel: [0.25, 0.55], giroMax: 0.10, giroPaso: 0.035, vira: 2.8,
-      /* alcance del campo, ancho y plano: ver el `filo` del banco. Los que
-         quedan fuera no se apuntan, y eso está bien. */
-      alcance: 2.2, filo: 6.0 },
+       `espera` es lo que el evento aguanta sin que nadie lo coja —con las
+       medusas de la pecera siempre hay alguna, así que es una red por si un
+       día no hay—. `cada` va largo: es de las cosas que se miran, y a menudo
+       deja de ser un hallazgo. */
+    { evento: 'gemacion', espera: 6,
+      cada: [150, 340], primero: [40, 110] },
   ],
 
   /* ── BICHOS ───────────────────────────────────────────────────────
@@ -632,6 +587,21 @@ export const ABISMO = {
       faldon: [0.22, 0.48], mEnv: [0.7, 1.3], mBase: [0.45, 0.80],
       lobulos: [5, 9], ensancha: [0.10, 0.26], achata: [0.10, 0.26],
       cuelga: 2.6, alcanceLuz: 3.4, alcanceCuerpo: 2.2, emision: 0.55,
+      /* ── LA CRÍA, CUANDO LE TOCA GEMAR ─────────────────────────
+         `gemaVida` es lo que dura la maniobra entera, en segundos, y va
+         LARGA: su pulso tarda de 2,6 a 4,8 s, así que por debajo de diez
+         segundos la cría sale y se va sin que haya latido tres veces y eso
+         se lee como un salto, no como que ha brotado. Dentro de esa vida el
+         reparto es fijo —brota el 30 %, se suelta el 20 % y se va el 50 %:
+         ver `pasoCria`—.
+
+         `gemaEsc` es lo grande que sale respecto a su madre: a la mitad se
+         lee como cría; por encima de 0,7 se lee como que hay dos medusas y
+         una se va, que es otra cosa. `gemaLejos` es hasta dónde llega,
+         medido en radios de su madre: lo que se ve es que se aleja, así que
+         tiene que salir del sitio donde ha nacido —a menos de cinco radios
+         parece que se apaga en el mismo punto. */
+      gemaVida: [15, 24], gemaEsc: [0.42, 0.58], gemaLejos: [7, 11],
       /* ── SE LADEA AL PASAR EL DEDO ─────────────────────────────
          El mismo mecanismo y los mismos tres números que el banco, con dos
          diferencias:
@@ -911,6 +881,26 @@ export const ABISMO = {
                   sat: [0.88, 1.00], luz: [0.54, 0.70],
                   satGlow: [0.70, 0.92], luzGlow: [0.20, 0.30],
                   giroGlow: 6 },
+      /* EL GEMELO SATURADO, y lo usa la floración: los MISMOS tonos y los
+         mismos tramos —el tono de una casilla sale de su índice, así que
+         `paletaVivo[i]` es el tono de `paleta[i]`—, con `luz` bajada hacia
+         0,5, que es donde el tono es puro, y las dos saturaciones arriba.
+         Así el pez se enciende en SU color: lo que cruza el cuadro es el
+         moteado del banco subido, no una mancha de un color.
+
+         Y `luzCore` ES EL NÚMERO QUE HACE EL EVENTO. Lo demás mueve el
+         `mid` y el halo, y de un pez en agua abierta el cuerpo no se ve:
+         lo que se ve es la hilera del vientre, y esos puntos son `core`.
+         Con el 0,95 de la casa el punto sale casi blanco —saturación real
+         0,06— y la floración no se nota; a 0,65 el punto se pone del color
+         del pez (0,70) y la hilera pasa de blanca a encendida. Es lo único
+         de la pieza que rompe a propósito el «el punto sale casi blanco
+         pase lo que pase» de arriba, y dura los tres segundos que tarda en
+         írsele el tinte. */
+      espectroVivo: { tono: [0, 352], tramos: 32,
+                      sat: [1.00, 1.00], luz: [0.46, 0.54],
+                      satGlow: [0.92, 1.00], luzGlow: [0.30, 0.42],
+                      luzCore: [0.60, 0.70], giroGlow: 6 },
       /* ── Y EL ORDEN EN EL SORTEO ──────────────────────────────
          Uno o dos tonos mandan en toda la pecera y `tendencia` es qué
          parte del banco se apunta; el resto sigue saliendo de la paleta
@@ -1001,40 +991,14 @@ export const ABISMO = {
          reglas de alinear y juntar —no la de no chocar—, así que el banco
          se abre y se rehace solo. */
       panico: 1.8,
-      /* ── SI ALGUIEN LOS FORMA ──────────────────────────────────
-         `formaPega` es la fuerza del tirón a su sitio, en 1/s, y va FLOJA:
-         a 4,0 la silueta cuaja en un segundo y lo que se ve es un pelotón
-         cuadrándose. Con 1,3 y un `entra` largo, cada pez llega cuando
-         llega y parece que se han encontrado. `formaCerca` es a cuántos
-         largos de su sitio deja de apuntar a él y se alinea con el
-         contorno. `formaBrillo` es cuánto emite de más el banco formado
-         —más color, no otro tono, que daría un salto.
-
-         ── Y QUE NO VAYAN COMO REMACHES ───────────────────────────
-         Los tres siguientes a 0 dan una plantilla: los sesenta y ocho
-         tirando a su casilla con la misma fuerza, el morro clavado en la
-         tangente y todos cuadrándose y deshaciéndose en el mismo
-         instante.
-
-         `formaError` es cuánto se equivoca cada pez de puesto, en fracción
-         del largo de la silueta, y va pequeño: a 0,055 son unos treinta
-         píxeles de una silueta de quinientos —bastante para que ninguno
-         esté donde «debería» y poco para que el contorno siga cerrando—.
-         El error transversal va a la mitad del longitudinal, porque
-         desdibuja el canto mucho más.
-
-         `formaDesorden` abre pez a pez lo demás: la gana con la que tira a
-         su sitio (±80 %, así que unos llegan en un tercio del tiempo que
-         otros), el desvío del morro (±0,35 rad) y el umbral al que se
-         apunta y se suelta (0 a 0,77 de campo). Ese último es el que quita
-         los dos momentos más forzados: el banco formándose en bloque y la
-         silueta desapareciendo de golpe.
-
-         `formaCalma` es cuánto se le baja el nervio en formación. A 0,70
-         queda un 30 % de tirón y de desvío y la silueta tiembla; apagado
-         del todo, los peces quedan clavados. */
-      formaPega: 1.3, formaCerca: 0.20, formaBrillo: 1.1,
-      formaError: 0.055, formaDesorden: 0.7, formaCalma: 0.70,
+      /* ── Y LO QUE LE HACE LA FLORACIÓN ─────────────────────────
+         `tinteVuelve` es a qué velocidad se le va el tinte, en 1/s: a 0,4
+         el color aguanta dos segundos y medio después de que el frente
+         pase, así que la onda deja rastro en vez de una línea.
+         `tinteBrillo` es cuánto emite de más mientras lo tiene, y hace
+         falta: de lejos, de un pez lo que se ve es el halo del fotóforo, y
+         un cambio de tono a brillo constante casi no se lee. */
+      tinteVuelve: 0.4, tinteBrillo: 1.2,
 
       /* DESORDEN POR CIZALLA: abre la velocidad de crucero y los pesos de
          grupo pez a pez, así que unos adelantan a otros. Sin esto todos

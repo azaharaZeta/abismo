@@ -49,10 +49,10 @@ escena.js          ABISMO: TODA la configuración de la pecera
 catalogo.js        una línea por criatura y por evento
 motor.js           la fachada: qué del motor es público
 motor/             util · color · registro · estado · agua · dedo · api · bucle
-bichos/            comun · forma · medusa · plancton · copepodo ·
+bichos/            comun · medusa · plancton · copepodo ·
                    pezlinterna · rape (+ rape-cuerpo, rape-caza)
 eventos/           contagio · visitante · leviatan · carrona · cuerpo ·
-                   glitch · superpez
+                   glitch · floracion · gemacion
 marco.css · js     la chapa, el título y los dos botones
 pruebas.js         el andamio
 ```
@@ -149,7 +149,7 @@ que existen: empujar a `M.campos` (y el bicho consulta `M.campo(tipo, x,
 y, plano)`), o modular `M.mod.agua` / `M.mod.ritmo`, que el motor aplica al
 pintar. Un campo lleva además dos cosas que el motor no mira y pasa tal
 cual: `c`, un color, y `d`, un dato cualquiera del que lo puso —lo usa el
-`superpez` para decir dónde y de qué tamaño es la silueta.
+`glitch` para decir cuánto se corre cada banda del sprite roto.
 
 Hay **un tipo de campo que no lee ninguna especie**, `tajo`: lo lee el
 motor en `pintaBicho()`, justo antes de dibujar a un bicho, y lo que hace
@@ -164,8 +164,7 @@ Y para **leer** la escena, un evento no recibe `L`: tiene
 planos juntos, que es como se usa casi siempre—. Con la primera puede existir un
 evento que no emita nada y se vea sólo cuando algo lo alumbra —la regla de
 la casa aplicada a un evento, que es lo que hace la `carrona`—; con la
-segunda, uno que se forme donde el banco ya estaba y hacia donde ya iba,
-que es lo que hace el `superpez`.
+segunda, uno que le pase algo al banco donde el banco está.
 
 ### Color
 
