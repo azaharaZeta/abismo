@@ -7,7 +7,7 @@
 Cuatro casos pequeños de «lo mismo escrito dos veces». Van juntos en una ficha porque
 ninguno merece la suya: son de una sentada y no hay nada que decidir. Los grandes
 —«cuánta luz me llega» y «una cadena de elipses a lo largo de un eje»— están en
-[simpl-02](../idea-luz-recibida-unica-simpl-02.md).
+[simpl-02](idea-luz-recibida-unica-simpl-02.md).
 
 ## 1 · La pasada extra cuando el alfa pasa de 1
 

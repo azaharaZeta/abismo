@@ -476,19 +476,12 @@ function pintaBordeCuerpo(b, M, p, g, plano){
     const j = i*5;
     _luzX[i] = _luzY[i] = 0; _luzC[i] = null;
     if (!(b.piel[j+3] > 0)) continue;
-    const x = b.piel[j], y = b.piel[j+1];
-    let lx = 0, ly = 0, mejor = 0, cm = null;
-    for (const o of luces){
-      const r = (o.rCuerpo || o.rLuz) * alc;
-      if (!r) continue;
-      const dx = o.x - x, dy = o.y - y, d2 = dx*dx + dy*dy;
-      const w = (o.luzI || 1) * Math.pow(1/(1 + d2/(r*r)), caida);
-      if (w < 0.002) continue;
-      const d = Math.sqrt(d2) || 1e-4;
-      lx += dx/d*w; ly += dy/d*w;
-      if (w > mejor){ mejor = w; cm = o.c; }
-    }
-    _luzX[i] = lx; _luzY[i] = ly; _luzC[i] = cm;
+    /* de `luzEn` esta muestra se lleva el VECTOR y el color del foco
+       dominante, no la suma: lo que se pinta es el lado del canto que mira
+       a la luz, y para eso hace falta de dónde viene. */
+    const luz = M.luzEn(b.piel[j], b.piel[j+1], luces,
+                        {alcance: alc, caida, umbral: 0.002});
+    _luzX[i] = luz.vx; _luzY[i] = luz.vy; _luzC[i] = luz.c;
   }
 
   /* ── 2 · EL CANTO, TRAMO A TRAMO Y LADO A LADO ──────────────────

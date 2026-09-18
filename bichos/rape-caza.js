@@ -215,36 +215,26 @@ function mirada(f, M, L, p, dt){
 }
 
 /* ── LUZ RECIBIDA ───────────────────────────────────────────────────
-   Se suma la de todas las escas del plano, y se guarda de dónde viene la
-   que más pesa: el dibujo enciende el cuerpo desde ahí. La propia va
-   penalizada porque apunta al frente y no al dueño.                 */
+   La suma de las escas del plano, con la propia penalizada —apunta al
+   frente y no al dueño—. La cuenta la hace `M.luzEn`, que es la misma para
+   todo el que se enciende porque algo lo alumbra; aquí sólo van el reglaje
+   del rape y qué se guarda.
+
+   `caida` alta es alcance corto y `ganancia` alta es mucha luz dentro de
+   ese alcance: juntas son lo que hace que un rape sea difícil de ver pero
+   se vea bien cuando se ve. SIN corte, o el cuerpo se apagaría de golpe al
+   salir del foco en vez de irse. */
 function luzRecibida(f, M, L, p, dt){
-  const Lg = f.Lg;
   /* el centro del cuerpo otra vez, ya movido: medirlo contra el de antes de
      integrar dejaba la iluminación un frame por detrás */
   const cen = centro(f, f.gx);
-  const cx = cen[0], cy = cen[1];
-  let tot = 0, mejor = 0;
-  for (const o of L.luces){
-    const R = o.rCuerpo || o.rLuz || Lg;
-    const dx = o.x - cx, dy = o.y - cy;
-    const q = (dx*dx + dy*dy)/(R*R);
-    /* caida alta = alcance corto; ganancia alta = mucho de cerca. Juntas son
-       lo que hace que un rape sea difícil de ver pero se vea bien cuando se ve. */
-    let w = opt(o.luzI, 1) * Math.pow(1/(1+q), p.caida) * p.ganancia;
-    if (o === f){
-      /* La penalización de la luz propia se disuelve cuando la esca se le viene
-         encima: a distancia apunta al frente y no le da, pero si el giro se la
-         trae al cuerpo le alumbra de lleno. Un autoLuz fijo obliga a elegir
-         entre invisible siempre o visible siempre. */
-      w *= p.autoLuz + (1 - p.autoLuz)*Math.exp(-q*3);
-    }
-    if (w < 0.004) continue;
-    tot += w;
-    /* de la luz dominante se guarda DÓNDE está, no de qué color es: el lado
-       por el que se enciende es suyo, el tono es del bicho */
-    if (w > mejor){ mejor = w; f.luzX = o.x; f.luzY = o.y; }
-  }
-  f.ilum = hacia(f.ilum, tot, 9, dt);               // sin parpadeos duros
+  const luz = M.luzEn(cen[0], cen[1], L.luces, {
+    caida: p.caida, ganancia: p.ganancia, umbral: 0.004,
+    propio: f, autoLuz: p.autoLuz,
+  });
+  /* de la luz dominante se guarda DÓNDE está, no de qué color es: el lado
+     por el que se enciende es suyo, el tono es del bicho */
+  if (luz.total > 0){ f.luzX = luz.x; f.luzY = luz.y; }
+  f.ilum = hacia(f.ilum, luz.total, 9, dt);         // sin parpadeos duros
 }
 export { querencia, caza, camposRape, mirada, luzRecibida };

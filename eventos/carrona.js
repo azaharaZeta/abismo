@@ -131,20 +131,17 @@ evento('carrona', {
     const alc = opt(p.alcance, 1), caida = opt(p.caida, 2.2);
     const gan = opt(p.ganancia, 1.9), techo = opt(p.techo, 1.5);
     const base = opt(p.base, 0), k = Math.min(1, 7*dt);
+    const luces = M.luces(plano);
     let pico = 0;
     for (let i=0;i<n;i++){
       const s = ((i+0.5)/n - 0.5)*e.Lg;
       const vx = e.x + s*ca, vy = e.y + s*sa;
-      let tot = 0;
-      for (const o of M.luces(plano)){
-        const r = (o.rCuerpo || o.rLuz) * alc;
-        if (!r) continue;
-        const d = Math.hypot(o.x - vx, o.y - vy);
-        if (d >= r) continue;
-        const w = (o.luzI || 1) * Math.pow(1 - d/r, caida);
-        if (w < 0.004) continue;
-        tot += w;
-      }
+      /* CON corte, que es lo que distingue a la carroña del rape y del
+         cuerpo: pasado el radio del foco la vértebra se apaga DE VERDAD, y
+         eso es lo que hace que aparezca y desaparezca a trozos mientras
+         baja. `ganancia` y `techo` se componen abajo, no dentro. */
+      const tot = M.luzEn(vx, vy, luces,
+                          {alcance: alc, caida, corta: true}).total;
       const obj = Math.min(techo, tot*gan) + base;
       /* con rampa, o los huesos entran y salen a saltos cuando un banco le
          pasa por delante: lo que se pide es que asome y se vaya, no que

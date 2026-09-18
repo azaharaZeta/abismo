@@ -150,6 +150,13 @@ comestible) y `L.cardumen` (quién hace banco — dos especies que lo pidan
 hacen banco mixto). Ese es todo el vocabulario. Ninguna especie pregunta
 por el nombre de otra.
 
+Y «cuánta luz me llega» —que es la regla de la casa hecha cuenta— tiene
+**una sola implementación**: `M.luzEn(x, y, luces, op)`. La usan el cuerpo
+del rape, cada vértebra de la carroña y cada muestra del canto de un
+cuerpo. Su único parámetro de forma es `corta`: sin él la luz no llega
+nunca a cero —hace falta para algo grande en agua vacía— y con él el trozo
+se apaga de verdad al salir del foco.
+
 Los **eventos** actúan por dos vías que tampoco obligan a nadie a saber
 que existen: empujar a `M.campos` (y el bicho consulta `M.campo(tipo, x,
 y, plano)`), o modular `M.mod.agua` / `M.mod.ritmo`, que el motor aplica al

@@ -51,6 +51,8 @@ function salto(x, y, inset){
 const _enc = [0,0];
 /* campo que más pesa en un punto. Compartido: consúmelo en el acto. */
 const _cam = {peso:0, c:null, d:null, x:0, y:0};
+/* lo que devuelve luzEn(). Compartido igual: consúmelo en el acto. */
+const _luz = {total:0, x:0, y:0, c:null, vx:0, vy:0};
 /* para M.luces de un plano que no existe: devolver null obligaría a cada
    consumidor a comprobarlo antes de recorrerlo */
 const VACIO = [];
@@ -93,6 +95,67 @@ const M = {
     }
     const L = PLANOS[plano|0];
     return L ? L.cardumen : VACIO;
+  },
+  /* ── CUÁNTA LUZ LE LLEGA A UN PUNTO ──────────────────────────────
+     La regla de la casa —nadie está iluminado por la escena, cada cuerpo
+     existe hasta donde llega la luz que le dan— se resuelve AQUÍ y en un
+     solo sitio. Lo piden el cuerpo del rape, cada vértebra de la carroña y
+     cada muestra del canto de un cuerpo.
+
+     `luces` es la lista de focos: `L.luces` desde una especie,
+     `M.luces(plano)` desde un evento. De cada foco se lee `rCuerpo || rLuz`
+     como radio y `luzI` como cuánto emite (1 si no lo declara).
+
+     DOS CURVAS, y la diferencia es de diseño:
+       · SIN `corta`, pow(1/(1+d²/r²), caida). No llega a cero nunca, así
+         que hay un hilo de luz a cualquier distancia que sube al
+         acercarse. Es lo que necesita algo grande en agua vacía: con corte
+         el canto de un cuerpo sale todo o nada.
+       · CON `corta`, pow(1 − d/r, caida) y nada pasado `r`. El trozo se
+         apaga DE VERDAD al salir del foco, que es lo que hace que una
+         vértebra aparezca y desaparezca mientras baja.
+
+     `propio` es el que pregunta, si está en la lista: su luz va penalizada
+     por `autoLuz` —apunta al frente, no a él— y la penalización se disuelve
+     si se le viene encima. Sólo tiene sentido sin `corta`.
+
+     `umbral` es por debajo de cuánto un foco no se cuenta, y `ganancia`
+     multiplica ANTES de ese descarte. `techo` y `base` no están aquí: son
+     de quien pregunta, que es quien sabe con qué los compone.
+
+     Devuelve un objeto COMPARTIDO —consúmelo en el acto—: `total` es la
+     suma, `x`, `y` y `c` son de la que más pesa, y `vx, vy` la suma de las
+     direcciones ponderada por peso, que es lo que deja encender sólo el
+     lado que mira a la luz. */
+  luzEn(x, y, luces, o){
+    const alc = opt(o.alcance, 1), caida = opt(o.caida, 2);
+    const gan = opt(o.ganancia, 1), umbral = opt(o.umbral, 0.004);
+    const propio = o.propio, auto = opt(o.autoLuz, 1);
+    let tot = 0, mejor = 0, vx = 0, vy = 0;
+    _luz.x = 0; _luz.y = 0; _luz.c = null;
+    for (const f of luces){
+      const r = (f.rCuerpo || f.rLuz) * alc;
+      if (!r) continue;
+      const dx = f.x - x, dy = f.y - y, d2 = dx*dx + dy*dy;
+      let w, d;
+      if (o.corta){
+        d = Math.hypot(dx, dy);
+        if (d >= r) continue;
+        w = opt(f.luzI, 1) * Math.pow(1 - d/r, caida) * gan;
+      } else {
+        const q = d2/(r*r);
+        w = opt(f.luzI, 1) * Math.pow(1/(1+q), caida) * gan;
+        if (f === propio) w *= auto + (1 - auto)*Math.exp(-q*3);
+        d = Math.sqrt(d2);
+      }
+      if (w < umbral) continue;
+      tot += w;
+      const dd = d || 1e-4;
+      vx += dx/dd*w; vy += dy/dd*w;
+      if (w > mejor){ mejor = w; _luz.x = f.x; _luz.y = f.y; _luz.c = f.c; }
+    }
+    _luz.total = tot; _luz.vx = vx; _luz.vy = vy;
+    return _luz;
   },
   /* lo que los eventos empujan y los bichos consultan */
   campos, get mod(){ return MOD; }, get ritmo(){ return MOD.ritmo; },

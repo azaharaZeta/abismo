@@ -10,7 +10,18 @@
      crear(M, L, p)            → el objeto; debe tener x, y
      actualiza(o, M, L, p, dt) → void
      dibuja(o, M, L, p, g)     → void, en el contexto del plano
-     luz         → ilumina al plancton; necesita x, y, c y rLuz
+     luz         → entra en L.luces, o sea que alumbra. El contrato de un
+                   foco, que lee `M.luzEn` y no sólo el plancton:
+                     x, y     dónde está la luz, en mundo. NO tiene por qué
+                              ser el cuerpo: la del rape es su esca.
+                     c        su color, para quien se tiña de él.
+                     rLuz     a cuánto enciende plancton —generoso.
+                     rCuerpo  a cuánto REVELA otro cuerpo. Suele ir más
+                              corto; sin él se usa `rLuz`.
+                     luzI     cuánto emite ahora mismo. Quien no lo declare
+                              vale 1, o sea más que un pez linterna entero.
+                     senuelo  si es una trampa. Lo mira la presa para no
+                              perseguir a cualquiera que brille.
      presa       → es comestible: entra en L.presas
      rompible    → se le puede romper el DIBUJO: un campo `tajo` encima y
                    el motor lo pinta cortado en bandas (ver pintaBicho).
@@ -33,7 +44,8 @@
    M es la escena viva: M.W M.H M.U M.t M.paleta y los métodos
    M.color() M.empuje(x,y,banda) M.borde(x,y) M.flujoX(y,t) M.flujoY(x,t)
    M.envuelve(o,inset) M.salto(x,y,inset) M.campo(tipo,x,y,plano)
-   M.luzDedo(x,y) M.halo(color) M.punto(color), más las utilidades M.rgba
+   M.luzEn(x,y,luces,op) M.luzDedo(x,y) M.halo(color) M.punto(color),
+   más las utilidades M.rgba
    M.clamp M.rnd M.rango M.rangoE M.elige M.mezcla M.suave M.opt M.TAU.
    L es el plano. p son los parámetros de la escena para esa especie. */
 const ESPECIES = {};
