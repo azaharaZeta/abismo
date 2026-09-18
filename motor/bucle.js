@@ -6,7 +6,8 @@ import { resuelveEspectros, resiembraPaletas, paletaDe } from './color.js';
 import { buildAgua, buildRuido, buildOndulacion, buildDispersion,
          resiembraAgua, pintaAgua, pintaDispersion,
          ruido, RUIDO } from './agua.js';
-import { cableaTacto, envejeceOndas, avisaContactos } from './dedo.js';
+import { cableaTacto, envejeceOndas, olvidaOndas,
+         avisaContactos } from './dedo.js';
 import { M } from './api.js';
 
 /* Los cuatro de calidad arrancan desde ABISMO y sólo los baja
@@ -290,13 +291,14 @@ function setup(repoblar){
 
 /* ── OTRA PECERA ────────────────────────────────────────────────────
    No es repoblar: es volver a sortearlo TODO, que es lo que pide el botón
-   de reiniciar. Hay tres cosas que sobreviven a un `setup(true)` y que por
-   tanto hay que tirar a mano, porque se sortean una sola vez:
+   de reiniciar. Hay cuatro cosas que sobreviven a un `setup(true)` y que
+   por tanto hay que tirar a mano:
 
      · las PALETAS: lo hace `resiembraPaletas()`, en motor/color.js, que es
        donde vive el convenio de los espectros y su marca.
      · las MANCHAS de la ondulación del agua.
      · los RELOJES de los eventos.
+     · las ONDAS del dedo, que son del gesto y no de la pecera.
 
    La calidad NO se restaura: si la máquina ya demostró que no podía,
    devolverle el detalle al reiniciar es volver a hacerle la misma
@@ -308,6 +310,7 @@ function reinicia(){
   ABISMO.bichos.forEach(resiembraPaletas);
   ABISMO.eventos.forEach(resiembraPaletas);
   resiembraAgua();
+  olvidaOndas();
   preparaEventos();
   V.t = 0;
   calentando = 0; lento = 0; ema = 16.7;
@@ -409,9 +412,9 @@ function pintaBicho(def, o, M, L, p, g){
 }
 
 /* Deja el contexto de un plano listo para sumar. Pasa por aquí TODO el que
-   pinta en él —población, los que piden frente, eventos y ondas—, así que
-   ninguno hereda el estado en que lo dejó el anterior: el `globalAlpha`
-   que se olvide un evento no puede apagarle las ondas al siguiente. */
+   pinta en él —población, los que piden frente y eventos—, así que ninguno
+   hereda el estado en que lo dejó el anterior: el `globalAlpha` que se
+   olvide un evento no puede apagarle el dibujo al siguiente. */
 function abrePlano(L){
   const g = L.g;
   g.setTransform(L.r,0,0,L.r,0,0);

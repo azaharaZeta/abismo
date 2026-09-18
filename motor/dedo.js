@@ -19,14 +19,23 @@ const ultimos = new Map();
 const ondaR = k => k.rmax * (1 - Math.pow(1 - Math.min(1, k.t/k.vida), k.cre));
 const ondaA = k => { const u = Math.min(1, k.t/k.vida);
                      return Math.pow(1-u, k.apa) * Math.min(1, u*14) * k.amp; };
+/* Lo que le QUEDA a una onda: sólo la caída, sin la rampa de entrada de
+   `ondaA`. Decrece con la edad, así que sirve para desalojar. */
+const ondaResto = k => Math.pow(1 - Math.min(1, k.t/k.vida), k.apa) * k.amp;
 
 function impulso(x, y){
-  /* al desbordar se tira la onda menos viva, no la más vieja: en un
-     barrido rápido todas son jóvenes y quitar la primera se ve */
+  /* Al desbordar se tira la onda menos viva, no la más vieja: en un
+     barrido rápido todas son jóvenes y quitar la primera se ve.
+
+     Y POR `ondaResto`, NO POR `ondaA`: ésa lleva dentro la rampa de entrada
+     —dos décimas en abrir—, así que una onda recién nacida puntúa casi 0 y
+     se desaloja a sí misma. Arrastrando el dedo eso congela el rastro donde
+     EMPEZÓ el gesto: llenas el tope y ninguna onda nueva pasa de un
+     fotograma. */
   if (contactos.length >= V.topeOndas){
     let peor = 0, va = Infinity;
     for (let i=0;i<contactos.length;i++){
-      const v = ondaA(contactos[i]);
+      const v = ondaResto(contactos[i]);
       if (v < va){ va = v; peor = i; }
     }
     contactos.splice(peor, 1);
@@ -143,6 +152,11 @@ function cableaTacto(){
     V.cv.addEventListener(ev, e => ultimos.delete(e.pointerId), {passive:true});
 }
 
+/* Las ondas son del GESTO y no de la pecera, así que `reinicia()` las tira:
+   una que sobreviva enciende el plancton que se acaba de sembrar, y lo que
+   se ve es un anillo de motas prendidas sin que nadie haya tocado. */
+function olvidaOndas(){ contactos.length = 0; }
+
 /* las ondas se apagan solas: cada una lleva su propia vida */
 function envejeceOndas(dt){
   for (let i=contactos.length-1;i>=0;i--){
@@ -157,4 +171,5 @@ function envejeceOndas(dt){
 let alContacto = () => {};
 function avisaContactos(fn){ alContacto = fn; }
 
-export { luzDedo, empuje, cableaTacto, envejeceOndas, avisaContactos };
+export { luzDedo, empuje, cableaTacto, envejeceOndas, olvidaOndas,
+         avisaContactos };

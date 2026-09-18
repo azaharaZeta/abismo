@@ -87,7 +87,7 @@ function trazaCinta(g, n, stops, ancho, aAncho, fino, aFino){
 function siembraHistorial(j){
   const sep = j.r*0.05;              // separación entre muestras
   for (let k=0;k<HIST;k++){
-    const age = k/(HIST-1), i = ((HIST-1-k) % HIST)*3;
+    const age = k/(HIST-1), i = (HIST-1-k)*3;
     j.hist[i]   = j.x + Math.sin(age*2.6 + j.tiltFase)*j.r*0.35*age;
     j.hist[i+1] = j.y + k*sep;
     j.hist[i+2] = 0;
@@ -317,11 +317,16 @@ const MEDUSA = {
            queda la mayor —o sea la más cercana, que el radio lleva dentro
            la escala del plano—. Ver por qué en eventos/gemacion.js. */
         if (j.r > gm.d.mejorR) gm.d.mejorR = j.r;
-        if (gm.d.lista && j.r >= gm.d.mejorR) gemar(j, p);
+        if (gm.d.lista && j.r >= gm.d.mejorR){
+          /* y SE GASTA EL CUPO: es lo que mata al evento en el acto —lee su
+             `quedan`— y lo que deja el «una y sólo una» en el cupo y no en
+             el desempate por radio. */
+          gm.d.quedan--;
+          gemar(j, p);
+        }
       }
     }
     if (j.cria) pasoCria(j, dt);
-
 
     reaccionBorde(j, M, p, j.x, j.y, dt);
     avanza(j, M, L, dt, j.dx, j.dy);

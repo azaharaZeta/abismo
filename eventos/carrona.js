@@ -15,8 +15,10 @@ import { pintaHalo, reparte } from '../bichos/comun.js';
 
    Dos cosas más la convierten en un cuerpo y no en un dibujo:
      · TAPA. Un campo `tapa` por vértebra, así que la nieve marina de
-       detrás se calla y el agua se oscurece bajo ella. A oscuras sigue
-       ahí: se la encuentra por el hueco.
+       detrás se calla. El agua NO se oscurece bajo ella —eso lo hace
+       `pintaSombras` y sólo con los campos `apaga`—, y está bien: un
+       esqueleto no es una masa. A oscuras sigue tapando: se la encuentra
+       por el hueco.
      · LA PRENDE. Un campo `enciende` flojo y ancho: la descomposición va
        encendiendo el plancton a su paso y le deja un rastro que tarda en
        borrarse. Muchas veces se la ve por eso antes que por ella.
