@@ -43,21 +43,20 @@ evento('glitch', {
   exclusivo: false,
   cada: [200, 460], primero: [60, 170],
   prueba: { dura: [14, 24], saltos: [22, 40], salto: [0.22, 0.50],
-            focos: [1, 2], radio: [0.30, 0.52],
-            bandas: [8, 14], paso: [6, 13],
-            sep: 34, estira: 0.85, avance: 0.14, giro: [0.20, 0.70],
+            focos: [1, 2], radio: [5.85, 10.1],
+            bandas: [8, 14], paso: [0.108, 0.235],
+            sep: 0.61, estira: 0.85, avance: 0.14, giro: [0.20, 0.70],
             parte: 1, filo: 3 },
   arranca(M, p){
     const n = rangoE(p.focos);
-    const lado = Math.min(M.W, M.H);
     const focos = [];
     for (let i=0;i<n;i++)
       focos.push({
         x: Math.random()*M.W, y: Math.random()*M.H,
-        r: lado*rango(p.radio),
+        r: M.U*rango(p.radio),
         /* `d` es el que lee el motor, y es el MISMO objeto toda la vida del
            evento: los pasos se dan mutándolo, no cambiándolo. */
-        d: { bandas: rangoE(p.bandas), paso: rango(p.paso),
+        d: { bandas: rangoE(p.bandas), paso: rango(p.paso)*M.U,
              parte: opt(p.parte, 1),
              giro: Math.random()*TAU, sep: 0, estira: 0 },
         /* cuánto está roto este foco ahora mismo. Arranca a medias: a 0 el
@@ -89,7 +88,7 @@ evento('glitch', {
         f.d.giro += rango(p.giro);
         /* del mismo `k` salen las dos: así la rotura es UNA cosa que crece
            y decrece, y no dos números sueltos que se pelean */
-        f.d.sep    = opt(p.sep, 0) * f.k;
+        f.d.sep    = opt(p.sep, 0) * M.U * f.k;
         f.d.estira = opt(p.estira, 0) * f.k;
       }
       e.roto = true;

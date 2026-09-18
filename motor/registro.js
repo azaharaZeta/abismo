@@ -33,8 +33,8 @@
    M es la escena viva: M.W M.H M.U M.t M.paleta M.raro y los métodos
    M.color() M.empuje(x,y,banda) M.borde(x,y) M.flujoX(y,t) M.flujoY(x,t)
    M.envuelve(o,inset) M.salto(x,y,inset) M.campo(tipo,x,y,plano)
-   M.halo(color) M.punto(color), más las utilidades M.rgba M.clamp M.rnd
-   M.rango M.rangoE M.elige M.mezcla M.suave M.opt M.TAU.
+   M.luzDedo(x,y) M.halo(color) M.punto(color), más las utilidades M.rgba
+   M.clamp M.rnd M.rango M.rangoE M.elige M.mezcla M.suave M.opt M.TAU.
    L es el plano. p son los parámetros de la escena para esa especie. */
 const ESPECIES = {};
 function especie(nombre, def){ ESPECIES[nombre] = def; }

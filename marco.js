@@ -1,0 +1,53 @@
+/* ══════════════════════════════════════════════════════════════════
+   EL MARCO · los dos botones de la franja
+
+   El marco en sí es CSS (marco.css) y no lienzo, y ésa es la decisión:
+   lo único que se le pide —que el abismo no pinte por encima— sale
+   gratis si el lienzo es más pequeño que la pantalla. Recortando sobre
+   el lienzo habría que acordarse en cada pasada a pantalla completa.
+
+   De aquí no sale ninguna llamada al motor que no sea `reinicia()`.
+   ══════════════════════════════════════════════════════════════════ */
+import { reinicia } from './motor.js';
+
+document.getElementById('reinicia')
+  .addEventListener('click', () => reinicia());
+
+/* ── GIRAR EL MÓVIL ─────────────────────────────────────────────────
+   Automático y limpio no se puede: bloquear la orientación exige
+   pantalla completa y pedirla exige un gesto, así que sin botón no hay
+   giro. Y donde la API no está —iOS no tiene ni `lock` ni pantalla
+   completa de documento— el botón NO SE PINTA: uno que no hace nada es
+   peor que no tenerlo.
+
+   También se esconde en escritorio: ahí `lock` existe pero rechaza, y
+   quien está en un monitor no quiere que le pongan la pieza en pantalla
+   completa por tocar un botón que dice «girar». */
+const girar = document.getElementById('girar');
+const raiz = document.documentElement;
+const puede = !!(raiz.requestFullscreen && screen.orientation &&
+                 screen.orientation.lock) &&
+              matchMedia('(hover:none) and (pointer:coarse)').matches;
+
+if (puede){
+  girar.hidden = false;
+  const etiqueta = () => {
+    girar.textContent = document.fullscreenElement ? 'salir' : 'girar';
+  };
+  document.addEventListener('fullscreenchange', etiqueta);
+  girar.addEventListener('click', async () => {
+    try {
+      if (document.fullscreenElement){
+        screen.orientation.unlock();
+        await document.exitFullscreen();
+      } else {
+        await raiz.requestFullscreen({navigationUI: 'hide'});
+        /* el bloqueo puede fallar y la pantalla completa quedarse: no se
+           deshace, que es lo que el usuario acaba de pedir a medias */
+        await screen.orientation.lock('landscape');
+      }
+    } catch { /* el navegador ha dicho que no */ }
+    etiqueta();
+  });
+  etiqueta();
+}

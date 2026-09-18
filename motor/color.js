@@ -108,8 +108,13 @@ function resuelveEspectros(conf){
     const destino = 'paleta' + k.slice(8);
     if (p[destino]) continue;
     const e = p[k];
-    p[destino] = Array.isArray(e) ? [].concat(...e.map(generaPaleta))
-                                  : generaPaleta(e);
+    const pal = Array.isArray(e) ? [].concat(...e.map(generaPaleta))
+                                 : generaPaleta(e);
+    /* Marcada porque `reinicia()` tiene que poder tirarla y volver a
+       sortearla, y una paleta ESCRITA A MANO no: ésa es una decisión y
+       sobrevive a la pecera nueva. */
+    pal.deEspectro = true;
+    p[destino] = pal;
   }
 }
 

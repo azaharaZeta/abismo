@@ -15,12 +15,19 @@ const P = A.pruebas;
    Sólo escalares: un rango [min,max] no cabe en un deslizador, y los de
    los eventos ya se editan como JSON más abajo.
 
+   Y sólo los que se pueden JUZGAR MIRANDO. Aquí no entra un parámetro
+   que haya que medir —`cardumen.vista` se comprueba contando alineación,
+   no arrastrando—, ni un multiplicador de otro que ya tiene mando
+   —`brilloOjo` cuelga de `brillo`—, ni un detalle de dos píxeles como la
+   pupila del rape. Para todo eso está el JSON del evento, y escena.js.
+
    `aplica` dice qué hace falta después de cambiarlo:
      null    · surte efecto solo, el motor lo lee cada frame
      'calc'  · hay que recalcular (corriente, planos, tamaño del lienzo)
      'nueva' · hace falta población nueva                             */
 const MANDOS = [
   /* EL AGUA. Los dos del velo están explicados en ABISMO.dispersion. */
+  {nombre:'luz de fondo',   ruta:'agua.brillo',       min:0,   max:3,    paso:0.05, aplica:null},
   {nombre:'velo · fuerza',  ruta:'dispersion.fuerza', min:0,   max:2,    paso:0.05, aplica:null},
   {nombre:'velo · caída',   ruta:'dispersion.caida',  min:0.2, max:0.95, paso:0.02, aplica:null},
   {nombre:'corriente',      ruta:'corriente.amplitud',min:0,   max:0.8,  paso:0.02, aplica:'calc'},
@@ -33,22 +40,15 @@ const MANDOS = [
   {nombre:'sombra en agua', ruta:'agua.sombra.fuerza', min:0, max:1, paso:0.05, aplica:null},
   /* y lo que emite el leviatán: a 0 sólo se le ve por el hueco */
   {nombre:'leviatán · luz', ruta:'eventos.@leviatan.brillo', min:0, max:0.8, paso:0.02, aplica:null},
-  /* el ojo multiplica a la luz de arriba, así que ésta a 0 lo apaga también */
-  {nombre:'leviatán · ojo', ruta:'eventos.@leviatan.brilloOjo', min:0, max:4, paso:0.1, aplica:null},
   /* el tamaño de TODO: la unidad de escena sale de aquí */
   {nombre:'escala',         ruta:'escala',            min:10,  max:60,   paso:1,    aplica:'nueva'},
 
   /* LOS BICHOS. `cada` es área por mota, así que BAJARLO es más plancton. */
   {nombre:'plancton · área/mota', ruta:'bichos.@plancton.total.cada',
    min:500, max:3000, paso:50, aplica:'nueva'},
-  /* los dos que mandan sobre lo acompasado que va el banco */
-  {nombre:'banco · vista',     ruta:'bichos.@pezlinterna.cardumen.vista',
-   min:1.5, max:8, paso:0.1, aplica:null},
   {nombre:'banco · desorden',  ruta:'bichos.@pezlinterna.desorden',
    min:0, max:0.6, paso:0.02, aplica:'nueva'},
-  /* y los dos que deciden cuánto se ve el rape */
   {nombre:'rape · cuerpo',     ruta:'bichos.@rape.cuerpo',    min:0, max:2,   paso:0.02, aplica:null},
-  {nombre:'rape · pupila',     ruta:'bichos.@rape.ojoBrillo',  min:0, max:0.6, paso:0.01, aplica:null},
 ];
 
 /* Un tramo de ruta puede ser `@nombre`: busca en el array la entrada cuya

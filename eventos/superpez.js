@@ -27,7 +27,7 @@ import { escQueCabe } from '../bichos/forma.js';
 evento('superpez', {
   exclusivo: true,
   cada: [200, 440], primero: [70, 190],
-  prueba: { largo: [0.40, 0.54], largoMin: 0.26, minimo: 12,
+  prueba: { largo: [13.9, 18.7], largoMin: 9.0, minimo: 12,
             superpeces: [1, 2], reparto: [0.55, 0.90], redondez: [0.70, 1.55],
             entra: [8, 14], nada: [7, 13], sale: [4, 7],
             vel: [0.25, 0.55], giroMax: 0.10, giroPaso: 0.035, vira: 2.8,
@@ -80,10 +80,10 @@ evento('superpez', {
       const m = mediasBanco(g);
       const gordo = rango(p.redondez);
       const esc = escQueCabe(M, m.cx, m.cy, m.ang,
-                             M.W * rango(p.largo) * parte, gordo);
+                             M.U * rango(p.largo) * parte, gordo);
       /* y si lo que cabe ya no es un SUPERpez, ésta no sale: media silueta
          asomando por un canto no se lee, y el evento es que se lea */
-      if (esc < M.W * opt(p.largoMin, 0) * parte) continue;
+      if (esc < M.U * opt(p.largoMin, 0) * parte) continue;
       formas.push({
         cx: m.cx, cy: m.cy, ang: m.ang, esc,
         vel:  rango(p.vel) * M.U,

@@ -20,19 +20,56 @@ const porReparto = (area, li, p) => Math.round(cuenta(area, p.total) * p.reparto
 const porPlano   = (area, li, p) => cuenta(area, p.por[li]);
 
 /* ── FÍSICA COMPARTIDA ──────────────────────────────────────────────
-   Las tres piezas de los que se mueven: apartarse del frente de la onda,
-   resistirse al borde y dejarse llevar por la corriente. Se cogen por
-   separado —el copépodo no usa la del dedo.
+   Las tres piezas de los que se mueven: apartarse del dedo, resistirse al
+   borde y dejarse llevar por la corriente. Se cogen por separado —el
+   copépodo no usa ninguna de las dos primeras—. El `borde` de la escena es
+   opcional. */
 
-   Contrato de reaccionDedo: el objeto lleva vx, vy, fx, fy, huida y lag;
-   la escena, fuerzaDedo. El `borde` de la escena es opcional. */
+/* ── APARTARSE DEL DEDO ─────────────────────────────────────────────
+   Y NO ES HUIR: el bicho se desplaza de lado mientras le pasa el frente
+   de la onda, sin que nadie le toque el rumbo, así que sigue yendo a lo
+   suyo. Deja la velocidad de ese desvío en `o.dx, o.dy`, y quien lo use
+   la suma a su movimiento —no la integra— porque lo que sale de aquí ya
+   ES una velocidad.
 
-/* Empujón del frente de onda, con rampa: el bicho no salta, va cogiendo
-   la fuerza según su `lag`. `e` es lo que devolvió M.empuje. */
-function reaccionDedo(o, M, p, e, dt){
-  const obj = M.U*p.fuerzaDedo*o.huida, k = Math.min(1, o.lag*dt);
-  o.fx += (e[0]*obj - o.fx)*k;
-  o.fy += (e[1]*obj - o.fy)*k;
+   QUE SEA UNA VELOCIDAD Y NO UNA FUERZA es la decisión: con una fuerza
+   hay que integrar dos veces y el desvío tarda segundos en verse. Medido
+   con el arnés de Node a 60 fps: al segundo del toque el pez se había
+   movido 0,04 U —un píxel y medio—, o sea que para cuando se apartaba el
+   dedo ya no estaba y el gesto se leía como que no pasa nada.
+
+   Y LA RAMPA ES ASIMÉTRICA, que es el resto del efecto: SUBE con `lag`
+   —deprisa, mientras el frente está encima, o no se ve— y BAJA con
+   `apartaVuelve` —despacio, así el bicho sigue deslizándose un rato
+   después—. Al revés se leen las dos cosas mal: un arranque lento no se
+   ve, y una vuelta rápida no se lee como apartarse.
+
+   Y EL MÓDULO DE `e` VA CON TOPE. M.empuje suma una onda por cada
+   contacto vivo y no normaliza, así que arrastrando el dedo —que suelta
+   una onda cada `paso`— se apilan y el peso llega a 2,5: medido, el
+   desvío se iba a 2,8 U/s, más del doble de lo que se mueve una medusa
+   sola, y eso ya no es apartarse. El tope se queda con la DIRECCIÓN que
+   sale de la suma y le quita el exceso, de modo que `apartaDedo` es de
+   verdad la velocidad máxima.
+
+   `e` es lo que devolvió M.empuje. El objeto lleva dx, dy, `aparta` y
+   `lag`; la escena, `apartaDedo` —en U/s, o sea la velocidad de lado a
+   plena onda— y `apartaVuelve`.
+
+   El plancton no lo usa: la nieve marina está en suspensión y del gesto
+   sólo recibe luz. */
+function seAparta(o, M, p, e, dt){
+  const w = Math.hypot(e[0], e[1]);
+  const obj = M.U*p.apartaDedo*o.aparta * (w > 1 ? 1/w : 1);
+  const ox = e[0]*obj, oy = e[1]*obj;
+  if (Math.hypot(ox, oy) > Math.hypot(o.dx, o.dy)){
+    const k = Math.min(1, o.lag*dt);
+    o.dx += (ox - o.dx)*k;
+    o.dy += (oy - o.dy)*k;
+  } else {
+    const fr = Math.pow(p.apartaVuelve, dt);
+    o.dx *= fr; o.dy *= fr;
+  }
 }
 
 /* Resistencia al canto, medida en (x,y) —que no siempre es la posición del
@@ -131,6 +168,6 @@ function silencio(M, x, y, L){
   }
   return v;
 }
-export { porReparto, porPlano, reaccionDedo, reaccionBorde,
+export { porReparto, porPlano, seAparta, reaccionBorde,
          paso, avanza, mancha, pintaHalo, reparte, giroCorto, mezclaAng,
          silencio };

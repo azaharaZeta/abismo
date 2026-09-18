@@ -4,7 +4,7 @@
    ══════════════════════════════════════════════════════════════════ */
 import { M, especie } from '../motor.js';
 const {rgba, clamp, rnd, rango, rangoE, opt, TAU} = M;
-import { porPlano, mancha, reparte, reaccionDedo, reaccionBorde,
+import { porPlano, mancha, reparte, seAparta, reaccionBorde,
          avanza, silencio } from './comun.js';
 
 const HIST = 48;              // muestras del buffer circular
@@ -119,6 +119,10 @@ function topa(j, M, p){
     teleporta(j, s[0], s[1]);
     if (s[2] && s[2]*j.vx < 0) j.vx = -j.vx*0.45;
     if (s[3] && s[3]*j.vy < 0) j.vy = -j.vy*0.40;
+    /* el ladeo del dedo rebota igual, o un dedo que la empuja contra el
+       cristal la deja pegada a él hasta que se le pasa */
+    if (s[2] && s[2]*j.dx < 0) j.dx = -j.dx*0.45;
+    if (s[3] && s[3]*j.dy < 0) j.dy = -j.dy*0.40;
   }
 
   /* MIGRACIÓN VERTICAL, y no un rebote contra el canto: cada medusa
@@ -173,8 +177,10 @@ especie('medusa', {
          1,8 px/s y ella se mueve a 0,16. */
       zTop: rango(pat), zBot: 1 - rango(pat),
       vigor: p.vigor[0] + (p.vigor[1]-p.vigor[0])*Math.pow(Math.random(), 0.45),
-      vx:0, vy:0, fx:0, fy:0,
-      huida: rango(p.huida), lag: rango(p.lag),
+      vx:0, vy:0,
+      /* dx,dy es la velocidad del LADEO del dedo, aparte de la del pulso */
+      dx:0, dy:0,
+      aparta: rango(p.aparta), lag: rango(p.lag),
       /* casi verticales, pero no del todo: bascula despacio */
       tilt: 0, tiltAmp: rango(p.tilt), tiltRate: rango(p.tiltVel),
       tiltFase: Math.random()*TAU,
@@ -233,15 +239,22 @@ especie('medusa', {
     const drag = Math.pow(p.arrastre, dt);
     j.vx *= drag; j.vy *= drag;
 
-    /* el dedo la enciende y la aparta */
+    /* EL DEDO LA ENCIENDE Y LA LADEA, y son dos consultas distintas a
+       propósito: el destello va con `luzDedo` —lo que la enciende es la luz,
+       así que responde también al fogonazo de debajo del dedo— y el empujón
+       con `empuje`, que es el frente y sólo el frente.
+
+       El ladeo va en su PROPIA velocidad (dx,dy) y no en la del pulso: en
+       vx,vy se lo comería el `arrastre`, que la deja en la mitad en medio
+       segundo, y la medusa acabaría donde estaba. Es lo mismo que hace el
+       banco, y por lo mismo. */
     j.destello *= Math.pow(0.20, dt);
-    const e = M.empuje(j.x, j.y, j.r*1.6);
-    if (e[2] > 0) j.destello = Math.min(1, j.destello + 3.0*dt*e[2]);
-    reaccionDedo(j, M, p, e, dt);
-    j.vx += j.fx*dt; j.vy += j.fy*dt;
+    const ld = M.luzDedo(j.x, j.y);
+    if (ld > 0) j.destello = Math.min(1, j.destello + 3.0*dt*ld);
+    seAparta(j, M, p, M.empuje(j.x, j.y, j.r*1.6), dt);
 
     reaccionBorde(j, M, p, j.x, j.y, dt);
-    avanza(j, M, L, dt);
+    avanza(j, M, L, dt, j.dx, j.dy);
     topa(j, M, p);
 
     /* lo que alumbra va con el pulso, no fijo: así lo que la medusa revela

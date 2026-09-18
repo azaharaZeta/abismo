@@ -3,7 +3,7 @@ import { TAU, rgba, clamp, opt, rnd, suave, elige, mezcla, rango,
          rangoE } from './util.js';
 import { V, campos, MOD, PLANOS, flujoX, flujoY } from './estado.js';
 import { eligeDePaleta, halo, punto } from './color.js';
-import { empuje } from './dedo.js';
+import { empuje, luzDedo } from './dedo.js';
 
 /* ── BORDES ─────────────────────────────────────────────────────────
    Empuje hacia dentro cerca del canto. Fuera del lienzo se satura en vez
@@ -60,7 +60,7 @@ const M = {
   get U(){ return V.U; }, get t(){ return V.t; },
   get paleta(){ return ABISMO.paleta; },
   get raro(){ return ABISMO.raro; },
-  empuje, borde, flujoX, flujoY, halo, punto,
+  empuje, luzDedo, borde, flujoX, flujoY, halo, punto,
   /* Un color respetando pesos. Úsalo en vez de elige(M.paleta) o los
      pesos no cuentan. La suma se cachea en el propio array. */
   color(pal){ return eligeDePaleta(pal || ABISMO.paleta); },

@@ -4,10 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es esto
 
-«Abismo»: una pieza de arte generativo en un único `<canvas>`. Un abismo
-bioluminiscente con criaturas que se iluminan entre sí. Sin build, sin
-dependencias y sin tests automáticos: módulos ES planos que `index.html`
-carga directamente.
+«Abyss by Zeta»: una pieza de arte generativo en un `<canvas>`, dentro de
+un marco de chapa que es CSS. Un abismo bioluminiscente con criaturas que
+se iluminan entre sí. Sin build, sin dependencias y sin tests automáticos:
+módulos ES planos que `index.html` carga directamente.
 
 **El código, los comentarios y los identificadores están en castellano.**
 Mantenlo así.
@@ -40,8 +40,8 @@ repoblar sin recargar.
 
 ## Arquitectura
 
-Módulos ES sin build. `index.html` carga dos: `abismo.js`, que tira del
-resto por imports, y `pruebas.js`.
+Módulos ES sin build. `index.html` carga tres: `abismo.js`, que tira del
+resto por imports, `marco.js` y `pruebas.js`.
 
 ```
 abismo.js          arranca
@@ -53,10 +53,11 @@ bichos/            comun · forma · medusa · plancton · copepodo ·
                    pezlinterna · rape (+ rape-cuerpo, rape-caza)
 eventos/           contagio · visitante · leviatan · carrona · cuerpo ·
                    glitch · superpez
+marco.css · js     la chapa, el título y los dos botones
 pruebas.js         el andamio
 ```
 
-Tres separaciones, y son el punto:
+Cuatro separaciones, y son el punto:
 
 1. **escena ↔ motor.** [escena.js](escena.js) es sólo números: paleta,
    agua, planos, y la lista de bichos y eventos con sus parámetros. Es el
@@ -68,6 +69,13 @@ Tres separaciones, y son el punto:
    ninguna: las busca por nombre en su registro.
 3. **la pieza ↔ el andamio.** [pruebas.js](pruebas.js) **no forma parte de
    la pieza**: borrar su `<script>` de `index.html` lo hace desaparecer.
+4. **el abismo ↔ el marco.** La chapa, el título y los dos botones son
+   DOM ([marco.css](marco.css), [marco.js](marco.js)), no lienzo. De ahí
+   sale gratis lo único que se le pide al marco —que el abismo no pinte
+   por encima—: el lienzo es MÁS PEQUEÑO que la pantalla, así que no
+   puede alcanzarlo, y ninguna de las pasadas a pantalla completa del
+   motor tiene que acordarse de recortar. `marco.js` no llama al motor
+   más que para `reinicia()`.
 
 Dentro del motor, el estado vivo va en el objeto `V` de
 [motor/estado.js](motor/estado.js) y no en variables sueltas: un `import`

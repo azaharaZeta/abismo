@@ -8,7 +8,7 @@
      motor/registro.js  los dos registros: especies y eventos
      motor/estado.js    `V` y las colecciones que comparte todo
      motor/agua.js      la tira, el grano, la ondulación y el velo
-     motor/dedo.js      las ondas del contacto
+     motor/dedo.js      el contacto: la luz que reparte y el empuje
      motor/api.js       campos, contención y el objeto `M`
      motor/bucle.js     población, eventos, calidad, setup y el fotograma
 
@@ -16,4 +16,4 @@
    ══════════════════════════════════════════════════════════════════ */
 export { M } from './motor/api.js';
 export { ESPECIES, EVENTOS, especie, evento } from './motor/registro.js';
-export { arranca } from './motor/bucle.js';
+export { arranca, reinicia } from './motor/bucle.js';

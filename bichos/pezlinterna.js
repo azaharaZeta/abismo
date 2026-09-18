@@ -9,8 +9,9 @@
 import { M, especie } from '../motor.js';
 const {rgba, clamp, rnd, rango, rangoE, opt, TAU} = M;
 import { porReparto, pintaHalo, reparte, giroCorto, mezclaAng,
-         reaccionDedo, reaccionBorde, avanza, silencio } from './comun.js';
+         seAparta, reaccionBorde, avanza, silencio } from './comun.js';
 import { formaObjetivo } from './forma.js';
+
 /* ── EL CARDUMEN ────────────────────────────────────────────────────
    Tres reglas y ninguna más: no chocar, ir a la par y no quedarse solo.
    No hay líder, y ningún pez sabe dónde está el banco ni cuántos son:
@@ -216,8 +217,10 @@ especie('pezlinterna', {
       fase: Math.random()*TAU,
       nFoto: rangoE(p.fotoforos),
       ilum: 0, cebada: false,
-      vx:0, vy:0, fx:0, fy:0,
-      huida: rango(p.huida), lag: rango(p.lag),
+      vx:0, vy:0,
+      /* dx,dy es la velocidad de APARTARSE del dedo, aparte del nado */
+      dx:0, dy:0,
+      aparta: rango(p.aparta), lag: rango(p.lag),
       comido: false, susto: 0,
       /* el pánico de este fotograma y hacia dónde huye: los pone el campo
          `asusta` y los consume el rumbo, después del cardumen */
@@ -316,7 +319,7 @@ especie('pezlinterna', {
          y para cuando se le ve ya está nadando. */
       z.x = z.x < M.W*0.5 ? rnd(M.W*0.55, M.W*0.95) : rnd(M.W*0.05, M.W*0.45);
       z.y = z.y < M.H*0.5 ? rnd(M.H*0.55, M.H*0.95) : rnd(M.H*0.05, M.H*0.45);
-      z.vx = z.vy = z.fx = z.fy = 0; z.vel = 0; z.ilum = 0; z.susto = 0;
+      z.vx = z.vy = z.dx = z.dy = 0; z.vel = 0; z.ilum = 0; z.susto = 0;
       z.ang = z.angObj = Math.random()*TAU;
     }
 
@@ -493,18 +496,22 @@ especie('pezlinterna', {
                   * (1 - z.forma*0.55);
     z.vel += (objVel - z.vel) * Math.min(1, 2.4*dt);
 
-    const e = M.empuje(z.x, z.y, Lg*0.9);
-    if (e[2] > 0.3){ z.susto = Math.max(z.susto, 1.2); z.angObj = Math.atan2(e[1], e[0]); }
-    reaccionDedo(z, M, p, e, dt);
-    /* vx,vy es sólo el empujón del dedo y se frena rápido: el nado va aparte,
-       por z.ang y z.vel, y no debe heredar esa frenada */
+    /* EL DEDO. Aquí NO se toca `susto` ni `angObj`: el susto es lo que
+       reparte un rape al morder —triplica el viraje, sube el nado a
+       `velSusto` y suelta las reglas de grupo—, y el dedo no es eso. Lo que
+       hace el contacto es apartar al pez de lado mientras sigue nadando
+       hacia donde iba. */
+    seAparta(z, M, p, M.empuje(z.x, z.y, Lg*0.9), dt);
+    /* vx,vy queda SÓLO para el empuje del canto, y se frena rápido: el
+       nado va por z.ang y z.vel y no debe heredar esa frenada. */
     const fr = Math.pow(0.12, dt);
-    z.vx = (z.vx + z.fx*dt)*fr;
-    z.vy = (z.vy + z.fy*dt)*fr;
+    z.vx *= fr; z.vy *= fr;
     reaccionBorde(z, M, p, z.x, z.y, dt);
 
+    /* el desvío del dedo se SUMA al nado: ya es una velocidad */
     const nado = z.vel + z.tiron;
-    avanza(z, M, L, dt, Math.cos(z.ang)*nado, Math.sin(z.ang)*nado);
+    avanza(z, M, L, dt, Math.cos(z.ang)*nado + z.dx,
+                        Math.sin(z.ang)*nado + z.dy);
     /* éste sí sabe girar: se le pone el rumbo hacia dentro y su `vira` dibuja
        la curva, así que la media vuelta se ve como una decisión */
     const par = M.envuelve(z);

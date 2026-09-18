@@ -32,7 +32,7 @@ const _lvQ = [0,0];
 evento('leviatan', {
   exclusivo: true,
   cada: [150, 330], primero: [45, 120],
-  prueba: { largo: [0.72, 0.86], grosor: [0.086, 0.108], onda: [0.155, 0.185],
+  prueba: { largo: [25, 29.8], grosor: [1.68, 2.11], onda: [3.02, 3.61],
             ondas: [1.6, 2.4], velOnda: [0.45, 0.75], embestida: 0.55,
             vel: [0.5, 0.9], banda: [0.12, 0.88],
             rumbo: [-0.22, 0.22], cadaRumbo: [9, 20], velRumbo: 0.25,
@@ -51,11 +51,11 @@ evento('leviatan', {
     return {
       dir, base, ang, angObj: ang,
       angProx: rango(p.cadaRumbo || [10, 20]),
-      largo:  M.W * rango(p.largo),
+      largo:  M.U * rango(p.largo),
       /* `grosor` es el SEMIgrosor del cuerpo y `onda` la amplitud de la
          ondulación: entre los dos salen el tercio de alto que ocupa */
-      grosor: M.H * rango(p.grosor),
-      onda:   M.H * rango(p.onda),
+      grosor: M.U * rango(p.grosor),
+      onda:   M.U * rango(p.onda),
       k:      TAU * rango(p.ondas),
       vOnda:  rango(p.velOnda),
       /* EL MORRO ARRANCA EN EL CANTO: `x` es el morro y el cuerpo va

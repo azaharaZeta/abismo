@@ -5,7 +5,7 @@
    dispersión. Son las pasadas a pantalla completa de cada fotograma.
    ══════════════════════════════════════════════════════════════════ */
 import { ABISMO } from '../escena.js';
-import { rgba, rnd, rango, TAU } from './util.js';
+import { rgba, opt, rnd, rango, TAU } from './util.js';
 import { V, campos, MOD, PLANOS } from './estado.js';
 
 let agua = null, ruido = null;
@@ -77,6 +77,10 @@ function buildOndulacion(){
   ondG = ondCv.getContext('2d');
   ondG.imageSmoothingEnabled = true;
 }
+
+/* Las manchas se sortean una vez y sobreviven al redimensionado; esto es
+   lo único que las vuelve a sortear, y lo llama `reinicia()`. */
+function resiembraAgua(){ MANCHAS.length = 0; buildOndulacion(); }
 
 function pintaOndulacion(){
   if (!ondCv) return;
@@ -182,13 +186,23 @@ function pintaAgua(){
   /* y las sombras, encima de la ondulación: lo que tapa un cuerpo es el
      agua Y su color, no sólo la tira de base */
   pintaSombras();
-  if (MOD.agua < 0.999){
-    V.ctx.fillStyle = 'rgba(0,0,0,'+(1-MOD.agua).toFixed(3)+')';
+  /* CUÁNTA LUZ DE FONDO HAY. Dos números y la misma cuenta: `brillo` es
+     el de la pecera y `MOD.agua` el que le pone encima lo que esté
+     pasando, así que se multiplican. Por encima de 1 hay que volver a
+     pasar la tira, y en varias vueltas: `globalAlpha` no sube de 1.
+     El tope de 3 pasadas es por si alguien escribe un 40. */
+  const luz = MOD.agua * opt(ABISMO.agua.brillo, 1);
+  if (luz < 0.999){
+    V.ctx.fillStyle = 'rgba(0,0,0,'+(1-luz).toFixed(3)+')';
     V.ctx.fillRect(0, 0, V.W, V.H);
-  } else if (MOD.agua > 1.001){
+  } else if (luz > 1.001){
     V.ctx.globalCompositeOperation = 'lighter';
-    V.ctx.globalAlpha = Math.min(1, MOD.agua - 1);
-    V.ctx.drawImage(agua, 0, 0, V.W, V.H);
+    let resto = Math.min(3, luz - 1);
+    while (resto > 0.002){
+      V.ctx.globalAlpha = Math.min(1, resto);
+      V.ctx.drawImage(agua, 0, 0, V.W, V.H);
+      resto -= 1;
+    }
     V.ctx.globalAlpha = 1;
     V.ctx.globalCompositeOperation = 'source-over';
   }
@@ -262,4 +276,4 @@ function pintaDispersion(){
   V.ctx.globalCompositeOperation = 'source-over';
 }
 export { buildAgua, buildRuido, buildOndulacion, buildDispersion,
-         pintaAgua, pintaDispersion, ruido, RUIDO };
+         resiembraAgua, pintaAgua, pintaDispersion, ruido, RUIDO };

@@ -30,8 +30,8 @@ const _vsP = [0,0], _vsN = [0,0], _ant = [0,0,0,0];
 evento('visitante', {
   exclusivo: false,
   cada: [45, 110], primero: [15, 40],
-  prueba: { cruce: [22, 34], cuentas: [18, 40], largo: [0.30, 0.55],
-            onda: [0.045, 0.115], grosor: [0.40, 0.78], brillo: 0.30,
+  prueba: { cruce: [22, 34], cuentas: [18, 40], largo: [10.4, 19.1],
+            onda: [0.88, 2.24], grosor: [0.40, 0.78], brillo: 0.30,
             merma: [0.18, 0.70], panza: [0, 0.42], variedad: 0.75, plano: 0,
             patas: 0.9, antenas: 1.5, cola: 1.6 },
   arranca(M, p){
@@ -40,8 +40,8 @@ evento('visitante', {
       dir: Math.random() < 0.5 ? 1 : -1,
       dur:   rango(p.cruce),
       y:     rnd(M.H*0.22, M.H*0.80),
-      amp:   M.H*rango(p.onda),
-      largo: M.W*rango(p.largo),
+      amp:   M.U*rango(p.onda),
+      largo: M.U*rango(p.largo),
       nOnda: rnd(2.6, 4.2), vel: rnd(0.45, 0.70),
       /* `n` se sortea aquí y no en la escena a secas porque con el largo ya
          sorteado lo que cambia es la SEPARACIÓN entre cuentas. Tope por

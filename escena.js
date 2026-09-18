@@ -26,6 +26,11 @@ export const ABISMO = {
   raro: ROJO,
 
   agua: {
+    /* LA LUZ DE FONDO, multiplicador sobre la tira de abajo: a 0 el agua
+       es negra del todo y los bichos quedan flotando en el vacío, a 2 el
+       techo se aclara y el abismo deja de tener hondura. Lo multiplica
+       además `M.mod.agua`, que es lo que mueve un evento. */
+    brillo: 1,
     pos: [0.000, 0.070, 0.220, 0.480, 0.760, 1.000],
     /* Casi negro de arriba abajo; el poco azul del techo evita que la
        pantalla sea un rectángulo plano. Perfil ajustado a mano. */
@@ -78,13 +83,22 @@ export const ABISMO = {
      en salto(). */
   borde: { margen: 0.14, fuerza: 1.0 },   // fracción de min(W,H) · U/s²
 
-  /* el dedo: sólo contacto, nunca hover */
+  /* ── EL DEDO ──────────────────────────────────────────────────────
+     Sólo contacto, nunca hover, y NO DIBUJA NADA: cada toque suelta una
+     onda que enciende plancton, primero debajo del dedo y después en el
+     frente que se va abriendo. Lo que se ve del gesto es la nieve marina,
+     que es la regla de la casa aplicada al que toca. */
   dedo: {
-    alcance: 3.4,                 // en unidades de escena
-    vida:    3.2,
-    color:   [96,150,180],        // el color del agua, no de un bicho
-    tinte:   [0.10, 0.34],        // cuánto tira del color de un bicho
-    brillo:  0.048,               // el fondo es casi negro: poco basta
+    /* `alcance` va largo —un cuarto de pantalla— porque la nieve marina es
+       rala: por debajo de tres U el frente cruza una docena de motas y
+       deja de leerse como onda. */
+    alcance: 7.0,                 // en U: hasta dónde llega el frente
+    vida:    3.6,                 // y lo que tarda en llegar y apagarse
+    frente:  1.3,                 // grosor del frente, en U
+    /* el fogonazo de debajo del dedo: la respuesta inmediata al toque. Va
+       corto porque lo que tiene que quedarse es la onda, no una mancha. */
+    radio:   2.6,                 // en U
+    brote:   0.5,                 // segundos
     paso:    0.9,                 // separación mínima entre ondas al arrastrar
     tope:    20,                  // ondas vivas a la vez como máximo
   },
@@ -100,7 +114,11 @@ export const ABISMO = {
     {resDiv:1, alpha:1.00, scale:1.32, sharp:1.00, tScale:1.00, drift:1.00},
   ],
 
-  escala: 26,                     // divisor de sqrt(área) → unidad U
+  /* El zoom de la pieza: la unidad de mundo sale de sqrt(área)/escala.
+     TODO tamaño de cuerpo o de evento va en U —nunca en fracción de W o de
+     H—, o las proporciones entre las cosas cambian al girar el móvil. Las
+     POSICIONES sí van en fracción de pantalla: el encuadre es lo que hay. */
+  escala: 26,
   maxPx: 4.6e6,                   // tope de píxeles de lienzo
 
   /* Cuánto espera un evento exclusivo que le toca turno y se lo
@@ -129,10 +147,11 @@ export const ABISMO = {
        avance con el coletazo, así que no cruza a velocidad constante. */
     { evento: 'leviatan', plano: 0,
       cada: [150, 330], primero: [45, 120],
-      /* El tamaño se ajusta contra el alto que ocupa la MASA oscura (donde
-         el apagado pasa de 0,45), no contra la penumbra, y la esbeltez se
-         mantiene en ~5:1: a 8:1 lee como anguila y no como leviatán. */
-      largo: [0.72, 0.86], grosor: [0.086, 0.108], onda: [0.155, 0.185],
+      /* En U. El tamaño se ajusta contra el alto que ocupa la MASA oscura
+         (donde el apagado pasa de 0,45), no contra la penumbra, y la
+         esbeltez se mantiene en ~5:1: a 8:1 lee como anguila y no como
+         leviatán. */
+      largo: [25, 29.8], grosor: [1.68, 2.11], onda: [3.02, 3.61],
       ondas: [1.6, 2.4], velOnda: [0.45, 0.75], embestida: 0.55,
       vel: [0.5, 0.9],
       /* `banda` es dónde puede caer su eje, y de ella sale también el tope
@@ -143,8 +162,8 @@ export const ABISMO = {
       /* `rumbo` es cuánto se aparta de la horizontal (±0,22 rad ≈ 13°) y se
          replantea cada `cadaRumbo` segundos, así que a lo largo de la
          travesía se compensa y describe un camino sinuoso. Sostener la
-         diagonal lo sacaría del cuadro: con `largo` de casi una pantalla,
-         0,22 rad todo el trayecto son más de 300 px de subida. `velRumbo`
+         diagonal lo sacaría del cuadro: con un `largo` de 25 a 30 U,
+         0,22 rad todo el trayecto son más de seis U de subida. `velRumbo`
          bajo hace que vire en unos cuatro segundos y no de golpe. */
       rumbo: [-0.22, 0.22], cadaRumbo: [9, 20], velRumbo: 0.25,
       /* Sombra y no silueta, y hacen falta los dos números: el máximo de
@@ -215,7 +234,7 @@ export const ABISMO = {
        bien»; `base` es lo que se intuye sin nada, y va mínimo. */
     { evento: 'carrona', plano: 1,
       cada: [130, 280], primero: [35, 95],
-      vel: [0.55, 0.95], largo: [0.15, 0.26],
+      vel: [0.55, 0.95], largo: [5.2, 9.0],
       giro: [-0.10, 0.10], deriva: 0.25,
       /* ── SIEMPRE HUESO ───────────────────────────────────────────
          Marfil mate, y fijo: un esqueleto que coge el color del foco que
@@ -285,16 +304,17 @@ export const ABISMO = {
     { evento: 'visitante', plano: 0,
       cada: [50, 120], primero: [15, 42],
       cruce: [28, 46], cuentas: [18, 40],
-      largo: [0.40, 0.72], onda: [0.03, 0.10],
+      largo: [13.9, 25.0], onda: [0.59, 1.95],
       grosor: [0.42, 0.80], merma: [0.18, 0.70], panza: [0, 0.42],
       variedad: 0.8, brillo: 0.26,
       patas: 0.95, antenas: 1.5, cola: 1.7 },
 
     /* ── EL CUERPO ──────────────────────────────────────────────────
        No dibuja NADA: la silueta es de campos `apaga`, así que lo que baja
-       es el hueco de un cuerpo humano. `alto` va en fracción del alto del
-       cuadro, y grande —un tercio— porque lo que hace el evento es que se
-       RECONOZCA; más pequeño es una mancha con forma rara.
+       es el hueco de un cuerpo humano. `alto` va en U, y grande —unas
+       siete, o sea un tercio del cuadro en apaisado— porque lo que hace el
+       evento es que se RECONOZCA; más pequeño es una mancha con forma
+       rara.
 
        El más lento y el más raro de la pecera. A 0,3-0,55 U/s cada cuerpo
        tarda entre 55 y 115 segundos en bajar, que es el rato que hace
@@ -309,7 +329,7 @@ export const ABISMO = {
          cuerpo en el 15,2 % de los fotogramas y a todos los exclusivos en
          el 43 %. */
       cada: [360, 720], primero: [110, 250],
-      alto: [0.28, 0.40], vel: [0.30, 0.55],
+      alto: [5.46, 7.8], vel: [0.30, 0.55],
       giro: [-0.055, 0.055], deriva: 0.22,
       /* `cuantos` es cuántos caen en una tirada y `retraso` los segundos
          que tarda cada uno en asomar detrás del anterior. El retraso es
@@ -418,16 +438,16 @@ export const ABISMO = {
        escalera no cabe.
 
        De ahí sale el reglaje. `radio` decide CUÁL de las cuatro medusas
-       le toca, así que va a media pantalla: más grande les toca a todas y
-       más chico a ninguna. `parte` a 1 rompe a todas las que caen dentro
+       le toca, así que va a unas ocho U —media pantalla de alto en
+       apaisado—: más grande les toca a todas y más chico a ninguna. `parte` a 1 rompe a todas las que caen dentro
        —con cuatro candidatos, bajarlo dejaba el evento en que no pasara
        nada; el «sólo algunos» ya lo da el foco—. En una pecera con más
        cosas rompibles hay que bajarlo.
 
        `bandas` y `paso` son los pasitos DENTRO del bicho: 8-14 bandas de
-       6-13 píxeles de escena, una pila de unos cien píxeles que le cruza
-       la campana entera. Los tentáculos caen en la última banda y se van
-       en bloque: campana en escalera y cortina desalineada por debajo.
+       0,11 a 0,24 U, una pila de una a tres U que le cruza la campana
+       entera. Los tentáculos caen en la última banda y se van en bloque:
+       campana en escalera y cortina desalineada por debajo.
 
        `sep` y `estira` son el tope a plena rotura, y los dos salen del
        mismo `k`, así que la rotura crece y decrece como una sola cosa.
@@ -440,9 +460,9 @@ export const ABISMO = {
     { evento: 'glitch',
       cada: [240, 540], primero: [70, 200],
       dura: [14, 24], saltos: [22, 40], salto: [0.22, 0.50],
-      focos: [1, 2], radio: [0.30, 0.52],
-      bandas: [8, 14], paso: [6, 13],
-      sep: 34, estira: 0.85,
+      focos: [1, 2], radio: [5.85, 10.1],
+      bandas: [8, 14], paso: [0.108, 0.235],
+      sep: 0.61, estira: 0.85,
       avance: 0.14, giro: [0.20, 0.70],
       parte: 1,
       /* `filo` alto: el foco queda casi plano dentro de su radio, así que
@@ -482,13 +502,13 @@ export const ABISMO = {
        estalla no se deshace casualmente. */
     { evento: 'superpez', plano: 2,
       cada: [200, 440], primero: [70, 190],
-      /* `largo` y `largoMin` van juntos: el segundo es el suelo por debajo
-         del cual una silueta se descarta, así que si no baja con el
-         primero, `escQueCabe` se queda sin sitio donde encoger. A un
-         tercio de pantalla cabe; a media no —`escQueCabe` la coloca con
-         el 87 % dentro AL NACER, pero después nada de 160 a 640 px y no
-         hay borde que la contenga. */
-      largo: [0.28, 0.38], largoMin: 0.18,
+      /* En U, y los dos van juntos: `largoMin` es el suelo por debajo del
+         cual una silueta se descarta, así que si no baja con `largo`,
+         `escQueCabe` se queda sin sitio donde encoger. A once U cabe; a
+         diecisiete no —`escQueCabe` la coloca con el 87 % dentro AL NACER,
+         pero después nada varias U por segundo y no hay borde que la
+         contenga. */
+      largo: [9.7, 13.2], largoMin: 6.24,
       /* ── CUÁNTOS Y CUÁNTAS ─────────────────────────────────────
          `reparto` es la fracción del banco que entra en la silueta, y no
          es 1 a propósito: los que quedan fuera siguen nadando a lo suyo
@@ -554,8 +574,25 @@ export const ABISMO = {
       radio: [0.28,1.50], alfa: [0.025,0.14], alfaAlto: [0.16,0.42],
       destacadas: 0.07, raro: 0.02,
       apaga: 0.78,                // el rastro dura lo suyo
-      enciende: 3.8, enciendeDedo: 3.6,
-      huida: [0.25,1.2], lag: [2,11], frena: [0.05,0.40], fuerzaDedo: 4,
+      enciende: 3.8,
+      /* ── LO QUE LE HACE EL DEDO ─────────────────────────────────
+         Son las dos mitades del gesto, porque el contacto no dibuja nada:
+         `enciendeDedo` es con cuánta gana sube el BRILLO y `creceDedo`
+         cuánto se HINCHA la mota. `apagaDedo` deja la hinchazón en la mitad
+         en 0,4 s: lo que tiene que leerse es un destello que pasa y no una
+         mota gorda que se queda.
+
+         EL QUE MANDA ES `topeDedo`, y el motivo es que esto SUMA. Al brillo
+         pleno el punto y el halo se pasan de 255, el canal que satura
+         primero se queda plano y la mota deja de tener color: sale blanca,
+         y encima el velo le devuelve su propio borrón y la blanquea más. A
+         0,55 el tono se sigue leyendo. Con el tope puesto, `enciendeDedo`
+         ya sólo decide lo rápido que llega, no a cuánto.
+
+         Y el crecimiento va CORTO: a 0,7 la mota queda en 2,2 veces su
+         radio de reposo, poco más que las 1,9 a las que la deja una esca
+         que pase cerca. Por encima de 1,5 no es un destello, es un bulto. */
+      enciendeDedo: 2.2, topeDedo: 0.55, creceDedo: 0.7, apagaDedo: 0.2,
       caida: 0.16,                // la nieve marina cae
     },
 
@@ -583,7 +620,24 @@ export const ABISMO = {
       faldon: [0.22, 0.48], mEnv: [0.7, 1.3], mBase: [0.45, 0.80],
       lobulos: [5, 9], ensancha: [0.10, 0.26], achata: [0.10, 0.26],
       cuelga: 2.6, alcanceLuz: 3.4, alcanceCuerpo: 2.2, emision: 0.55,
-      huida: [0.4, 1.1], lag: [2, 8], fuerzaDedo: 3, borde: 0.8,
+      /* ── SE LADEA AL PASAR EL DEDO ─────────────────────────────
+         El mismo mecanismo y los mismos tres números que el banco, con dos
+         diferencias:
+
+           el ladeo va en una velocidad APARTE de la del pulso, o su
+           `arrastre` —que la deja en la mitad en medio segundo— se lo
+           comería y la medusa acabaría donde estaba;
+
+           `apartaVuelve` más alto (0,78 contra 0,70): es lo más lento de la
+           pecera, así que su ladeo se va y vuelve en unos cinco segundos en
+           vez de en tres.
+
+         MEDIDO: el ladeo se topa en 1,42 U/s, del orden del 1,2 que da su
+         propio pulso en el latigazo, y se va 0,46 U al segundo y medio y
+         1 U a los dos segundos. */
+      apartaDedo: 1.2, aparta: [0.7, 1.2], lag: [5, 9],
+      apartaVuelve: 0.78,
+      borde: 0.8,
     },
 
     { especie: 'copepodo',
@@ -796,10 +850,6 @@ export const ABISMO = {
          canto y los del borde no llegan al umbral: el miedo no tiene
          borde duro. */
       espanta: 2.0, espantaDura: 2.2, espantaFilo: 0.8,
-
-      /* la onda del dedo le hace dar media vuelta y salir de ahí */
-      umbralHuida: 0.25, estampida: [3, 6],
-      huida: [0.4, 1.2], lag: [0.7, 2.2], fuerzaDedo: 2.2,
     },
 
     /* LA PRESA, y a la vez el foco que se mueve. En cardumen son las dos
@@ -984,7 +1034,41 @@ export const ABISMO = {
       desvio: 0.5,                // radianes que tuerce al dárselo
       aleteo: 17,
       trago: 0.42,                // lo que tarda en entrar por la boca
-      huida: [0.6, 1.6], lag: [4, 12], fuerzaDedo: 6, borde: 1.0,
+      /* ── SE APARTA DEL DEDO ────────────────────────────────────
+         No es huir, y la diferencia está en que NADIE LE TOCA EL RUMBO: el
+         pez sigue nadando hacia donde iba y sólo se desplaza de lado
+         mientras le pasa el frente de la onda.
+
+           `apartaDedo`   la velocidad de ese desvío a plena onda, en U/s.
+                          Es una VELOCIDAD y no una fuerza, y por eso se ve
+                          (ver `seAparta` en comun.js). A 1,4 el tope queda
+                          en 1,8 U/s, que está DENTRO de lo que el pez ya
+                          hace solo: su crucero es 0,66 pero con el tirón
+                          del nervio darda a 1,7-2,5, así que el desvío se
+                          lee como un viraje suyo. Por encima de 3 empieza a
+                          leerse como huida.
+           `lag`          con cuánta gana lo coge, en 1/s, y NO PUEDE IR
+                          BAJO: el frente cruza al pez en menos de un
+                          segundo, y a 3 la rampa sólo llega al 13 % antes
+                          de que el frente se vaya —el pez se aparta tres
+                          segundos DESPUÉS del gesto, o sea que no se ve—.
+                          A 5-9 lo coge mientras el frente está encima.
+           `apartaVuelve` lo que le queda cada segundo cuando el frente se
+                          va. A 0,70 se queda en la mitad en 1,9 s, así que
+                          sigue deslizándose un rato y el hueco tarda tres o
+                          cuatro segundos en cerrarse. Lo tranquilo sale de
+                          aquí y de `apartaDedo`, nunca de `lag`.
+
+         `aparta` es la gana de cada pez, así que el hueco se abre desigual
+         y no como una cortina.
+
+         MEDIDO con el arnés de Node a 60 fps, cruzando el banco de lado a
+         lado en un segundo y medio: el pez al que más le toca se desvía
+         0,36 U a los 0,6 s, 0,69 al segundo y 0,93 a 1,2 —un tercio de su
+         largo— y el desvío se queda topado en 1,78 U/s. */
+      apartaDedo: 1.4, aparta: [0.7, 1.3], lag: [5, 9],
+      apartaVuelve: 0.70,
+      borde: 1.0,
     },
 
   ],

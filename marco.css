@@ -1,0 +1,130 @@
+/* ══════════════════════════════════════════════════════════════════
+   EL MARCO
+   La chapa alrededor del ojo de buey y la franja de abajo. Va casi
+   negro y muy fino: lo único que tiene que hacer es cerrar el cuadro, y
+   lo que se mira es lo de dentro.
+   ══════════════════════════════════════════════════════════════════ */
+:root{
+  --marco: 12px;                /* el grueso de la chapa */
+  --pie:   46px;                /* la franja de abajo */
+  --filo:  #102c38;             /* el filo apagado */
+  --filo2: #2a5c70;             /* el filo que coge luz */
+  --tinta: #5d8899;
+  --viva:  #a9d3e2;
+}
+
+html,body{margin:0;padding:0;height:100%;background:#000103;overflow:hidden;
+  -webkit-tap-highlight-color:transparent;overscroll-behavior:none;
+  user-select:none;-webkit-user-select:none}
+
+#marco{
+  position:fixed;inset:0;box-sizing:border-box;
+  display:flex;flex-direction:column;
+  padding:var(--marco);
+  padding-bottom:calc(var(--marco) + env(safe-area-inset-bottom,0px));
+  /* chapa mojada: el degradado sube un poco por arriba y por abajo, que
+     es por donde daría la luz que no hay */
+  background:linear-gradient(180deg,#0a1218,#050a0e 22%,#03070a 78%,#080f14);
+  box-shadow:inset 0 0 0 1px var(--filo), inset 0 0 26px 3px #000;
+}
+
+/* LOS REMACHES, una hilera por lado. El punto lleva su propia sombra
+   —claro arriba, negro debajo— o sobre una chapa plana lee como una
+   pegatina y no como algo clavado. */
+#marco::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  --remache:radial-gradient(circle at center,
+              var(--filo2) 0 1px, #081319 1.5px 2.3px, transparent 2.5px);
+  background-image:var(--remache),var(--remache),var(--remache),var(--remache);
+  background-size:28px 7px, 28px 7px, 7px 28px, 7px 28px;
+  background-position:14px 2.5px, 14px calc(100% - 2.5px),
+                      2.5px 14px, calc(100% - 2.5px) 14px;
+  background-repeat:repeat-x, repeat-x, repeat-y, repeat-y;
+}
+
+/* ── EL OJO DE BUEY ─────────────────────────────────────────────────
+   El lienzo, con su filo y una sombra que lo mete hacia dentro: lo que
+   hay detrás está más lejos que la chapa. */
+#pecera{
+  position:relative;flex:1 1 auto;min-height:0;
+  box-shadow:inset 0 0 0 1px var(--filo), 0 0 0 1px #000,
+             inset 0 0 40px 6px rgba(0,0,0,.9);
+}
+#acuario{display:block;width:100%;height:100%;
+  touch-action:none;user-select:none;-webkit-user-select:none}
+
+/* las escuadras de las esquinas: cuatro eles finas, por fuera del filo */
+#pecera::after{
+  content:'';position:absolute;inset:-4px;pointer-events:none;
+  background-image:
+    linear-gradient(var(--filo2),var(--filo2)),linear-gradient(var(--filo2),var(--filo2)),
+    linear-gradient(var(--filo2),var(--filo2)),linear-gradient(var(--filo2),var(--filo2)),
+    linear-gradient(var(--filo2),var(--filo2)),linear-gradient(var(--filo2),var(--filo2)),
+    linear-gradient(var(--filo2),var(--filo2)),linear-gradient(var(--filo2),var(--filo2));
+  background-size:15px 1px,1px 15px, 15px 1px,1px 15px,
+                  15px 1px,1px 15px, 15px 1px,1px 15px;
+  background-position:left top,left top, right top,right top,
+                      left bottom,left bottom, right bottom,right bottom;
+  background-repeat:no-repeat;
+  opacity:.8;
+}
+
+/* ── LA FRANJA ──────────────────────────────────────────────────────
+   Tres columnas: la de en medio lleva el título centrado y la tercera
+   los botones. La primera se queda vacía a propósito —es lo que impide
+   que los botones empujen al título fuera del centro. */
+#pie{
+  flex:0 0 var(--pie);
+  /* `minmax(0,1fr)` y no `1fr`: con `1fr` a secas la columna de los
+     botones no baja de su ancho mínimo, se lleva más que la vacía de la
+     izquierda y el título deja de caer en el centro de la pantalla. */
+  display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  gap:8px;padding:0 4px;
+  touch-action:manipulation;
+}
+#titulo{
+  grid-column:2;justify-self:center;margin:0;
+  font:400 15px/1 Didot,'Bodoni MT','Playfair Display',Georgia,'Times New Roman',serif;
+  text-transform:uppercase;letter-spacing:.42em;text-indent:.42em;
+  color:var(--viva);white-space:nowrap;
+  /* respira muy despacio y una vez por vuelta se le va: un parpadeo
+     regular es un letrero de neón, y uno que falla es otra cosa */
+  animation:respira 13s ease-in-out infinite;
+}
+#titulo i{font-style:italic;font-size:.7em;letter-spacing:.18em;
+  color:var(--tinta);text-shadow:none}
+@keyframes respira{
+  0%,100%{opacity:.82;text-shadow:0 0 9px #235f74, 0 0 22px #09303f}
+  40%    {opacity:1;  text-shadow:0 0 15px #3e9fbd, 0 0 34px #12536b}
+  58%    {opacity:.34;text-shadow:0 0 4px #14414f}
+  61%    {opacity:1;  text-shadow:0 0 15px #3e9fbd, 0 0 34px #12536b}
+}
+@media (prefers-reduced-motion:reduce){#titulo{animation:none}}
+
+#mandos{grid-column:3;justify-self:end;display:flex;gap:6px}
+#pie button{
+  font:11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  text-transform:uppercase;letter-spacing:.13em;
+  color:var(--tinta);background:#071218;
+  border:1px solid #14323f;border-radius:2px;
+  padding:7px 10px;cursor:pointer;
+  transition:color .18s,border-color .18s,background .18s,box-shadow .18s;
+}
+#pie button:hover,#pie button:focus-visible{
+  color:var(--viva);border-color:#2e6d83;background:#0c2029;
+  box-shadow:0 0 12px -3px #17576e;outline:none;
+}
+#pie button:active{background:#040d12;transform:translateY(1px)}
+
+/* En pantalla estrecha la chapa adelgaza, el título encoge y deja de ir
+   centrado: con los dos botones no cabe en el medio, y un título que se
+   descentra un poco según el ancho se lee como un fallo. */
+@media (max-width:560px){
+  :root{--marco:8px;--pie:50px}
+  #pie{grid-template-columns:1fr auto;padding:0 6px}
+  #titulo{grid-column:1;justify-self:start;
+    font-size:12px;letter-spacing:.3em;text-indent:.3em}
+  #mandos{grid-column:2}
+  #pie button{padding:7px 8px;font-size:10px;letter-spacing:.1em}
+}

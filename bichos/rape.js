@@ -11,8 +11,7 @@
 
 import { M, especie } from '../motor.js';
 const {rgba, clamp, rnd, rango, rangoE, suave, opt, TAU} = M;
-import { porPlano, paso, reaccionDedo, reaccionBorde,
-         silencio } from './comun.js';
+import { porPlano, paso, reaccionBorde, silencio } from './comun.js';
 import { enPez, aMundo, centro, bocaLargo, adelante, cuerpoPath, piel,
          visceras, aletas, volumen, ojo, quijadas, bocaPath, boca,
          barbilla, senuelo } from './rape-cuerpo.js';
@@ -63,7 +62,7 @@ especie('rape', {
          segunda copia del mismo punto que mantener al día */
       x: bx, y: by, lvx: 0, lvy: 0,
       rLuz: Lg*p.alcanceLuz, rCuerpo: Lg*p.alcanceCuerpo, luzI: 0.6,
-      vx: 0, vy: 0, fx: 0, fy: 0,
+      vx: 0, vy: 0,
       fase: Math.random()*TAU,
       velCola: rango(p.velCola),
       amplitudCola: rango(p.cola),
@@ -94,7 +93,6 @@ especie('rape', {
       alFrente: false,
       reposo: rnd(0, rango(p.reposo || 1)),
       bocaX: bx, bocaY: by, tragando: null,
-      huida: rango(p.huida), lag: rango(p.lag),
       sway: Math.random()*TAU,
       ilum: 0, luzX: bx, luzY: by,
       /* A DÓNDE MIRA, en mundo. Arranca en el morro y no en el cuerpo para que
@@ -176,9 +174,9 @@ especie('rape', {
        ni crucero, ni vaivén— es una cosa que ya te había visto. Lo que se
        mueve es la pupila y nada más.
 
-       No congela el bocado, ni la embestida, ni la huida del dedo: en las
-       tres ya está pasando algo. El umbral va a medio `techo`, así que se
-       congela cuando está revelado y no cuando le roza un reflejo.   */
+       No congela el bocado ni la embestida: en las dos ya está pasando
+       algo. El umbral va a medio `techo`, así que se congela cuando está
+       revelado y no cuando le roza un reflejo.                       */
     const cong = (f.ataque > 0 || f.mastica > 0 || f.lanza > 0.01) ? 0
       : opt(p.congela, 0)
         * suave(clamp(f.ilum/Math.max(0.001, p.techo*0.5), 0, 1));
@@ -221,23 +219,9 @@ especie('rape', {
       f.lanza *= Math.pow(0.06, dt);
     }
     querencia(f, M, p, dt);
-
-    /* EL DEDO. Al alcanzarle la onda se gira en redondo para huir y
-       sale de estampida. Girar de golpe es lo que descoloca la esca:
-       el señuelo va con retardo y se le queda encima del cuerpo unos
-       instantes. Ahí es cuando se le ve. */
-    const bc = centro(f, f.gx);
-    const bcx = bc[0], bcy = bc[1];
-    const e = M.empuje(bcx, bcy, Lg*0.9);
-    if (e[2] > p.umbralHuida){
-      f.dir = e[0] > 0 ? -1 : 1;              // de espaldas a la onda
-      f.lanza = Math.max(f.lanza, rango(p.estampida)*M.U*e[2]);
-      f.angObj = clamp(e[1]*1.3, -p.topeInclina, p.topeInclina);
-      f.angProx = rango(p.cadaInclina);
-      f.objBrillo = Math.min(1, f.objBrillo + 0.9*e[2]);
-    }
-    reaccionDedo(f, M, p, e, dt);
-    f.vx += f.fx*dt; f.vy += f.fy*dt;
+    /* EL DEDO NO LE HACE NADA, y es a propósito: un cazador de emboscada
+       que sale de estampida porque le rozan la pantalla deja de ser una
+       trampa esperando. Lo único que lo mueve de su sitio es el hambre. */
 
     /* Se replantea de tanto en tanto hacia dónde mira. Con `miraAlCentro` no
        alterna: se vuelve a poner de cara al centro, que es de donde tiene
@@ -258,8 +242,9 @@ especie('rape', {
     const dr = Math.pow(p.arrastre, dt);
     f.vx *= dr; f.vy *= dr;
     /* el borde se mide en el centro del cuerpo, no en la esca: es el pez el
-       que no cabe */
-    reaccionBorde(f, M, p, bcx, bcy, dt);
+       que no cabe. `centro` devuelve un array compartido: se consume ya. */
+    const bc = centro(f, f.gx);
+    reaccionBorde(f, M, p, bc[0], bc[1], dt);
 
     /* El cuerpo se integra en bx,by porque x,y son la esca. Es el integrador
        de siempre, que por eso vive suelto en `paso`: la corriente y el ritmo

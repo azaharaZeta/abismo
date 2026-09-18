@@ -6,8 +6,7 @@
    ══════════════════════════════════════════════════════════════════ */
 import { M, especie } from '../motor.js';
 const {rgba, rnd, rango, TAU} = M;
-import { porReparto, pintaHalo, reaccionDedo, avanza,
-         silencio } from './comun.js';
+import { porReparto, pintaHalo, paso, silencio } from './comun.js';
 
 especie('plancton', {
   escalaCalidad: true,
@@ -21,15 +20,11 @@ especie('plancton', {
       r: rango(p.radio)*Math.max(0.6, L.scale),
       a: alto ? rango(p.alfaAlto) : rango(p.alfa),
       ph: Math.random()*TAU, sp: rnd(0.25,0.8),
-      glow: 0, lit: null, cal: 0,
-      /* cada mota con su fuerza, su retardo y su frenada: si no, salen todas
-         disparadas a la vez */
-      vx:0, vy:0, fx:0, fy:0,
+      glow: 0, lit: null, cal: 0, dedo: 0,
       /* sentido de la caída: se invierte al topar, y entonces la nieve marina
          pasa a ser materia en suspensión circulando, que es lo que se ve en
          una caja de agua sin fondo por el que caerse. */
-      sentido: 1,
-      huida: rango(p.huida), lag: rango(p.lag), fren: rango(p.frena) };
+      sentido: 1 };
   },
 
   actualiza(m, M, L, p, dt){
@@ -63,25 +58,41 @@ especie('plancton', {
     const sl = m.cal = silencio(M, m.x, m.y, L);
     if (sl > 0.01) m.glow *= Math.pow(0.02, dt*sl);
 
-    /* el frente de la onda, no el dedo: el destello y el apartarse van
-       detrás del gesto y no pegados a él */
-    const e = M.empuje(m.x, m.y);
-    if (e[2] > 0){
-      m.glow = Math.min(1, m.glow + p.enciendeDedo*dt*e[2]);
-      m.lit = m.c;                           // su propia luz
-    }
-    reaccionDedo(m, M, p, e, dt);
-    /* la frenada se aplica al total: una mota no tiene inercia que defender,
-       y así vuelve antes a la deriva */
-    const fr = Math.pow(m.fren, dt);
-    m.vx = (m.vx + m.fx*dt)*fr;
-    m.vy = (m.vy + m.fy*dt)*fr;
+    /* EL DEDO, y esto es TODO lo que le hace: el contacto no dibuja nada,
+       así que el gesto existe sólo en las motas que enciende. Se encienden
+       con su color PROPIO —nadie las está alumbrando—, y además crecen:
+       `dedo` es esa hinchazón y se apaga por su cuenta, más rápido que
+       `glow`, o el bulto se queda después del destello.
 
-    /* vaivén propio, y `caida` como sesgo vertical constante: 0 deja la mota
-       en suspensión, positivo la hace nieve marina */
-    avanza(m, M, L, dt,
-           Math.sin(m.ph + t*m.sp)*M.U*0.05,
-           Math.cos(m.ph*1.7 + t*m.sp)*M.U*0.05 + (p.caida||0)*M.U*m.sentido);
+       Y NO SE APARTAN. La nieve marina está en suspensión: que salga huyendo
+       del dedo la convierte en un bicho con opinión, y lo que tiene que
+       hacer es encenderse y quedarse donde está. */
+    const ld = M.luzDedo(m.x, m.y);
+    if (ld > 0){
+      /* `topeDedo` es hasta dónde puede subirle el brillo, y NO ES 1: con
+         el brillo al máximo el punto y el halo se suman por encima de 255,
+         el canal que satura primero se queda plano y la mota PIERDE SU
+         COLOR —sale blanca—. Se queda por debajo, donde el tono aún se lee.
+         Y nunca BAJA: si ya la alumbraba algo más fuerte, el dedo no le
+         quita nada. */
+      const sube = Math.min(p.topeDedo, m.glow + p.enciendeDedo*dt*ld);
+      if (sube > m.glow) m.glow = sube;
+      if (ld > m.dedo) m.dedo = ld;
+      m.lit = m.c;
+    }
+    m.dedo *= Math.pow(p.apagaDedo, dt);
+
+    /* Vaivén propio, y `caida` como sesgo vertical constante: 0 deja la mota
+       en suspensión, positivo la hace nieve marina.
+
+       Va por `paso` y no por `avanza` porque la mota NO TIENE velocidad: al
+       dedo se ENCIENDE, no se aparta, y nada más la empuja. El array que
+       devuelve es compartido: se consume aquí. */
+    const q = paso(M, L, dt, m.x, m.y,
+                   Math.sin(m.ph + t*m.sp)*M.U*0.05,
+                   Math.cos(m.ph*1.7 + t*m.sp)*M.U*0.05
+                     + (p.caida||0)*M.U*m.sentido);
+    m.x = q[0]; m.y = q[1];
     /* el plancton no llama a reaccionBorde: el cristal es lo único que lo
        retiene. La caída se invierte SÓLO si sigue empujando contra esa
        pared; invirtiendo en cada contacto, la mota queda clavada en el
@@ -95,15 +106,19 @@ especie('plancton', {
     /* lo que tapa no se dibuja: se lee porque AQUÍ no se dibuja nada */
     const sil = 1 - m.cal;
     if (sil < 0.02) return;
-    const ha = (0.22*m.glow + (m.alto ? 0.15 : 0)) * sil;
+    /* la hinchazón del dedo entra en las DOS: el halo y la mota. Sólo en
+       la mota, lo que crece es un punto gordo y mate dentro de un halo que
+       se ha quedado igual, y eso no es un destello. */
+    const cd = m.dedo*p.creceDedo;
+    const ha = (0.22*m.glow + 0.08*cd + (m.alto ? 0.15 : 0)) * sil;
     if (ha > 0.012){
-      const R = m.r*(m.alto ? 5 : 0) + m.r*10*m.glow;
+      const R = m.r*(m.alto ? 5 : 0) + m.r*(10*m.glow + 4*cd);
       pintaHalo(g, M, c, m.x, m.y, R, ha);
     }
     /* LA MOTA. Un punto suave y no un disco: `M.punto` cae de `mid` a `glow`
        y muere en el canto, así que no hay borde y el color se enfría por
        fuera. El radio va por 2,2 porque el sprite es casi todo falda. */
-    const R = m.r*(1 + m.glow*0.9)*2.2;
+    const R = m.r*(1 + m.glow*0.9 + cd)*2.2;
     g.globalAlpha = Math.min(1, (m.a + m.glow*0.85)*sil);
     g.drawImage(M.punto(c), m.x-R, m.y-R, R*2, R*2);
     g.globalAlpha = 1;

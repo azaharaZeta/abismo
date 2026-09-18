@@ -205,7 +205,7 @@ function cuerpoFlexion(b, ly, t){
 /* un cuerpo nuevo: su tamaño, su rumbo, su postura y su flotación. `espera`
    son los segundos que tarda en asomar, que es lo que los desacompasa. */
 function cuerpoNuevo(M, p, x, y, espera){
-  const h = M.H * rango(p.alto);
+  const h = M.U * rango(p.alto);
   const b = {
     x: opt(x, rnd(0.16, 0.84)*M.W),
     /* entra por arriba y desde fuera, por su altura entera: el cuerpo
@@ -259,7 +259,7 @@ function cuerpoNuevo(M, p, x, y, espera){
 evento('cuerpo', {
   exclusivo: true,
   cada: [320, 660], primero: [80, 200],
-  prueba: { alto: [0.30, 0.42], vel: [0.30, 0.55], giro: [-0.055, 0.055],
+  prueba: { alto: [5.85, 8.2], vel: [0.30, 0.55], giro: [-0.055, 0.055],
             deriva: 0.22, vaiven: 0.30, hondura: [0.92, 1.0],
             cuantos: [1, 3], retraso: [10, 30],
             abre: [0.70, 1.22], dobla: [0.3, 1.8],

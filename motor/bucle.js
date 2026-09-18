@@ -4,9 +4,9 @@ import { V, campos, MOD, reiniciaMod, frente, PLANOS } from './estado.js';
 import { ESPECIES, EVENTOS, especie, evento, paramsDe } from './registro.js';
 import { resuelveEspectros } from './color.js';
 import { buildAgua, buildRuido, buildOndulacion, buildDispersion,
-         pintaAgua, pintaDispersion, ruido, RUIDO } from './agua.js';
-import { dibujaOndas, cableaTacto, envejeceOndas,
-         avisaContactos } from './dedo.js';
+         resiembraAgua, pintaAgua, pintaDispersion,
+         ruido, RUIDO } from './agua.js';
+import { cableaTacto, envejeceOndas, avisaContactos } from './dedo.js';
 import { M } from './api.js';
 
 /* Los cuatro de calidad arrancan desde ABISMO y sólo los baja
@@ -289,6 +289,45 @@ function setup(repoblar){
   if (repoblar) puebla();
 }
 
+/* ── OTRA PECERA ────────────────────────────────────────────────────
+   No es repoblar: es volver a sortearlo TODO, que es lo que pide el botón
+   de reiniciar. Hay tres cosas que sobreviven a un `setup(true)` y que por
+   tanto hay que tirar a mano, porque se sortean una sola vez:
+
+     · las PALETAS, que se cachean en la propia entrada de escena la
+       primera vez que se resuelve su espectro —y los halos, dentro de cada
+       color—. Sin tirarlas, la pecera nueva sale con los colores de la
+       vieja. Sólo las generadas: una paleta escrita a mano es una decisión
+       y se queda.
+     · las MANCHAS de la ondulación del agua.
+     · los RELOJES de los eventos.
+
+   La calidad NO se restaura: si la máquina ya demostró que no podía,
+   devolverle el detalle al reiniciar es volver a hacerle la misma
+   pregunta. Lo que sí se reinicia es la vigilancia, o los primeros
+   fotogramas —lentos, como los de cualquier arranque— cuentan como
+   máquina lenta. */
+function resiembraColores(conf){
+  const p = paramsDe(conf);
+  for (const k in p){
+    if (k.indexOf('espectro') !== 0) continue;
+    const destino = 'paleta' + k.slice(8);
+    if (p[destino] && p[destino].deEspectro) delete p[destino];
+  }
+  resuelveEspectros(conf);
+}
+
+function reinicia(){
+  para();
+  ABISMO.bichos.forEach(resiembraColores);
+  ABISMO.eventos.forEach(resiembraColores);
+  resiembraAgua();
+  preparaEventos();
+  V.t = 0;
+  calentando = 0; lento = 0; ema = 16.7;
+  setup(true);
+}
+
 /* ── VIGILANCIA DEL FOTOGRAMA ───────────────────────────────────────
    La media móvil del tiempo de fotograma decide si degradar. Los primeros
    son lentos por el JIT y el primer pintado, y uno de más de 200 ms es
@@ -301,8 +340,8 @@ function vigila(ms){
   if (lento > 90) degradar();
 }
 
-/* Cada plano en su propio lienzo y en aditivo: primero la población,
-   después los eventos que dibujen, y las ondas del dedo al final. */
+/* Cada plano en su propio lienzo y en aditivo: primero la población y
+   después los eventos que dibujen. El dedo no pinta nada. */
 /* ── EL TAJO: PINTAR UN BICHO MAL ───────────────────────────────────
    Todo dibujo de bicho pasa por aquí. Un campo `tajo` NO lo lee ninguna
    especie: lo lee el motor justo antes de pintarla y lo que hace es
@@ -452,10 +491,6 @@ function pasoPlanos(dt){
     e.def.dibuja(e, M, e.p, abrePlano(L));
   }
 
-  /* las ondas van en el plano de delante: lo que se toca es la superficie,
-     no el fondo. Se le reabre el contexto porque el último que pintó pudo
-     ser un evento de otro plano, o de éste dejándose el alfa puesto. */
-  dibujaOndas(abrePlano(PLANOS[PLANOS.length-1]));
 }
 
 
@@ -562,7 +597,7 @@ function arranca(){
   requestAnimationFrame(frame);
 }
 
-window.Acuario = { arranca, especie, evento, ESPECIES, EVENTOS, M,
+window.Acuario = { arranca, reinicia, especie, evento, ESPECIES, EVENTOS, M,
   /* ── sólo para el panel de pruebas ── */
   pruebas: {
     dispara, para,
@@ -577,4 +612,4 @@ window.Acuario = { arranca, especie, evento, ESPECIES, EVENTOS, M,
   },
 };
 
-export { arranca };
+export { arranca, reinicia };

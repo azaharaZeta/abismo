@@ -29,7 +29,7 @@ import { pintaHalo, reparte } from '../bichos/comun.js';
 evento('carrona', {
   exclusivo: false,
   cada: [120, 260], primero: [30, 90],
-  prueba: { vel: [0.55, 0.95], largo: [0.14, 0.24], vertebras: 13,
+  prueba: { vel: [0.55, 0.95], largo: [4.85, 8.3], vertebras: 13,
             giro: [-0.10, 0.10], deriva: 0.25, costillas: 7,
             caja: [0.30, 0.90], falta: 0.18, chevrones: [3, 6], craneo: 0.85,
             alcance: 3.0, caida: 2.2, ganancia: 1.9, techo: 1.5, base: 0.03,
@@ -39,7 +39,7 @@ evento('carrona', {
                         satGlow: [0.14, 0.26], luzGlow: [0.26, 0.36],
                         luzCore: [0.93, 0.98], giroGlow: 4 } },
   arranca(M, p, x, y){
-    const Lg = Math.max(M.W, M.H) * rango(p.largo);
+    const Lg = M.U * rango(p.largo);
     /* UN SOLO SORTEO de vértebras: de aquí salen el contador Y el largo
        del array de luz. Sorteados por separado no coinciden, y entonces
        `e.luz[n-1]` es `undefined`, el alfa del jirón de la cola sale NaN y
