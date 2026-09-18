@@ -75,15 +75,14 @@ const M = {
      eventos se pintan después de los bichos; en un `actualiza` es la del
      anterior, que a la velocidad a la que se mueve esto da igual. */
   luces(plano){ const L = PLANOS[plano|0]; return L ? L.luces : VACIO; },
-  /* y quién hace banco, por lo mismo: un evento que quiera pasarle algo al
-     banco necesita saber dónde está.
+  /* y quién hace banco, por lo mismo: un evento que quiera pasarle algo
+     al banco necesita saber dónde está.
 
-     SIN `plano`, los tres planos juntos, y ésa es la forma de usarlo casi
-     siempre: el banco vive repartido en los tres y un campo puesto en el
-     plano de delante lo leen también los de atrás —la guarda sólo excluye
-     a quien pregunta desde más cerca—, así que quien quiera saber «dónde
-     está el banco» tiene que mirarlo entero: contando sólo el plano de
-     delante se ve el 42 % de los peces (`reparto`, en la escena).
+     SIN `plano`, los tres juntos, y ésa es la forma de usarlo casi
+     siempre: el banco vive repartido en los tres y un campo del plano de
+     delante lo leen también los de atrás —la guarda sólo excluye a quien
+     pregunta desde más cerca—. Contando sólo el de delante se ve el 42 %
+     de los peces (`reparto`, en la escena).
 
      Devuelve un array NUEVO en ese caso: pídelo al arrancar un evento, no
      por fotograma. */
@@ -118,8 +117,8 @@ const M = {
       /* ── EL DESCARTE BARATO, Y ES LA MITAD DEL MOTOR ────────────
          Este bucle se recorre una vez por bicho, por tipo consultado y
          por campo vivo: con el evento `cuerpo` en marcha son unas 315.000
-         pasadas por fotograma. Con el seno, el coseno y la raíz dentro
-         costaba 4,9 ms de un fotograma de 16,7; con el descarte, 1,6.
+         pasadas por fotograma. Sin el descarte, con el seno, el coseno y
+         la raíz dentro, son 4,9 ms de un fotograma de 16,7; con él, 1,6.
 
          Es EXACTO y no una aproximación: la elipse cabe siempre dentro
          del círculo de radio r·max(1,ky), girarla no la mueve de ahí, y

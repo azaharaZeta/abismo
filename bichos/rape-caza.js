@@ -106,15 +106,14 @@ function caza(f, M, L, p, dt){
     } else {
       /* falló, y la presa sale disparada HACIA FUERA: el rumbo se le da desde
          la esca hacia él, y se le alarga el temporizador para que no sortee
-         otro antes de haber escapado. Subiéndole sólo la velocidad, aceleraba
-         con el rumbo que traía —que apuntaba al señuelo— y volvía a la boca. */
+         otro antes de haber escapado. Subiéndole sólo la velocidad acelera
+         con el rumbo que traía —que apunta al señuelo— y vuelve a la boca. */
       z.susto = 1.6;
       z.angObj = Math.atan2(z.y - f.y, z.x - f.x);
       z.prox = Math.max(z.prox, 1.8);
-      /* y aquí NO se le sube el brillo a la esca. Estaba `f.objBrillo = 1`,
-         sin comentario y sin rampa que lo bajara: tras cada fallo la esca se
-         quedaba a tope hasta el siguiente parpadeo, o sea un segundo
-         encendido detrás de la ráfaga. El parpadeo sigue su ciclo. */
+      /* y aquí NO se le toca el brillo a la esca: subirlo la deja a tope
+         hasta el siguiente parpadeo, o sea un segundo encendida detrás de
+         la ráfaga. El parpadeo sigue su ciclo. */
       f.reposo = rango(opt(p.reposoFallo, p.reposo));
     }
     return;

@@ -227,18 +227,17 @@ evento('carrona', {
        y no un peine:
 
        1 · EL LARGO DE CADA COSTILLA SALE DEL PERFIL DEL CUERPO
-           (`carronaPerfil`) y no de un seno cualquiera. Con el seno las
-           costillas salían desiguales pero al azar, y lo que se veía era
-           un peine desdentado; con el perfil, las del centro de la caja
-           son las largas y se acortan hacia los dos extremos, o sea que
-           el conjunto tiene silueta de tonel. Eso es lo que se reconoce.
+           (`carronaPerfil`) y no de un seno cualquiera: con el perfil las
+           del centro de la caja son las largas y se acortan hacia los dos
+           extremos, o sea silueta de tonel, que es lo que se reconoce. Al
+           azar sale un peine desdentado.
        2 · LE FALTAN COSTILLAS, y por lados sueltos (ver `falta` en
            `arranca`). Una jaula completa y simétrica se lee como un
            dibujo; a la que le falta medio par se le lee la edad.
 
-       Y va de 0,13 a 0,58 del cuerpo —antes 0,16 a 0,50—: la caja de un
-       pez llega más atrás que su tercio delantero, y con el tramo corto
-       las costillas salían apiñadas junto al cráneo. */
+       Y va de 0,13 a 0,58 del cuerpo: la caja de un pez llega más atrás
+       que su tercio delantero, y en un tramo más corto las costillas
+       salen apiñadas junto al cráneo. */
     const nc = e.costillas;
     if (nc){
       g.lineWidth = Math.max(0.4, Lg*0.007);
@@ -247,11 +246,10 @@ evento('carrona', {
         const v = luzEn(u);
         if (v < 0.03) continue;
         const s = (u-0.5)*Lg;
-        /* 0,19 y no más: el perfil vale hasta 0,90 en el pecho, así que
-           esto pone la costilla más larga en 0,17 del cuerpo, que es lo
-           que medía la más larga de antes. A 0,30 —el primer valor que se
-           probó— la caja medía media eslora de alto y lo que se veía era
-           un peine, no un tórax. */
+        /* 0,19 y no más: el perfil llega a 0,90 en el pecho, así que la
+           costilla más larga queda en 0,17 del cuerpo. A 0,30 la caja
+           mide media eslora de alto y se lee como un peine, no un
+           tórax. */
         const h = Lg*0.19*carronaPerfil(u, e.caja);
         g.strokeStyle = rgba(c.mid, Math.min(1, 0.42*v));
         g.beginPath();

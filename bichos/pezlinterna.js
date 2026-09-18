@@ -13,53 +13,42 @@ import { porReparto, pintaHalo, reparte, giroCorto, mezclaAng,
 
 /* ── EL CARDUMEN ────────────────────────────────────────────────────
    Tres reglas y ninguna más: no chocar, ir a la par y no quedarse solo.
-   No hay líder, y ningún pez sabe dónde está el banco ni cuántos son:
-   cada uno mira a los que tiene al lado.
+   No hay líder y nadie sabe dónde está el banco: cada pez mira a los que
+   tiene al lado.
 
    No manda, SUGIERE: lo que sale de aquí se suma al rumbo que el pez ya
-   llevaba —el peso `propio`— y después su `vira` dibuja la curva, así que
-   el banco se dobla en vez de quebrarse.
+   llevaba —el peso `propio`— y su `vira` dibuja la curva, así que el
+   banco se dobla en vez de quebrarse.
 
-   `libre` es si el pez está a lo suyo. Cuando NO lo está —va a una esca, o
-   huye— se le quitan las dos reglas de grupo, pero NO la de no chocar: con
-   la separación apagada, la mitad de los cebados acaba con otro encima.
+   `libre` es si el pez está a lo suyo. Cuando no lo está —va a una esca o
+   huye— se le quitan las dos reglas de grupo pero NO la de no chocar: sin
+   separación, la mitad de los cebados acaba con otro encima.
 
    ── POR QUÉ NINGUNO LO CONSIGUE ────────────────────────────────────
-   Un banco en el que cada pez ve a todos sus vecinos, todo el rato y sin
-   error, CONVERGE: llegan a un rumbo común y a partir de ahí se trasladan
-   como una pieza —medido, 0,84 de alineación, o sea cada pez a diecisiete
-   grados del rumbo medio de sus vecinos—. Bajar los pesos no lo arregla:
-   el efecto no sale del ruido de la medida (está en
-   docs/ideas/archivo/idea-cardumen-desorden.md). Lo que lo arregla es que
-   la información les llegue MAL, y hay dos formas que además son las de
-   un pez de verdad:
+   Un banco con información perfecta CONVERGE: rumbo común y a partir de
+   ahí se trasladan como una pieza (0,84 de alineación). Bajar los pesos
+   no lo arregla; lo que lo arregla es que la información llegue MAL, y
+   los dos mecanismos son los de un pez de verdad:
 
-     · `reacciona` · NO MIRA TODO EL RATO, y es el que hace el trabajo.
-       Mira, decide, y va con esa idea unas décimas de segundo; cuando
-       vuelve a mirar, el grupo ya no está donde estaba, así que corrige
-       hacia un sitio equivocado. Cuanto más rápido se mueva el grupo, más
-       se equivoca. Medido: la alineación baja de 0,84 a 0,51 y el ángulo
-       entre un pez y sus vecinos pasa de 17° a 42°.
-     · `ciego` · NO VE HACIA ATRÁS. Rompe la reciprocidad: si A se alinea
-       con B y B con A, los dos convergen. El golpe sí se siente por
-       detrás, que la separación no mira el cono.
+     · `reacciona` · no mira todo el rato, y es el que hace el trabajo:
+       cuando vuelve a mirar el grupo ya se movió, así que corrige hacia
+       un sitio equivocado. Baja la alineación de 0,84 a 0,51.
+     · `ciego` · no ve hacia atrás, lo que rompe la reciprocidad. A SOLAS
+       NO HACE NADA (0,88, dentro del ruido): sólo suma ENCIMA del
+       anterior, de 0,51 a 0,42. El golpe sí se siente por detrás, que la
+       separación no mira el cono.
 
-       OJO CON ÉSTE: a solas NO HACE NADA —0,88 contra 0,84, dentro del
-       ruido—; lo que hace es bajar de 0,51 a 0,42 ENCIMA de `reacciona`.
-       Con información al día da igual perder a los de atrás, porque los
-       de delante ya traen el acuerdo; con información vieja, el de atrás
-       era un canal de corrección más. Se queda por la medida.
+   Ninguno cambia la FORMA del banco —la elongación se queda en 1,9—: lo
+   que arreglan es la sincronía. Las tandas, en
+   docs/ideas/archivo/idea-cardumen-desorden.md.
 
-   Ninguno de los dos cambia la FORMA del banco: la elongación se queda en
-   1,9 con ellos y sin ellos. Lo que arreglan es la sincronía.
+   `mira` es si a este pez le toca mirar este fotograma. Cuando no le
+   toca, la separación se aplica igual —esquivar no es una decisión que se
+   pueda posponer— y las de grupo se quedan con la idea de antes.
 
-   `mira` es si a este pez le toca mirar en este fotograma. Cuando no le
-   toca, la separación se aplica igual —esquivar es un reflejo, no una
-   decisión— y las dos reglas de grupo se quedan con la idea de antes.
-
-   Es todos contra todos dentro del plano: con las docenas que puebla la
-   escena son unos cientos de comparaciones por plano y fotograma. El día
-   que haya cientos de peces, aquí entra una rejilla.                */
+   Todos contra todos dentro del plano: con las docenas de la escena son
+   unos cientos de comparaciones por plano y fotograma. El día que haya
+   cientos de peces, aquí entra una rejilla. */
 function cardumen(z, M, L, p, libre, mira){
   const C = p.cardumen;
   if (!C) return;
@@ -125,12 +114,11 @@ function cardumen(z, M, L, p, libre, mira){
   if (sx || sy) z.angObj = Math.atan2(sy, sx);
 }
 
-/* LA PANZA, como los tres puntos de la curva que la dibuja. La hilera de
-   fotóforos sale de aquí y no de una fórmula suya: escritas por separado se
-   despegan en cuanto se toca un número, y es justo lo que pasaba —la hilera
-   iba por debajo del canto y los puntos se veían fuera del pez.
-   `t` va de 0 en la cola a 1 en el morro; la flexión de la cola entra en el
-   primer punto, que es el único que se mueve. */
+/* LA PANZA, en los tres puntos de la curva que la dibuja. La hilera de
+   fotóforos sale de aquí y no de una fórmula suya: por separado se
+   despegan en cuanto se toca un número y los puntos acaban fuera del pez.
+   `t` va de 0 en la cola a 1 en el morro; la flexión de la cola entra en
+   el primer punto, que es el único que se mueve. */
 const PANZA = [[-0.42, 0.07], [0.10, 0.20], [0.50, 0.00]];
 const _pz = [0,0];
 function panzaPez(t, Lg, cola){
@@ -503,15 +491,13 @@ especie('pezlinterna', {
       g.quadraticCurveTo(PANZA[1][0]*Lg, PANZA[1][1]*Lg,
                          PANZA[2][0]*Lg, PANZA[2][1]*Lg);
       g.closePath();
-      /* `cuerpo`, `blanco` y `canto` salen de la escena porque son el mando
-         de lo NEGRO que se ve un pez: escritos a mano aquí no se pueden
-         tocar sin abrir el catálogo. Los tres multiplican a `br`, que es la
-         luz que de verdad le llega, así que a oscuras siguen sin encender
-         nada.
+      /* `cuerpo`, `blanco` y `canto` son el mando de lo NEGRO que se ve
+         un pez, y por eso salen de la escena. Los tres multiplican a
+         `br`, la luz que de verdad le llega, así que a oscuras no
+         encienden nada.
 
-         `cuerpo` es cuánto tinte coge el relleno —el degradado que va de
-         `mid` en el morro a `glow` en la cola, o sea el color propio del
-         pez. */
+         `cuerpo` es cuánto tinte coge el relleno: el degradado que va de
+         `mid` en el morro a `glow` en la cola. */
       const tin = opt(p.cuerpo, 1);
       const gb = g.createLinearGradient(Lg*0.5, 0, -Lg*0.6, 0);
       gb.addColorStop(0.00, rgba(cMid,  Math.min(1, 0.42*br*tin)));
@@ -519,25 +505,20 @@ especie('pezlinterna', {
       gb.addColorStop(1.00, rgba(cGlow, Math.min(1, 0.04*br*tin)));
       g.fillStyle = gb; g.fill();
       /* Y `blanco` ES UN POCO DE `core` ENCIMA, plano y en una SEGUNDA
-         pasada. Metido como un tramo más del degradado de arriba no vale:
-         entre dos tramos el alfa interpola, así que un tramo claro entre
-         dos oscuros deja una banda apagada cruzando el cuerpo. Sumando
-         encima —el plano va en `lighter`— el cuerpo coge el blanco sin
-         perder su tinte. El path sigue puesto de la pasada anterior, así
-         que esto no vuelve a trazarlo.
+         pasada. Como un tramo más del degradado de arriba no vale: entre
+         dos tramos el alfa interpola, así que un tramo claro entre dos
+         oscuros deja una banda apagada cruzando el cuerpo. Sumando
+         encima, el cuerpo coge el blanco sin perder su tinte. El path
+         sigue puesto de la pasada anterior.
 
-         VA CON `propia` Y NO CON `br`, y ahí está la gracia: es la carne
-         del bicho alumbrada por SUS PROPIOS FOTÓFOROS —que es lo que hace
-         un mictófido de verdad, llevarlos en el vientre—, no luz que le
-         llegue de fuera. Atado a `br` no servía para nada: en un pez al
-         que no le da nada `br` vale 0,12, así que el blanco salía por
-         debajo del ruido del dither y seguía viéndose negro, que era
-         exactamente la queja. Con `propia` se ve siempre, y sólo sube un
-         75 % cuando además lo alumbran.
+         VA CON `propia` Y NO CON `br`: es la carne alumbrada por SUS
+         PROPIOS FOTÓFOROS, no luz de fuera. Atado a `br` no sirve —en un
+         pez al que no le da nada `br` vale 0,12 y el blanco cae por
+         debajo del ruido del dither—; con `propia` se ve siempre y sólo
+         sube un 75 % cuando además lo alumbran.
 
-         Una pasada de relleno más por pez: cronometrado con los 59 de la
-         pecera, 0,13 ms de fotograma, o sea dos microsegundos por bicho.
-         El path ya está trazado y es el gasto de rellenarlo otra vez. */
+         Cuesta un relleno más por pez: 0,13 ms de fotograma con los 59
+         de la pecera, y el path ya está trazado. */
       const bl = opt(p.blanco, 0);
       if (bl > 0.002){
         g.fillStyle = rgba(cCore, Math.min(1, bl*propia));

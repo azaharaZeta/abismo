@@ -333,32 +333,30 @@ function vigila(ms){
    después los eventos que dibujen. El dedo no pinta nada. */
 /* ── EL TAJO: PINTAR UN BICHO MAL ───────────────────────────────────
    Todo dibujo de bicho pasa por aquí. Un campo `tajo` NO lo lee ninguna
-   especie: lo lee el motor justo antes de pintarla y lo que hace es
-   pintarla ROTA. Es el mismo principio que `alFrente` —el dibujo de un
-   objeto lo coloca el motor, no el objeto— y es el único sitio donde se
-   puede corromper un sprite sin que la especie sepa que existe.
+   especie: lo lee el motor justo antes de pintarla, y lo que hace es
+   pintarla ROTA. Mismo principio que `alFrente` —el dibujo de un objeto
+   lo coloca el motor, no el objeto— y el único sitio donde se puede
+   corromper un sprite sin que la especie sepa que existe.
 
-   La rotura son BANDAS HORIZONTALES, cada una corrida lo suyo: el bicho
-   se dibuja `d.bandas` veces, cada vez con el recorte de una banda y con
-   su propio desplazamiento. Las bandas miden `d.paso` píxeles de escena,
-   así que a un bicho grande le tocan varias y a una mota una sola —y
-   entonces lo que le pasa es que aparece desplazada, que también vale.
-
-   La primera banda y la última se van a infinito, de modo que la escalera
-   cubre al bicho entero pase lo que pase: sin eso, lo que quedara por
-   encima o por debajo de la pila no se dibujaría.
+   La rotura son BANDAS HORIZONTALES: el bicho se dibuja `d.bandas`
+   veces, cada vez con el recorte de una banda y su propio
+   desplazamiento. Miden `d.paso` píxeles de escena, así que a uno grande
+   le tocan varias y a una mota una sola —y entonces lo que le pasa es
+   que aparece desplazada, que también vale—. La primera banda y la
+   última se van a infinito para que la escalera cubra al bicho entero;
+   sin eso, lo que sobresalga de la pila no se dibuja.
 
    NADA DE ESTO SE SORTEA: el signo, la altura de los cortes, el salto de
-   cada banda y el selector salen de la POSICIÓN del bicho. Tienen que ser
-   estables entre fotogramas —un tajo que salta cada fotograma es ruido y
-   no una rotura— y el motor no puede guardar nada en el objeto de una
-   especie que no conoce. Con senos de periodo largo los cortes además se
+   cada banda y el selector salen de la POSICIÓN del bicho. Tienen que
+   ser estables entre fotogramas —un tajo que salta cada fotograma es
+   ruido— y el motor no puede guardar estado en el objeto de una especie
+   que no conoce. Con senos de periodo largo los cortes además se
    arrastran despacio mientras el bicho nada.
 
    Lo único que viene de fuera es `d.giro`, una fase que el que pone el
-   campo va avanzando: sumada al seno de la banda recoloca a TODAS un poco
-   y cada una lo suyo. Es lo que permite que la rotura dé pasos sin que el
-   motor guarde nada y sin sortear el patrón de cero, que sería un salto. */
+   campo va avanzando: sumada al seno de la banda las recoloca a todas un
+   poco y a cada una lo suyo. Es lo que deja que la rotura dé pasos sin
+   que el motor guarde nada. */
 function pintaBicho(def, o, M, L, p, g){
   /* `rompible` lo declara la ESPECIE, no el evento: el que rompe no elige
      a quién, y aquí nadie pregunta de qué especie es nadie.
@@ -554,16 +552,14 @@ function alRedimensionar(){
        redimensionar igual, pero repoblar por eso sería tirar la escena a
        la vista del usuario.
 
-       Y SE REPUEBLA TAMBIÉN AL VOLCAR, que el área no lo ve: girar el
-       móvil intercambia ancho y alto, así que el área es la MISMA y sólo
-       cambia la forma. Sin esta mitad, la población se queda sentada
-       donde la dejó la caja anterior —amontonada contra un canto y con la
-       mitad fuera— y el cristal la va metiendo durante minutos.
+       Y SE REPUEBLA AL VOLCAR, que el área no lo ve: girar el móvil
+       intercambia ancho y alto, o sea que el área es la MISMA y sólo
+       cambia la forma. Sin esta mitad la población se queda donde la dejó
+       la caja anterior, amontonada contra un canto y con la mitad fuera.
 
-       La comparación es «alto contra ancho», o sea por qué lado es más
-       largo el cuadro: la barra de URL sólo cambia el alto y no puede
-       cruzar esa línea salvo en un cuadro ya casi cuadrado, donde
-       repoblar tampoco molesta. */
+       La comparación es por qué lado es más largo el cuadro: la barra de
+       URL sólo cambia el alto y no puede cruzar esa línea salvo en un
+       cuadro ya casi cuadrado, donde repoblar tampoco molesta. */
     const antes = anchoPrev*altoPrev;
     const vuelca = (anchoPrev > altoPrev) !== (w > h);
     setup(vuelca || Math.abs(w*h - antes) > antes*0.15);

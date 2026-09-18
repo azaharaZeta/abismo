@@ -318,9 +318,9 @@ const MEDUSA = {
            la escala del plano—. Ver por qué en eventos/gemacion.js. */
         if (j.r > gm.d.mejorR) gm.d.mejorR = j.r;
         if (gm.d.lista && j.r >= gm.d.mejorR){
-          /* y SE GASTA EL CUPO: es lo que mata al evento en el acto —lee su
-             `quedan`— y lo que deja el «una y sólo una» en el cupo y no en
-             el desempate por radio. */
+          /* y SE GASTA EL CUPO: es lo que mata al evento en el acto —lee
+             su `quedan`— y lo que pone el «una y sólo una» en el cupo y no
+             en el desempate por radio. */
           gm.d.quedan--;
           gemar(j, p);
         }

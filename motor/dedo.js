@@ -27,11 +27,10 @@ function impulso(x, y){
   /* Al desbordar se tira la onda menos viva, no la más vieja: en un
      barrido rápido todas son jóvenes y quitar la primera se ve.
 
-     Y POR `ondaResto`, NO POR `ondaA`: ésa lleva dentro la rampa de entrada
-     —dos décimas en abrir—, así que una onda recién nacida puntúa casi 0 y
-     se desaloja a sí misma. Arrastrando el dedo eso congela el rastro donde
-     EMPEZÓ el gesto: llenas el tope y ninguna onda nueva pasa de un
-     fotograma. */
+     Y POR `ondaResto`, NO POR `ondaA`: ésa lleva dentro la rampa de
+     entrada —dos décimas en abrir—, así que una onda recién nacida puntúa
+     casi 0 y se desaloja a sí misma. Con eso, arrastrando el dedo el
+     rastro se congela donde EMPEZÓ el gesto. */
   if (contactos.length >= V.topeOndas){
     let peor = 0, va = Infinity;
     for (let i=0;i<contactos.length;i++){
@@ -131,9 +130,9 @@ function cableaTacto(){
     V.cv.addEventListener(ev, e => ultimos.delete(e.pointerId), {passive:true});
 }
 
-/* Las ondas son del GESTO y no de la pecera, así que `reinicia()` las tira:
-   una que sobreviva enciende el plancton que se acaba de sembrar, y lo que
-   se ve es un anillo de motas prendidas sin que nadie haya tocado. */
+/* Las ondas son del GESTO y no de la pecera, así que `reinicia()` las
+   tira: una que sobreviva enciende el plancton recién sembrado, y se ve
+   un anillo de motas prendidas sin que nadie haya tocado. */
 function olvidaOndas(){ contactos.length = 0; }
 
 /* del puntero al lienzo, y no hay más: la caja del lienzo es la caja de

@@ -48,12 +48,9 @@ especie('rape', {
     /* UN COLOR Y UNO SOLO, sorteado al nacer. Lo usan la esca, el cuerpo,
        la barbilla y la pupila: ningún componente tiene color propio, y lo
        que la luz de al lado decide es por dónde se enciende, no de qué
-       color es.
-
-       Hubo dos paletas atadas por índice, una para la lámpara y otra para
-       el animal. La diferencia entre el foco y el susurro la sostienen
-       ahora sólo el alfa —`brillo` contra `cuerpo`— y el núcleo blanco de
-       la esca, que es donde de verdad estaba. */
+       color es. La diferencia entre el FOCO y el SUSURRO la sostienen
+       sólo el alfa —`brillo` contra `cuerpo`— y el núcleo blanco de la
+       esca; no hace falta una paleta por componente. */
     const f = {
       c: M.color(p.paleta),
       Lg, dir, gx: dir,
@@ -339,14 +336,11 @@ especie('rape', {
        fuera: así los degradados se centran en la luz real, en coordenadas
        de mundo, y los grosores de línea no se deforman.
 
-       Y EL BICHO ES TRANSPARENTE A SÍ MISMO A PROPÓSITO. Todo se suma en
-       el mismo lienzo y en aditivo, así que una aleta que está detrás del
-       cuerpo se le suma encima. En un motor con orden de profundidad sería
-       un fallo; aquí es el diseño: de un animal de agua negra no se ve un
-       volumen macizo sino la suma de lo que en él tiene luz.
-
-       Que se vieran OTROS bichos a través de él sí era un fallo, y lo tapa
-       el campo `tapa`: transparente a sí mismo, opaco a los demás.   */
+       Y EL BICHO ES TRANSPARENTE A SÍ MISMO A PROPÓSITO: todo se suma en
+       el mismo lienzo, así que una aleta de detrás se le suma encima. De
+       un animal de agua negra no se ve un volumen macizo, se ve la suma
+       de lo que en él tiene luz. A los DEMÁS sí los tapa, con el campo
+       `tapa`: transparente a sí mismo, opaco a los otros. */
     if (br > 0.012){
       const q = quijadas(f, p);
       /* EL CUERPO, MENOS EL HUECO DE LA BOCA. Dos recortes que se cruzan:

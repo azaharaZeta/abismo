@@ -223,12 +223,12 @@ export const ABISMO = {
                            0,17 U contra los 0,24 de un fotóforo. Late
                            desacompasada del coletazo.
 
-         AJUSTADOS POR AMPLITUD Y NO POR LUZ TOTAL: el velo del lomo suma
-         un tercio de lo que emite la bestia y casi no se ve, porque lo
-         reparte por veinte mil píxeles. Lo que dice si un detalle se lee
-         es cuánto sube el píxel más alto. Contra el hilo de la panza, que
-         sube 347 de 765, el lomo va a una trigésima parte y las espinas a
-         una docena de veces menos. */
+         AJUSTADOS POR AMPLITUD Y NO POR LUZ TOTAL: lo que dice si un
+         detalle se lee es cuánto sube el píxel más alto, no cuánta luz
+         suma. El velo del lomo aporta un tercio de lo que emite la bestia
+         y casi no se ve, porque lo reparte por veinte mil píxeles: contra
+         el hilo de la panza —347 de 765— va a una trigésima parte, y las
+         espinas a una docena de veces menos. */
       brilloLomo: 0.55, brilloEspinas: 2.0 },
 
     /* ── LA CARROÑA ─────────────────────────────────────────────────
@@ -291,7 +291,7 @@ export const ABISMO = {
        está. `patas`, `antenas` y `cola` son el detalle: a 0 vuelve a ser
        la cadena de cuentas pelada.
 
-       Es el evento que más se repite —cae cada minuto o dos— y por eso lo
+       Es el evento que más se repite —cae cada minuto o dos—, así que lo
        que se sortea por travesía son las PROPORCIONES y no sólo el
        tamaño:
 
@@ -299,18 +299,16 @@ export const ABISMO = {
          `merma`   cuánto adelgaza hacia la cola: 0,18 es un tubo, 0,70 un
                    cono.
          `panza`   dónde tiene lo más gordo. A 0, en la cabeza; a 0,42, un
-                   bulto a un tercio del morro, que es un huso y no un
-                   gusano.
-         `cuentas` con el largo ya sorteado, lo que cambia es la SEPARACIÓN,
-                   o sea lo gruesa que se lee la segmentación: dieciocho
-                   dan segmentos marcados, cuarenta un cuerpo casi liso. No
-                   llega a collar en ningún caso —el halo de una cuenta
-                   mide 93-177 px y la separación 11-43.
+                   bulto a un tercio del morro, que es un huso.
+         `cuentas` con el largo ya sorteado, lo que cambia es la SEPARACIÓN
+                   entre ellas: dieciocho dan segmentos marcados, cuarenta
+                   un cuerpo casi liso. No llega a collar en ningún caso
+                   —el halo de una cuenta mide 93-177 px y la separación
+                   11-43.
 
-       `variedad` abre además los tres apéndices, cada uno por su lado.
-       Va alto (0,8) y asimétrico, así que de vez en cuando uno sale a 0 y
-       cruza un bicho sin parapodios o sin antenas. A 0, todos los
-       visitantes son exactamente el mismo. */
+       `variedad` abre además los tres apéndices, cada uno por su lado. Va
+       alto y asimétrico, así que de vez en cuando uno sale a 0 y cruza un
+       bicho sin parapodios o sin antenas. A 0 todos son el mismo. */
     { evento: 'visitante', plano: 0,
       cada: [50, 120], primero: [15, 42],
       cruce: [28, 46], cuentas: [18, 40],
@@ -379,96 +377,72 @@ export const ABISMO = {
          finos —un brazo— y con canto duro se despegan. */
       hondura: [0.92, 1.0], filo: 1.8, penumbra: 1.25,
       /* ── EL CANTO, CUANDO ALGO LO ALUMBRA ────────────────────────
-         El agua de la mitad de abajo del cuadro ya es casi negra —[0,1,3]
-         contra [4,13,21] del techo—, así que ahí un hueco negro sobre
-         negro no se lee y el cuerpo se perdería justo mientras baja.
+         El agua de la mitad de abajo ya es casi negra —[0,1,3] contra
+         [4,13,21] del techo—, así que ahí un hueco negro sobre negro no
+         se lee y el cuerpo se pierde justo mientras baja.
 
-         NO SE LE PONE LUZ DESDE LA ESCENA: un filo fijo por el canto de
-         arriba es lo que la regla de la casa prohíbe. Lo que se enciende
-         es lo que un foco de verdad alcanza —la luz se acumula COMO
-         VECTOR y sólo se pinta el lado del canto que mira a ella, así que
-         el de sombra se queda negro.
+         NO SE LE PONE LUZ DESDE LA ESCENA, que es lo que la regla de la
+         casa prohíbe: se enciende lo que un foco de verdad alcanza. La
+         luz se acumula COMO VECTOR y sólo se pinta el lado del canto que
+         mira a ella; el de sombra se queda negro.
 
-           `borde`      la ganancia, multiplicador sobre la luz que le
-                        llega y no un brillo suyo: a 0 el evento vuelve a
-                        no dibujar nada.
-           `bordeAlcance` agranda el radio con el que un foco lo revela, y
-                        va alto por lo mismo que en la carroña: los radios
-                        de la casa revelan un pez, y un cuerpo mide medio
-                        cuadro. Medido: en una travesía entera lo más
-                        cerca que le pasó algo fueron 320 px, contra
-                        radios de 16 a 125.
-           `bordeCaida` alta es alcance corto. La curva es la de
-                        `luzRecibida` —pow(1/(1+d²/r²), caida)— y no la de
-                        la carroña, que se corta en el radio: con corte el
-                        canto sale todo o nada.
-           `bordeTecho` el tope, con rodilla blanda. La luz que le llega va
-                        de 0,02 a más de 1 según lo que pase cerca, y sin
-                        techo el canto se clava en alfa 1 cada vez que se
-                        le acerca una medusa: deja de ser un hueco y pasa
-                        a ser una figura recortada en blanco.
-           `bordeTono`  GRIS casi neutro: no es un esqueleto pálido ni un
-                        bicho que emite, es carne mojada.
-           `bordeTinte` lo poco que coge del color de quien lo alumbra. A 0
-                        se despega de la escena; a 1 parece otro bicho
-                        encendido.
-           `bordeTapado` a partir de qué campo `apaga` se considera que un
-                        trozo de canto está ENTERRADO en otra parte del
-                        cuerpo —el brazo por donde cruza el hombro— y no
-                        se pinta. Sin esto salen rayas por dentro de la
-                        masa oscura y el cuerpo se lee como un despiece.
+           `borde`      la ganancia sobre la luz que le llega, no un
+                        brillo suyo: a 0 el evento no dibuja nada.
+           `bordeAlcance` agranda el radio con el que un foco lo revela.
+                        Va alto porque los radios de la casa revelan un
+                        pez y esto mide medio cuadro: medido, lo más cerca
+                        que le pasó algo en una travesía fueron 320 px
+                        contra radios de 16 a 125.
+           `bordeCaida` alta es alcance corto. Curva de `luzRecibida`
+                        —pow(1/(1+d²/r²), caida)—, sin el corte en el
+                        radio de la carroña: con corte sale todo o nada.
+           `bordeTecho` el tope, con rodilla blanda. La luz recibida va de
+                        0,02 a más de 1, y sin techo el canto se clava en
+                        alfa 1 cada vez que se acerca una medusa: de hueco
+                        pasa a figura recortada en blanco.
+           `bordeTono`  GRIS casi neutro: es carne mojada, no un hueso ni
+                        un bicho que emite.
+           `bordeTinte` lo poco que coge del color de quien lo alumbra. A
+                        0 se despega de la escena; a 1 parece otro bicho.
+           `bordeTapado` desde qué campo `apaga` se da un trozo de canto
+                        por ENTERRADO en otra parte del cuerpo —el brazo
+                        cruzando el hombro— y no se pinta. Sin esto salen
+                        rayas por dentro de la masa y el cuerpo se lee
+                        como un despiece.
 
-         Con estos valores, medido sobre doce cuerpos con la luz dando por
-         los cuatro lados: de los 74 trozos de canto —las muestras de piel
-         por sus dos lados, menos las raíces de los miembros, que el borde
-         no mira— se encienden unos 27, 37 quedan de espaldas a la luz y 10
-         salen enterrados. Que la mitad esté siempre negra es lo que
-         mantiene al cuerpo siendo un hueco; el alfa del trazo va de 0,04
-         a 0,20, o sea que se ve siempre un poco y mucho más cuando algo
-         lo encuentra. */
+         Medido sobre doce cuerpos con luz por los cuatro lados: de 74
+         trozos de canto se encienden 27, 37 quedan de espaldas y 10 salen
+         enterrados. Que la mitad esté siempre negra es lo que mantiene al
+         cuerpo siendo un hueco. El alfa del trazo va de 0,04 a 0,20. */
       borde: 2.2, bordeAlcance: 4.2, bordeCaida: 2.0, bordeTecho: 0.09,
       bordeGrosor: 0.05, bordeTono: [182, 196, 204],
       bordeTinte: 0.22, bordeTapado: 0.25 },
 
     /* ── EL GLITCH ──────────────────────────────────────────────────
-       No es un fallo de la pantalla, es un fallo del DIBUJANTE: una o dos
-       medusas se quedan pintadas en bandas escalonadas mientras las otras
-       están perfectas. Lo aplica el motor con el campo `tajo` (ver
-       `pintaBicho`); la medusa no se entera. No dibuja nada.
+       Una o dos medusas se quedan pintadas en bandas escalonadas
+       mientras las otras están perfectas. No dibuja nada: reparte campos
+       `tajo` y los aplica el motor al pintar (ver `pintaBicho`). El
+       mecanismo, en eventos/glitch.js; aquí va el reglaje.
 
-       VA A PASITOS. El foco se sortea una vez al nacer y después cada
-       tirón AVANZA lo que ya había: `avance` es cuánto cambia la rotura
-       por paso y `giro` cuánto se recoloca cada banda. Sorteando el foco
-       entero en cada tirón se ven SALTOS —la rotura desaparece y aparece
-       otra en otro sitio—; avanzando se ve una sola avería dando pasos.
-       Y dura: 22-40 pasos repartidos por 14-24 segundos.
-
-       A QUIÉN LE TOCA no lo decide el evento: lo declara la especie con
-       `rompible` (ver el REGISTRO DE ESPECIES), y el evento reparte
-       campos sin saber a quién le caen. Hoy sólo la medusa, que es el
-       sprite más grande y el más lento: en una mota de tres píxeles la
-       escalera no cabe.
-
-       De ahí sale el reglaje. `radio` decide CUÁL de las cuatro medusas
-       le toca, así que va a unas ocho U —media pantalla de alto en
-       apaisado—: más grande les toca a todas y más chico a ninguna. `parte` a 1 rompe a todas las que caen dentro
-       —con cuatro candidatos, bajarlo dejaba el evento en que no pasara
-       nada; el «sólo algunos» ya lo da el foco—. En una pecera con más
-       cosas rompibles hay que bajarlo.
+       `radio` decide CUÁL de las cuatro medusas le toca, así que va a
+       unas ocho U —media pantalla de alto en apaisado—: más grande les
+       toca a todas y más chico a ninguna. `parte` a 1 rompe a todas las
+       que caen dentro; con sólo cuatro candidatos, bajarlo deja el
+       evento en que no pase nada, y el «sólo algunos» ya lo da el foco.
+       En una pecera con más cosas rompibles hay que bajarlo.
 
        `bandas` y `paso` son los pasitos DENTRO del bicho: 8-14 bandas de
-       0,11 a 0,24 U, una pila de una a tres U que le cruza la campana
-       entera. Los tentáculos caen en la última banda y se van en bloque:
-       campana en escalera y cortina desalineada por debajo.
+       0,11 a 0,24 U, una pila de una a tres U que cruza la campana
+       entera. Los tentáculos caen en la última banda y se van en bloque.
 
-       `sep` y `estira` son el tope a plena rotura, y los dos salen del
+       `sep` y `estira` son el tope a plena rotura y los dos salen del
        mismo `k`, así que la rotura crece y decrece como una sola cosa.
 
-       CUIDADO AL SUBIR `bandas` O `radio`: cada banda es un dibujo entero
-       del bicho. Cronometrado, una medusa cuesta 0,069 ms normal y 0,050
-       por banda; el peor caso —las cuatro medusas con catorce bandas—
-       serían 2,6 ms sobre un fotograma de 8,3. Con el `radio` de la
-       escena le toca a una o dos: 0,7-1,3 ms y sólo durante los tirones. */
+       CUIDADO AL SUBIR `bandas` O `radio`: cada banda es un dibujo
+       entero del bicho. Una medusa cuesta 0,069 ms normal y 0,050 por
+       banda, así que el peor caso —cuatro medusas con catorce bandas—
+       son 2,6 ms sobre un fotograma de 8,3. Con este `radio` le toca a
+       una o dos: 0,7-1,3 ms, y sólo durante los tirones. */
     { evento: 'glitch',
       cada: [240, 540], primero: [70, 200],
       dura: [14, 24], saltos: [22, 40], salto: [0.22, 0.50],
@@ -603,25 +577,23 @@ export const ABISMO = {
          parece que se apaga en el mismo punto. */
       gemaVida: [15, 24], gemaEsc: [0.42, 0.58], gemaLejos: [7, 11],
       /* ── SE LADEA AL PASAR EL DEDO ─────────────────────────────
-         El mismo mecanismo y los mismos tres números que el banco, con dos
-         diferencias:
+         El mismo mecanismo y los mismos tres números que el banco, con
+         dos diferencias:
 
            el ladeo va en una velocidad APARTE de la del pulso, o su
            `arrastre` —que la deja en la mitad en medio segundo— se lo
            comería y la medusa acabaría donde estaba;
 
-           `apartaVuelve` más alto (0,78 contra 0,70): es lo más lento de la
-           pecera, así que su ladeo se va y vuelve en unos cinco segundos en
-           vez de en tres.
+           `apartaVuelve` más alto (0,78 contra 0,70): es lo más lento de
+           la pecera, así que su ladeo va y vuelve en unos cinco segundos
+           en vez de en tres.
 
-         MEDIDO, tocando a dos U de una medusa del plano de delante: el
-         frente le pasa por encima en medio segundo, así que del tope no
-         coge más de la mitad, y de ahí salen los dos números —`apartaDedo`
-         pone el tope y `lag` cuánto de él se coge antes de que el frente se
-         vaya—. Se ladea 0,5 U a los 0,6 s, 1,8 a los 1,2 y 3,7 a los dos
-         segundos, o sea tres radios de campana. Las de los planos de atrás
-         se ladean menos: `drift` les recorta la velocidad —0,44 en el
-         fondo— igual que se la recorta al pulso. */
+         MEDIDO tocando a dos U de una medusa del plano de delante: el
+         frente le pasa por encima en medio segundo, así que no coge más
+         de la mitad del tope. Se ladea 0,5 U a los 0,6 s, 1,8 a los 1,2 y
+         3,7 a los dos segundos, o sea tres radios de campana. Las de
+         atrás se ladean menos: `drift` les recorta la velocidad igual que
+         se la recorta al pulso. */
       apartaDedo: 2.2, aparta: [0.7, 1.2], lag: [7, 12],
       apartaVuelve: 0.78,
       borde: 0.8,
@@ -927,25 +899,23 @@ export const ABISMO = {
            `base`   lo que se intuye sin nada que lo alumbre.
            `cuerpo` cuánto tinte propio coge el relleno —el degradado de
                     `mid` a `glow` que va del morro a la cola.
-           `blanco` cuánto `core` se le suma encima, plano. Es lo que de
-                    verdad saca al cuerpo del negro: el tinte propio de un
-                    pez azul oscuro sobre agua negra sigue siendo oscuro.
+           `blanco` cuánto `core` se le suma encima, plano. Es lo que
+                    saca al cuerpo del negro: el tinte propio de un pez
+                    azul oscuro sobre agua negra sigue siendo oscuro.
            `canto`  lo marcada que va la línea del contorno, en `core`. No
                     subirlo: a 0,48 el filo se come al bicho, y la forma
                     tiene que leerse por el relleno y no por una raya
                     brillante alrededor de un hueco negro.
 
          `base`, `cuerpo` y `canto` multiplican a la luz que le LLEGA, así
-         que a oscuras del todo apenas hacen nada. `blanco` va con la luz
-         que el pez EMITE —la de sus propios fotóforos—, y por eso es el
-         único que sirve para que se le vea la forma a oscuras: atado a la
-         luz recibida se quedaba por debajo del ruido del dither. No rompe
-         la regla de la casa: no es la escena la que lo ilumina, es él.
+         que a oscuras apenas hacen nada. `blanco` va con la luz que el pez
+         EMITE —sus propios fotóforos—, y por eso es el único que le da
+         forma a oscuras. No rompe la regla de la casa: no lo ilumina la
+         escena, se ilumina él.
 
-         Medido sobre un pez apagado del todo y sin nada a menos de 97 px,
-         contra un suelo de dither de 2,4 de media: `blanco` 0,10 le sube
-         11 de luminancia media, o sea un gris oscuro con su forma; a 0,18
-         los peces salen lechosos y pierden el «apenas están». */
+         Medido sobre un pez sin nada a menos de 97 px, contra un suelo de
+         dither de 2,4: `blanco` 0,10 le sube 11 de luminancia media —un
+         gris oscuro con su forma—; a 0,18 salen lechosos. */
       base: 0.10,
       cuerpo: 1.22, blanco: 0.06, canto: 0.34,
       brillo: 1.15, revelado: 1.6,// a cuántas U del cebo ya se le ve
@@ -963,25 +933,22 @@ export const ABISMO = {
          `aparta` tiene que mandar sobre `junta`: al revés el banco se
          anuda.
 
-         `vista` corta (4,2 y no 5,5) es lo que evita que el banco entero
-         llegue a UN acuerdo: con 5,5 cada pez veía a 12 de sus 15-27
-         vecinos y la alineación del grupo subía de 0,51 a 0,70. Por
-         debajo de 3,2 deja de leerse como banco.
+         `vista` CORTA es lo que evita que el banco entero llegue a un
+         acuerdo: a 5,5 cada pez ve a 12 de sus 15-27 vecinos y la
+         alineación sube de 0,51 a 0,70. Por debajo de 3,2 deja de leerse
+         como banco.
 
-         ── Y LAS DOS QUE HACEN QUE NINGUNO LO CONSIGA ────────────
          `reacciona` (cada cuánto vuelve a mirar, en segundos) y `ciego`
-         (el cono que no ve a su espalda, en radianes: 1,9 ≈ 109°). El
-         mecanismo está explicado en `cardumen()`, en bichos.js. Lo que
-         hay que saber para tocarlos: `reacciona` es el que hace el
-         trabajo —por sí solo baja la alineación del grupo de 0,84 a
-         0,51—; `ciego` a solas no hace nada, pero encima del primero
-         llega a 0,42. Ninguno toca la FORMA del banco: la elongación se
-         queda en 1,84 y el grupo mayor en 19-21 peces.
+         (el cono que no ve a su espalda, en radianes: 1,9 ≈ 109°) son las
+         dos que lo desincronizan; el mecanismo está en `cardumen()`, en
+         bichos/pezlinterna.js. Para tocarlos basta saber que `reacciona`
+         hace el trabajo —de 0,84 a 0,51 de alineación— y que `ciego` a
+         solas no hace nada pero encima del otro llega a 0,42. Ninguno
+         toca la FORMA: la elongación se queda en 1,84.
 
          AL MEDIR: comprobar primero que `M.cardumen().length` es el que
-         toca. Una tanda tomada con la población recortada por
-         `degradar()` da un banco más denso, más apretado y más redondo, y
-         lleva a conclusiones falsas. */
+         toca. Con la población recortada por `degradar()` el banco sale
+         más denso y más redondo, y lleva a conclusiones falsas. */
       cardumen: { vista: 4.2, roce: 3.0, propio: 0.40,
                   aparta: 1.8, alinea: 1.6, junta: 0.9,
                   ciego: 1.9, reacciona: [0.18, 0.68] },
@@ -1030,55 +997,42 @@ export const ABISMO = {
       volteo: 7,
       /* ── EL ALETEO VA CON EL AVANCE ──────────────────────────────
          `zancada` es cuántos LARGOS DE CUERPO recorre por coletazo, y de
-         ahí sale la frecuencia: así el pez bate despacio al crucero y
-         deprisa en el dardo, que es lo que se lee como nadar. Un pez de
-         verdad hace un largo por coletazo, y entre 0,7 y 1,2 el nado
-         parece nado.
-
-         Iba a 17 rad/s FIJOS, o sea 2,7 coletazos por segundo con o sin
-         avance: medido, 7,5 coletazos por largo recorrido —el pez se
-         sacudía en el sitio—. Con 0,8 el crucero cae a medio coletazo por
-         segundo y los 17 rad/s de antes son ahora la frecuencia de quien
-         huye, que es donde tenían sentido. */
+         ahí sale la frecuencia: el pez bate despacio al crucero y deprisa
+         en el dardo, que es lo que se lee como nadar. Un pez de verdad
+         hace un largo por coletazo; entre 0,7 y 1,2 el nado parece nado, y
+         por debajo de 0,3 se sacude en el sitio. Con 0,8 el crucero sale a
+         medio coletazo por segundo y la huida, a unos 2,7. */
       zancada: 0.8,               // largos de cuerpo por coletazo
       trago: 0.42,                // lo que tarda en entrar por la boca
       /* ── SE APARTA DEL DEDO ────────────────────────────────────
-         No es huir, y la diferencia está en que NADIE LE TOCA EL RUMBO: el
-         pez sigue nadando hacia donde iba y sólo se desplaza de lado
-         mientras le pasa el frente de la onda.
+         No es huir: nadie le toca el rumbo, sólo se desplaza de lado
+         mientras le pasa el frente. El mecanismo, en `seAparta` de
+         comun.js; aquí van las medidas.
 
-           `apartaDedo`   la velocidad de ese desvío a plena onda, en U/s.
-                          Es una VELOCIDAD y no una fuerza, y por eso se ve
-                          (ver `seAparta` en comun.js). El tope no se
-                          alcanza: el frente cruza al pez en medio segundo y
-                          la rampa se queda a la mitad, así que a 2,8 el
-                          tope es 3,6 U/s y lo que de verdad hace son 1,4.
-                          Eso lo pone entre su crucero (0,66) y el dardo
-                          del nervio (1,7-2,5), así que sigue leyéndose como
-                          un viraje suyo y no como huida.
+           `apartaDedo`   la velocidad del desvío a plena onda, en U/s. El
+                          tope NO se alcanza —el frente cruza al pez en
+                          medio segundo y la rampa se queda a la mitad—,
+                          así que a 2,8 lo que de verdad hace son 1,4. Eso
+                          lo deja entre su crucero (0,66) y el dardo del
+                          nervio (1,7-2,5): se lee como un viraje suyo.
            `lag`          con cuánta gana lo coge, en 1/s, y NO PUEDE IR
-                          BAJO: el frente cruza al pez en menos de un
-                          segundo, y a 3 la rampa sólo llega al 13 % antes
-                          de que el frente se vaya —el pez se aparta tres
-                          segundos DESPUÉS del gesto, o sea que no se ve—.
-                          A 7-12 coge la mitad del tope mientras el frente
-                          está encima; es el otro mando del desvío, y el
-                          único que lo hace más SECO.
+                          BAJO: a 3 la rampa sólo llega al 13 % antes de
+                          que el frente se vaya y el desvío pasa
+                          desapercibido. A 7-12 coge la mitad del tope
+                          mientras el frente está encima. Es el mando de
+                          lo SECO, no el de cuánto.
            `apartaVuelve` lo que le queda cada segundo cuando el frente se
-                          va. A 0,70 se queda en la mitad en 1,9 s, así que
-                          sigue deslizándose un rato y el hueco tarda tres o
-                          cuatro segundos en cerrarse. Lo tranquilo sale de
-                          aquí y de `apartaDedo`, nunca de `lag`.
+                          va. A 0,70 se queda en la mitad en 1,9 s, así
+                          que el hueco tarda tres o cuatro en cerrarse. Lo
+                          tranquilo sale de aquí y de `apartaDedo`, nunca
+                          de `lag`.
+           `aparta`       la gana de cada pez: el hueco se abre desigual y
+                          no como una cortina.
 
-         `aparta` es la gana de cada pez, así que el hueco se abre desigual
-         y no como una cortina.
-
-         MEDIDO con el arnés de Node a 60 fps, un toque y los peces que
-         entran en la onda, contra la MISMA tirada tocando fuera del cuadro
-         —restando las dos se separa lo que hizo el dedo de la divergencia
-         caótica, que a los dos segundos ya manda—: el pez al que más le
-         toca se desvía 1,7 U a los 0,6 s y 2,5 a los 1,2 —un largo y
-         medio—, y la media de los alcanzados, 0,6 y 1,1. */
+         Medido con el arnés de Node, restando la misma tirada tocando
+         fuera del cuadro —a los dos segundos manda ya la divergencia
+         caótica—: el pez más alcanzado se desvía 1,7 U a los 0,6 s y 2,5
+         a los 1,2; la media de los alcanzados, 0,6 y 1,1. */
       apartaDedo: 2.8, aparta: [0.7, 1.3], lag: [7, 12],
       apartaVuelve: 0.70,
       borde: 1.0,

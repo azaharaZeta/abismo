@@ -27,37 +27,29 @@ const porPlano   = (area, li, p) => cuenta(area, p.por[li]);
 
 /* ── APARTARSE DEL DEDO ─────────────────────────────────────────────
    Y NO ES HUIR: el bicho se desplaza de lado mientras le pasa el frente
-   de la onda, sin que nadie le toque el rumbo, así que sigue yendo a lo
-   suyo. Deja la velocidad de ese desvío en `o.dx, o.dy`, y quien lo use
-   la suma a su movimiento —no la integra— porque lo que sale de aquí ya
-   ES una velocidad.
+   de la onda, sin que nadie le toque el rumbo. Deja esa velocidad en
+   `o.dx, o.dy`, y quien la use la SUMA a su movimiento en vez de
+   integrarla, porque lo que sale de aquí ya ES una velocidad.
 
-   QUE SEA UNA VELOCIDAD Y NO UNA FUERZA es la decisión: con una fuerza
-   hay que integrar dos veces y el desvío tarda segundos en verse. Medido
-   con el arnés de Node a 60 fps: al segundo del toque el pez se había
-   movido 0,04 U —un píxel y medio—, o sea que para cuando se apartaba el
-   dedo ya no estaba y el gesto se leía como que no pasa nada.
+   QUE SEA VELOCIDAD Y NO FUERZA es la decisión: con una fuerza hay que
+   integrar dos veces y el desvío tarda segundos en verse —medido, 0,04 U
+   al segundo del toque, o sea que para cuando se nota el dedo ya no está.
 
    Y LA RAMPA ES ASIMÉTRICA, que es el resto del efecto: SUBE con `lag`
    —deprisa, mientras el frente está encima, o no se ve— y BAJA con
-   `apartaVuelve` —despacio, así el bicho sigue deslizándose un rato
-   después—. Al revés se leen las dos cosas mal: un arranque lento no se
-   ve, y una vuelta rápida no se lee como apartarse.
+   `apartaVuelve` —despacio, así el bicho sigue deslizándose un rato—. Al
+   revés no se lee ninguna de las dos cosas.
 
-   Y EL MÓDULO DE `e` VA CON TOPE. M.empuje suma una onda por cada
-   contacto vivo y no normaliza, así que arrastrando el dedo —que suelta
-   una onda cada `paso`— se apilan y el peso llega a 2,5: medido, el
-   desvío se iba a 2,8 U/s, más del doble de lo que se mueve una medusa
-   sola, y eso ya no es apartarse. El tope se queda con la DIRECCIÓN que
-   sale de la suma y le quita el exceso, de modo que `apartaDedo` es de
-   verdad la velocidad máxima.
+   Y EL MÓDULO DE `e` VA CON TOPE: `M.empuje` suma una onda por contacto
+   vivo y no normaliza, así que arrastrando el dedo se apilan y el peso
+   llega a 2,5 —el desvío se iría a 2,8 U/s, el doble de lo que se mueve
+   una medusa—. El tope conserva la DIRECCIÓN de la suma y quita el
+   exceso, de modo que `apartaDedo` es de verdad la velocidad máxima.
 
-   `e` es lo que devolvió M.empuje. El objeto lleva dx, dy, `aparta` y
-   `lag`; la escena, `apartaDedo` —en U/s, o sea la velocidad de lado a
-   plena onda— y `apartaVuelve`.
+   `e` es lo que devolvió `M.empuje`. El objeto lleva dx, dy, `aparta` y
+   `lag`; la escena, `apartaDedo` y `apartaVuelve`.
 
-   El plancton no lo usa: la nieve marina está en suspensión y del gesto
-   sólo recibe luz. */
+   El plancton no lo usa: está en suspensión y del gesto sólo recibe luz. */
 function seAparta(o, M, p, e, dt){
   const w = Math.hypot(e[0], e[1]);
   const obj = M.U*p.apartaDedo*o.aparta * (w > 1 ? 1/w : 1);

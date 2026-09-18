@@ -2,46 +2,35 @@ import { M, evento } from '../motor.js';
 const {rnd, rango, rangoE, opt, TAU} = M;
 
 /* ── EL CUERPO ──────────────────────────────────────────────────────
-   Un cuerpo humano bajando. NO SE DIBUJA NADA: la silueta está hecha de
-   campos `apaga`, igual que el leviatán, así que lo que cruza la pantalla
-   es una región donde la nieve marina se calla y el agua se oscurece. Es
-   la única forma de que aquí haya algo oscuro —sumar no oscurece— y
-   además es la buena: no se ve un cuerpo, se ve el hueco de un cuerpo, y
-   el que mira lo reconoce sin que se lo dibujen.
+   Un cuerpo humano bajando, y NO SE DIBUJA NADA: la silueta son campos
+   `apaga`, igual que el leviatán, así que lo que cruza la pantalla es
+   una región donde la nieve marina se calla y el agua se oscurece. Es la
+   única forma de tener algo oscuro aquí —sumar no oscurece— y además es
+   la buena: no se ve un cuerpo, se ve el HUECO de un cuerpo.
 
-   Es E-04 llevado al sitio donde de verdad duele. La carroña es un
-   esqueleto de pez y se ilumina; esto no emite ni un fotón y no hace
-   falta: lo que lo hace insoportable es que la silueta es humana.
+   LA POSTURA es la del ahogado —brazos arriba y hacia fuera, cabeza
+   colgando, piernas juntas y algo dobladas—, que es como flota un cuerpo
+   en el agua y lo que hace que se reconozca de perfil, de frente y
+   girado: va volteando muy despacio.
 
-   LA POSTURA es la del ahogado: brazos arriba y hacia fuera, cabeza
-   colgando, piernas juntas y algo dobladas. No es licencia —un cuerpo en
-   el agua flota así— y es lo que hace que se reconozca de perfil, de
-   frente y girado, que es importante porque va volteando muy despacio.
+   Va MÁS LENTO que la carroña y con menos volteo: tiene que tardar tanto
+   en cruzar que dé tiempo a dudar de lo que se está viendo. Cuatro cosas
+   lo hacen BLANDO, y sin ellas se reconoce el cuerpo pero no se cree:
 
-   Va MÁS LENTO que la carroña y con menos volteo: lo que se pide es que
-   tarde tanto en cruzar que dé tiempo a dudar de lo que se está viendo.
-   Cuatro cosas lo hacen BLANDO y CONTINUO, y sin ellas se reconoce el
-   cuerpo pero no se cree:
-
-     1 · NO HAY UNA ELIPSE POR HUESO. Se recorren dos perfiles —el del
-         tronco (`CUERPO_PERFIL`) y el de cada miembro— dejando campos
-         solapados con el grosor interpolado, y la unión es una manga
-         continua. Con una elipse por pieza se ve LA PIEZA: una elipse se
-         afila en sus dos puntas, así que cada junta deja un pellizco y el
-         cuerpo se lee como óvalos ensartados con los miembros despegados
-         del tronco. Esto es lo que lo arregla y lo demás se apoya en ello.
-     2 · EL ESPINAZO SE DOBLA (`arqueo`, `onda`). El eje no es recto: se
-         arquea lo suyo por cuerpo y encima le recorre una onda muy lenta.
-         La flexión se aplica CAMPO A CAMPO, así que arrastra todo lo que
-         cuelga del eje —miembros incluidos— sin partirlo.
-     3 · LOS MIEMBROS CUELGAN DE SU HUECO y no giran sobre su propio
-         centro. Un brazo con el centro por pivote es un aspa; con el
-         hombro por pivote es un brazo suelto en el agua. Y son dos
-         eslabones en cadena: el antebrazo se mueve con el brazo.
-     4 · CADA UNO FLOTA A LO SUYO. Cada eslabón lleva su fase y su
-         velocidad, sorteadas al nacer, así que no hay dos acompasados.
-         Con un seno único los cuatro miembros suben y bajan juntos y eso
-         se lee como un mecanismo.
+     1 · NO HAY UNA ELIPSE POR HUESO. Se recorren dos perfiles —tronco
+         (`CUERPO_PERFIL`) y cada miembro— dejando campos solapados con el
+         grosor interpolado, y la unión es una manga continua. Con una
+         elipse por pieza se ve LA PIEZA: se afila en sus dos puntas, así
+         que cada junta deja un pellizco. Lo demás se apoya en esto.
+     2 · EL ESPINAZO SE DOBLA (`arqueo`, `onda`), y la flexión se aplica
+         CAMPO A CAMPO: así arrastra todo lo que cuelga del eje —miembros
+         incluidos— sin partirlo.
+     3 · LOS MIEMBROS CUELGAN DE SU HUECO y no giran sobre su centro. Con
+         el centro por pivote un brazo es un aspa; con el hombro, un brazo
+         suelto en el agua. Y van en cadena: el antebrazo sigue al brazo.
+     4 · CADA ESLABÓN FLOTA A LO SUYO, con su fase y su velocidad. Con un
+         seno único los cuatro miembros suben y bajan juntos y eso se lee
+         como un mecanismo.
 
    Y CAEN DE UNO A TRES, desfasados (`cuantos`, `retraso`): el segundo
    entra cuando el primero lleva medio cuadro bajado. A la vez serían una
@@ -144,46 +133,31 @@ const CUERPO_MIEMBROS = [
 /* CADA CUÁNTO SE DEJA UN CAMPO, en fracciones del alto, y cuánto mide de
    largo el que se deja —el factor sobre el paso—.
 
-   El factor sale de una cuenta: dos elipses iguales de semieje `a`
-   separadas `s` dejan la unión, justo en medio, a `sqrt(1 − (s/2a)²)` de
-   su ancho. Con el semieje igual al paso eso es el 87 % y el pellizco se
-   ve; con 1,35 es el 93 % y no. Subirlo más no arregla nada y hace que
-   asome más por las puntas.
+   El factor sale de una cuenta: dos elipses de semieje `a` separadas `s`
+   se unen, justo en medio, a `sqrt(1 − (s/2a)²)` de su ancho. Con el
+   semieje igual al paso eso es el 87 % y el pellizco se ve; con 1,35 es
+   el 93 % y no. Subirlo más sólo hace que asome por las puntas.
 
    ── Y POR QUÉ EL TRONCO VA MÁS FINO QUE LOS MIEMBROS ────────────────
-   Porque el paso es también el TAMAÑO DEL DETALLE MÁS PEQUEÑO que se
-   puede resolver: dos campos consecutivos se solapan a propósito, así que
-   cualquier estrechamiento más corto que el paso lo rellenan entre ellos.
+   El paso es también el DETALLE MÁS PEQUEÑO que se puede resolver: dos
+   campos consecutivos se solapan, así que cualquier estrechamiento más
+   corto que el paso lo rellenan entre ellos. El tronco tiene uno que no
+   se puede perder —el CUELLO, unas tres centésimas del alto—, así que
+   por encima de 0,030 la cabeza y los hombros se dan la mano y sale un
+   bulto puntiagudo. Los miembros son conos lisos y sólo piden no
+   pellizcar en el codo y la rodilla.
 
-   El tronco tiene uno que no se puede perder —el CUELLO, que mide unas
-   tres centésimas del alto—, y con el paso a 0,072 los campos de la
-   cabeza y de los hombros se daban la mano por encima de él: salía un
-   cuerpo sin cabeza, un bulto puntiagudo. A 0,030 el cuello se resuelve y
-   hay cabeza. Los miembros no tienen ningún detalle así —son conos
-   lisos—, y ahí lo único que hacía falta era que no pellizcaran en el codo
-   y la rodilla.
+   ── LO QUE CUESTA ───────────────────────────────────────────────────
+   41 campos por cuerpo: 19 del tronco, 5 por brazo y 6 por pierna. Unos
+   0,017 ms cada uno; el peor caso, tres cuerpos, son 127 campos y 4,4 ms
+   de fotograma contra 2,4 sin evento.
 
-   ── LO QUE CUESTA, Y DÓNDE SE VA ────────────────────────────────────
-   41 campos por cuerpo: 19 del tronco, 5 por brazo y 6 por pierna. Eran
-   13. Cronometrado en el navegador con la población ENTERA —59 peces, sin
-   que haya entrado `degradar()`— y con los cuerpos parados, para que la
-   medida no dependa de por dónde vayan:
-
-     | sin evento                    |   4 campos |  2,4 ms |
-     | un cuerpo                     |  45 campos |  3,1 ms |
-     | tres cuerpos (el peor caso)   | 127 campos |  4,4 ms |
-
-   Unos 0,017 ms por campo, o sea dos milisegundos en el peor caso de
-   todos. Y el gasto NO está en dibujar: apagando `pintaSombras` entera
-   —`agua.sombra.fuerza` a 0— la diferencia es de 0,02 ms, o sea ninguna.
-   Está TODO en `M.campo()`, que es un recorrido lineal del array de
-   campos y al que el plancton llama por mota: setecientas motas por dos
-   consultas por ciento veintisiete campos son ciento setenta mil
-   comparaciones por fotograma.
-
-   Eso es lo que pone el tope al paso, y no el número de elipses. Si algún
-   día hace falta bajarlo más, lo que hay que arreglar antes es la
-   consulta —una rejilla— y no este evento.                           */
+   Y el gasto NO está en dibujar: apagar `pintaSombras` entera no cambia
+   nada (0,02 ms). Está TODO en `M.campo()`, un recorrido lineal al que
+   el plancton llama por mota —setecientas motas por dos consultas por
+   127 campos son 170.000 comparaciones por fotograma—. Eso es lo que
+   pone el tope al paso, y no el número de elipses: para bajarlo más hay
+   que arreglar antes la consulta, con una rejilla. */
 const PASO_TRONCO = 0.030, PASO_MIEMBRO = 0.075, LARGO_CAMPO = 1.35;
 
 /* CUÁNTAS MUESTRAS SALEN DE ESO, contadas una sola vez y aquí: las usan el
@@ -444,51 +418,37 @@ function cuerpoCampos(b, M, plano, pen, filo, vai){
 }
 
 /* ── EL BORDE ───────────────────────────────────────────────────────
-   Lo ÚNICO que dibuja este evento. Sin él, en la mitad de abajo del
-   cuadro —donde el agua ya es casi negra, [0,1,3] contra [4,13,21] del
-   techo— un hueco negro sobre agua negra no se lee y el cuerpo se pierde
-   justo cuando más cerca está de pasar por delante de algo.
+   Lo ÚNICO que dibuja este evento: el canto que un foco de verdad
+   alcanza. Sin él, en la mitad de abajo del cuadro —agua casi negra— un
+   hueco negro sobre negro no se lee y el cuerpo se pierde.
 
-   Y NO SE ILUMINA DESDE LA ESCENA. Un borde fijo por el canto de arriba
-   —como si cayera luz de la superficie— va contra la regla de la casa, y
-   además aquí no llega el sol. Lo que se enciende es lo que un foco de
-   verdad alcanza: se recorre el canto que ya dejó apuntado
-   `cuerpoCampos`, se mira qué luz le llega de `M.luces(plano)` y se
-   enciende SÓLO el lado que mira a esa luz. Es lo mismo que hace la
-   carroña, con dos diferencias:
+   Y NO SE ILUMINA DESDE LA ESCENA, que es la regla de la casa. Se
+   recorre el canto que dejó apuntado `cuerpoCampos`, se mira qué llega
+   de `M.luces(plano)` y se enciende SÓLO el lado que mira a esa luz. Lo
+   mismo que la carroña con dos diferencias:
 
-     · Aquí la luz tiene DIRECCIÓN. La carroña se pregunta cuánta luz le
-       llega a cada vértebra; un borde necesita además de dónde viene, o se
-       enciende el contorno entero y el cuerpo pasa de hueco a muñeco
-       recortado. Se acumula como VECTOR y el canto se enciende por
-       `dot(normal, luz)`: el lado de sombra se queda negro, que es la
-       mitad del efecto.
-     · Es GRIS y no del color del foco: lo que se quiere leer es carne
-       mojada, y para eso el tono tiene que ser casi neutro. Coge un poco
-       del color de quien lo alumbra —`tinte`— y nada más.
+     · Aquí la luz tiene DIRECCIÓN: se acumula como VECTOR y el canto se
+       enciende por `dot(normal, luz)`. Sin eso se enciende el contorno
+       entero y el cuerpo pasa de hueco a muñeco recortado; que el lado
+       de sombra se quede negro es la mitad del efecto.
+     · Es GRIS y no del color del foco —carne mojada—, con un poco de
+       `tinte` de quien lo alumbra y nada más.
 
-   Se salta los trozos de canto que caen DENTRO de otra parte del cuerpo
-   —el brazo por donde cruza el hombro— preguntándole al motor por su
-   propio campo `apaga`: en el canto, el campo de esa misma muestra vale
-   cero, así que lo que devuelva viene de otra parte. Sin esto salen rayas
-   por dentro de la masa oscura y el cuerpo se lee como un despiece.
+   Se salta los trozos que caen DENTRO de otra parte del cuerpo —el brazo
+   cruzando el hombro— preguntando por el campo `apaga`: en el canto, el
+   de esa misma muestra vale cero, así que lo que devuelva viene de otra
+   parte. Sin esto el cuerpo se lee como un despiece.
 
    ── Y SE COSE, NO SE PUNTEA ─────────────────────────────────────────
-   Un trazo RECTO por muestra se lee TOSCO, y sobre todo en los miembros:
-   su paso es 0,075 del alto contra los 0,030 del tronco, así que cada
-   trazo de un brazo medía una décima parte del cuerpo —rayas rectas con
-   hueco entre ellas, y la última asomando medio paso más allá de la mano—.
+   Dos muestras seguidas encendidas se unen con un TROZO DE CURVA cuyas
+   tangentes son el EJE del cuerpo en cada punta, que `cuerpoCampos` deja
+   en `piel`: el canto sale con la curvatura que el cuerpo tiene ahí, sin
+   cuerdas ni huecos. Hace falta sobre todo en los miembros, cuyo paso es
+   0,075 del alto contra los 0,030 del tronco. El alfa y el tinte van en
+   un degradado de una muestra a la otra, así que tampoco hay escalones.
 
-   Dos muestras seguidas encendidas se unen ahora con un TROZO DE CURVA, y
-   las tangentes son el EJE del cuerpo en cada punta, que `cuerpoCampos` ya
-   deja apuntado en `piel`: el canto sale con la curvatura que tiene el
-   cuerpo ahí, sin cuerdas, sin huecos y sin asomar por las puntas. El alfa
-   y el tinte van en un degradado de una muestra a la otra, así que tampoco
-   hay escalones de brillo de un trozo al siguiente.
-
-   Lo que NO cambia es cuántas muestras hay: el paso lo fija el coste de
-   `M.campo()` —ver arriba— y dibujar no cuesta nada. Suavizar es gratis;
-   muestrear más, no. */
+   Lo que NO se toca es cuántas muestras hay: el paso lo fija el coste de
+   `M.campo()` —ver arriba—. Suavizar es gratis; muestrear más, no. */
 function pintaBordeCuerpo(b, M, p, g, plano){
   const gan = opt(p.borde, 0);
   if (!(gan > 0)) return;

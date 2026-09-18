@@ -143,18 +143,16 @@ function buildDispersion(){
 
 /* ── LAS SOMBRAS EN EL AGUA ─────────────────────────────────────────
    Un campo `apaga` calla a los bichos; esto es la otra mitad, y le quita
-   al AGUA su luz. Hace falta porque en aditivo un cuerpo oscuro no se
-   puede pintar encima de los planos —sumar nunca oscurece— y el ÚNICO
-   sitio de la tubería donde sí se puede quitar luz es aquí: sobre el
-   agua, antes de que se sumen los planos. Sin esto, un cuerpo enorme al
-   fondo se lee sólo por las motas que faltan en el plano 0, que es el más
-   tenue de los tres, mientras los otros dos siguen brillando sobre el
-   hueco.
+   al AGUA su luz. En aditivo no se puede pintar un cuerpo oscuro encima
+   de los planos —sumar nunca oscurece—, y aquí es el ÚNICO sitio de la
+   tubería donde sí se puede quitar: sobre el agua y antes de sumarlos.
+   Sin esto, un cuerpo enorme al fondo se lee sólo por las motas que le
+   faltan al plano 0, el más tenue, mientras los otros dos siguen
+   brillando sobre el hueco.
 
    El agua es lo más lejano que hay, así que aquí NO se mira la guarda de
    `plano`: todo campo `apaga` la tapa. La elipse es la misma que resuelve
-   M.campo —semieje `r` en x y `r*ky` en y, girada `rot`—, así que la
-   sombra y el silencio son la misma forma. */
+   M.campo, así que la sombra y el silencio son la misma forma. */
 function pintaSombras(){
   const S = ABISMO.agua.sombra;
   if (!S || !(S.fuerza > 0) || !campos.length) return;
