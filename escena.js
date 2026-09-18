@@ -473,7 +473,7 @@ export const ABISMO = {
        Una onda de color que cruza el banco: al pez que le pasa el frente
        por encima se le enciende SU tono saturado y se le va despacio. No
        dibuja nada —lo que se ve son los peces— y no trae color: el color es
-       de cada pez (ver `espectroVivo` en el banco).
+       de cada pez (ver `tinteSat` en el banco).
 
        `vel` va a la mitad que la del contagio y `salto` —el grosor del
        anillo, en U— al doble: los peces son cuarenta en toda la pecera, así
@@ -871,26 +871,6 @@ export const ABISMO = {
                   sat: [0.88, 1.00], luz: [0.54, 0.70],
                   satGlow: [0.70, 0.92], luzGlow: [0.20, 0.30],
                   giroGlow: 6 },
-      /* EL GEMELO SATURADO, y lo usa la floración: los MISMOS tonos y los
-         mismos tramos —el tono de una casilla sale de su índice, así que
-         `paletaVivo[i]` es el tono de `paleta[i]`—, con `luz` bajada hacia
-         0,5, que es donde el tono es puro, y las dos saturaciones arriba.
-         Así el pez se enciende en SU color: lo que cruza el cuadro es el
-         moteado del banco subido, no una mancha de un color.
-
-         Y `luzCore` ES EL NÚMERO QUE HACE EL EVENTO. Lo demás mueve el
-         `mid` y el halo, y de un pez en agua abierta el cuerpo no se ve:
-         lo que se ve es la hilera del vientre, y esos puntos son `core`.
-         Con el 0,95 de la casa el punto sale casi blanco —saturación real
-         0,06— y la floración no se nota; a 0,65 el punto se pone del color
-         del pez (0,70) y la hilera pasa de blanca a encendida. Es lo único
-         de la pieza que rompe a propósito el «el punto sale casi blanco
-         pase lo que pase» de arriba, y dura los tres segundos que tarda en
-         írsele el tinte. */
-      espectroVivo: { tono: [0, 352], tramos: 32,
-                      sat: [1.00, 1.00], luz: [0.46, 0.54],
-                      satGlow: [0.92, 1.00], luzGlow: [0.30, 0.42],
-                      luzCore: [0.60, 0.70], giroGlow: 6 },
       /* ── Y EL ORDEN EN EL SORTEO ──────────────────────────────
          Uno o dos tonos mandan en toda la pecera y `tendencia` es qué
          parte del banco se apunta; el resto sigue saliendo de la paleta
@@ -983,7 +963,14 @@ export const ABISMO = {
          `tinteBrillo` es cuánto emite de más mientras lo tiene, y hace
          falta: de lejos, de un pez lo que se ve es el halo del fotóforo, y
          un cambio de tono a brillo constante casi no se lee. */
-      tinteVuelve: 0.4, tinteBrillo: 1.2,
+      /* `tinteSat` es CUÁNTO se va el núcleo del fotóforo hacia el color
+         del pez cuando pasa la onda, y es el número que hace el evento:
+         el punto se pinta con `core`, que sale casi blanco pase lo que
+         pase, así que a 0 la floración no se nota. A 0,88 el punto queda
+         en el color del bicho (saturación real 0,88-0,99) y la hilera
+         pasa de blanca a encendida; a 1 es el `mid` pelado y el núcleo
+         deja de leerse como núcleo. */
+      tinteVuelve: 0.4, tinteBrillo: 1.2, tinteSat: 0.88,
 
       /* DESORDEN POR CIZALLA: abre la velocidad de crucero y los pesos de
          grupo pez a pez, así que unos adelantan a otros. Sin esto todos

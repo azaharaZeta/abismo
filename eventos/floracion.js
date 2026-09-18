@@ -8,11 +8,11 @@ const {rnd, rango, opt} = M;
    contagio con el plancton y por el mismo motivo: la luz que se ve tiene
    que salir de un cuerpo, no de la escena.
 
-   Y NO TRAE COLOR. El campo va sin `c` a propósito: cada pez coge SU tono
-   saturado —su misma casilla en otra paleta—, así que lo que cruza el
-   cuadro es el moteado del banco subido de golpe y no una mancha de un
-   color. Un color por onda haría lo contrario de lo que hace bonito al
-   banco, que es estar moteado.
+   Y NO TRAE COLOR. El campo va sin `c` a propósito: cada pez se lleva su
+   propio núcleo hacia su propio tono, así que lo que cruza el cuadro es el
+   moteado del banco subido de golpe y no una mancha de un color. Un color
+   por onda haría lo contrario de lo que hace bonito al banco, que es estar
+   moteado.
 
    VA MÁS DESPACIO QUE EL CONTAGIO, y eso es casi todo el evento: el
    plancton son cientos de motas y una onda rápida se lee igual, pero peces

@@ -174,10 +174,6 @@ especie('pezlinterna', {
               ? M.elige(p.mandan) : M.color(p.paleta);
     return {
       c,
-      /* SU CASILLA EN LA PALETA, y de ella sale su gemelo saturado cuando
-         pasa la floración: `paletaVivo` lleva los mismos tonos en el mismo
-         orden, así que el pez se enciende en SU tono y no en otro. */
-      iC: p.paleta ? Math.max(0, p.paleta.indexOf(c)) : 0,
       tinte: 0,
       Lg,
       x: rnd(0,M.W), y: rnd(0,M.H),
@@ -435,18 +431,21 @@ especie('pezlinterna', {
        entrar. */
     const men = z.mengua, apaga = (0.35 + 0.65*men)*(1 - silencio(M, z.x, z.y, L));
     if (apaga < 0.02) return;
-    /* LA FLORACIÓN le sube lo que emite además de teñirlo: cuando la onda
-       pasa, el pez lo DA TODO.
+    /* LA FLORACIÓN: le sube lo que emite y le lleva el NÚCLEO hacia su
+       propio color. De un pez en agua abierta el cuerpo no se ve —lo que
+       se ve es la hilera del vientre, y esos puntos son `core`, que sale
+       casi blanco pase lo que pase—, así que el evento entero es esto:
+       el punto pasa de blanco a encendido en el tono del bicho.
 
-       Y EL COLOR SE MEZCLA A MANO, no se le escribe en la entrada de
-       paleta: el halo se cachea DENTRO de ella (`M.halo`), así que tocarla
-       le dejaría el halo viejo —y compartido— a todo el tramo. Por eso el
-       halo se cruza pintando los dos y lo demás se interpola. */
+       No hay paleta gemela ni color en la onda: el destino de la mezcla
+       es el `mid` del propio pez, que ES su tono. El color no se le puede
+       escribir en la entrada de paleta —el halo se cachea DENTRO de ella
+       (`M.halo`) y es compartido por todo el tramo—, de ahí que se mezcle
+       aquí y sólo para pintar. */
     const rl = 1 + z.tinte*opt(p.tinteBrillo, 0);
-    const viva = z.tinte > 0.004 && p.paletaVivo ? p.paletaVivo[z.iC] : null;
-    const cCore = viva ? mezcla(z.c.core, viva.core, z.tinte) : z.c.core;
-    const cMid  = viva ? mezcla(z.c.mid,  viva.mid,  z.tinte) : z.c.mid;
-    const cGlow = viva ? mezcla(z.c.glow, viva.glow, z.tinte) : z.c.glow;
+    const cCore = z.tinte > 0.004
+      ? mezcla(z.c.core, z.c.mid, z.tinte*opt(p.tinteSat, 0.88)) : z.c.core;
+    const cMid = z.c.mid, cGlow = z.c.glow;
     const br = (p.base + z.ilum) * p.brillo * apaga * rl;
     /* LO QUE EMITE ÉL, que no es lo mismo que lo que le llega. `br` es la
        luz recibida y va de 0,12 a 1,5 según lo que tenga al lado —trece
@@ -546,8 +545,7 @@ especie('pezlinterna', {
          canto, así que la hilera se afina hacia el morro y hacia la cola
          —que es como la lleva un mictófido de verdad. */
       const rr = Math.min(Lg*0.035, pz[1] - fy);
-      pintaHalo(g, M, z.c, fx, fy, rr*5, pa*0.55*(viva ? 1-z.tinte : 1));
-      if (viva) pintaHalo(g, M, viva, fx, fy, rr*5, pa*0.55*z.tinte);
+      pintaHalo(g, M, z.c, fx, fy, rr*5, pa*0.55);
       g.fillStyle = rgba(cCore, Math.min(1, pa));
       g.beginPath(); g.arc(fx, fy, rr, 0, TAU); g.fill();
     }
