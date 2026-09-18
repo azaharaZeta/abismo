@@ -117,8 +117,25 @@ export const ABISMO = {
   /* El zoom de la pieza: la unidad de mundo sale de sqrt(área)/escala.
      TODO tamaño de cuerpo o de evento va en U —nunca en fracción de W o de
      H—, o las proporciones entre las cosas cambian al girar el móvil. Las
-     POSICIONES sí van en fracción de pantalla: el encuadre es lo que hay. */
-  escala: 26,
+     POSICIONES sí van en fracción de pantalla: el encuadre es lo que hay.
+
+     Y ES EL MANDO DEL TAMAÑO APARENTE. El cuadro enseña siempre
+     `escala`×`escala` U de mundo, así que bajarlo enseña MENOS mundo con
+     todo más grande. A 18 un pez subtiende 2,0° en un iPhone y 2,3° en
+     un monitor, contra 1,4° y 1,6° que daba a 26.
+
+     Lo que NO arregla es la diferencia entre móvil y monitor: al ser
+     global los sube a los dos y la razón entre ellos se queda igual. Esa
+     diferencia es física —un px CSS mide 0,18 mm en un móvil y 0,265 en
+     un monitor, y no se mira desde el doble de cerca— y no se toca desde
+     aquí. Lo que se ha hecho es subir el suelo hasta que el móvil llega a
+     donde estaba el monitor.
+
+     Lo que NO crece con él es el plancton y el copépodo: sus radios van
+     en píxeles y no en U, así que al bajar `escala` quedan relativamente
+     más finos. Y su CUENTA va por área en píxeles, o sea que tampoco se
+     entera; el banco sí, porque se cuenta a pelo (ver `total`). */
+  escala: 18,
   maxPx: 4.6e6,                   // tope de píxeles de lienzo
 
   /* Cuánto espera un evento exclusivo que le toca turno y se lo
@@ -822,11 +839,13 @@ export const ABISMO = {
          tope alto es para pantallas grandes; `escalaCalidad` los recorta
          si la máquina no da.
 
-         OJO A CUÁL DE LOS TRES MANDA: a 1024×768 son 786.000 píxeles, o
-         sea 49 peces por área, así que el que corta es `max` y no `cada`.
-         Para que el cambio se note en una pantalla chica, donde manda
-         `cada`, hay que mover los dos. */
-      total: {cada:16000, min:15, max:38},
+         UN NÚMERO SUELTO Y NO {cada, min, max}: el cuadro enseña siempre
+         `escala`×`escala` U de mundo, o sea el mismo trozo de mar en un
+         móvil que en un monitor, así que el banco tiene que ser el mismo.
+         Contándolo por área en píxeles salían 38 en un PC y 15 en un
+         iPhone SE —el mismo mar con la mitad de peces—, que es parte de
+         lo que hacía que en móvil se viera todo pequeño y apretado. */
+      total: 14,
       /* cargado hacia delante: el banco que se tiene que leer como banco
          es el de cerca; el del fondo son motas */
       reparto: [0.24, 0.34, 0.42],

@@ -12,8 +12,10 @@ if (!A || !A.pruebas) return;            // motor viejo: no estorbar
 const P = A.pruebas;
 
 /* ── lo que se puede tocar en caliente ──────────────────────────────
-   Sólo escalares: un rango [min,max] no cabe en un deslizador, y los de
-   los eventos ya se editan como JSON más abajo.
+   Escalares, y pares de escalares: una fila puede mover varias rutas a
+   la vez con `ruta` como lista y un `factores` a juego (ver `rutasDe`),
+   que es como se gobierna un `[min,max]` con un deslizador. Los rangos
+   de los eventos se siguen editando como JSON más abajo.
 
    Y sólo los que se pueden JUZGAR MIRANDO. Aquí no entra un parámetro
    que haya que medir —`cardumen.vista` se comprueba contando alineación,
@@ -46,6 +48,26 @@ const MANDOS = [
   /* LOS BICHOS. `cada` es área por mota, así que BAJARLO es más plancton. */
   {nombre:'plancton · área/mota', ruta:'bichos.@plancton.total.cada',
    min:500, max:3000, paso:50, aplica:'nueva'},
+  /* ── EL BANCO: CUÁNTOS Y DE QUÉ TAMAÑO ──────────────────────────
+     Los dos gobiernan un PAR de la escena con un solo deslizador (ver
+     `rutasDe`), y cada uno por su motivo.
+
+     CUÁNTOS escribe el `total` del banco, que es un número suelto: el
+     conteo no pasa por el área, así que el mando dice «tantos peces» y
+     vale igual en un móvil que en una pantalla grande. Puede quedarse a
+     uno del pedido, que el total se reparte por planos con `reparto` y
+     cada plano redondea por su cuenta.
+
+     TAMAÑO es un MULTIPLICADOR sobre `largo`, no un largo: los factores
+     son los dos extremos de la escena, así que a 1 la reproduce exacta y
+     al moverlo el banco conserva su reparto de peces grandes y chicos.
+     Puesto como largo absoluto habría que elegir uno de los dos extremos
+     y el otro se despegaría. */
+  {nombre:'peces · cuántos', ruta:'bichos.@pezlinterna.total',
+   min:0, max:90, paso:1, aplica:'nueva'},
+  {nombre:'peces · tamaño ×', ruta:['bichos.@pezlinterna.largo.0',
+                                    'bichos.@pezlinterna.largo.1'],
+   factores:[1.15, 1.92], min:0.2, max:4, paso:0.05, aplica:'nueva'},
   {nombre:'banco · desorden',  ruta:'bichos.@pezlinterna.desorden',
    min:0, max:0.6, paso:0.02, aplica:'nueva'},
   {nombre:'rape · cuerpo',     ruta:'bichos.@rape.cuerpo',    min:0, max:2,   paso:0.02, aplica:null},
@@ -67,6 +89,22 @@ const poner = (r, v) => {
   const o = ks.reduce(baja, P.escena);
   if (o) o[ult] = v;
 };
+
+/* ── UN DESLIZADOR, VARIAS RUTAS ────────────────────────────────────
+   Una fila puede llevar `ruta` como lista y un `factores` a juego: el
+   valor del deslizador se reparte por todas multiplicado por el suyo. Es
+   lo que deja gobernar un PAR de la escena —un `[min,max]`, los dos
+   extremos de un largo— con un solo mando, sin que el panel tenga que
+   saber editar arrays.
+
+   El número que se enseña sale de la PRIMERA ruta dividida por su factor,
+   así que conviene poner delante la que manda. Se redondea al escribir
+   porque 1,15·1,4 son 1,6099999999999999 y eso acaba en la escena. */
+const rutasDe  = m => Array.isArray(m.ruta) ? m.ruta : [m.ruta];
+const factorDe = (m, i) => (m.factores ? m.factores[i] : 1);
+const valorDe  = m => leer(rutasDe(m)[0]) / factorDe(m, 0);
+const ponValor = (m, v) => rutasDe(m).forEach(
+  (r, i) => poner(r, Math.round(v*factorDe(m, i)*1e4)/1e4));
 
 /* ── estilo ─────────────────────────────────────────────────────────
    Todo con el prefijo pr- para no chocar con la pieza. */
@@ -245,23 +283,25 @@ caja.appendChild(listaVivos);
 titulo('escena');
 const refrescos = [];
 for (const m of MANDOS){
-  const v0 = leer(m.ruta);
-  if (typeof v0 !== 'number') continue;      // la escena no lo usa
+  const v0 = valorDe(m);
+  if (typeof v0 !== 'number' || !isFinite(v0)) continue;   // la escena no lo usa
   const fila = h('div', {className:'fila'});
-  fila.appendChild(h('label', {textContent: m.nombre || m.ruta, title:m.ruta}));
+  const rutas = rutasDe(m).join('\n');
+  fila.appendChild(h('label', {textContent: m.nombre || rutas, title: rutas}));
   const val = h('span', {className:'val', textContent:String(v0)});
   fila.appendChild(val);
   caja.appendChild(fila);
   const sl = h('input', {type:'range', min:m.min, max:m.max, step:m.paso, value:v0});
   sl.oninput = () => {
     const v = parseFloat(sl.value);
-    poner(m.ruta, v);
+    ponValor(m, v);
     val.textContent = String(v);
     if (m.aplica === 'calc')  P.aplica(false);
     if (m.aplica === 'nueva') P.aplica(true);
   };
   caja.appendChild(sl);
-  refrescos.push(() => { const v = leer(m.ruta); sl.value = v; val.textContent = String(v); });
+  refrescos.push(() => { const v = valorDe(m);
+                         sl.value = v; val.textContent = String(Math.round(v*1e3)/1e3); });
 }
 
 caja.appendChild(h('p', {className:'nota',

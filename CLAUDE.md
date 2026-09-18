@@ -227,8 +227,15 @@ basta volver a listarlos en `ABISMO.eventos`.
 [pruebas.js](pruebas.js) con la ruta dentro de `ABISMO`. Los tramos
 `@nombre` buscan por `especie`/`evento` en vez de por índice. `aplica`
 dice qué hace falta después: `null` (se lee cada fotograma), `'calc'`
-(recalcular) o `'nueva'` (repoblar). Sólo escalares: los rangos
-`[min, max]` se editan como JSON en el evento o directamente en `ABISMO`.
+(recalcular) o `'nueva'` (repoblar).
+
+Una fila mueve un escalar, o VARIOS a la vez si `ruta` es una lista y
+lleva un `factores` a juego: el valor se reparte por todas multiplicado
+por el suyo, y el que se enseña sale de la primera. Es lo que permite
+gobernar un `[min, max]` con un deslizador: «peces · tamaño ×» escala
+los dos extremos del largo del banco conservando su reparto. Los rangos
+de los eventos se siguen editando
+como JSON en el panel, o directamente en `ABISMO`.
 
 ## El backlog de ideas
 
