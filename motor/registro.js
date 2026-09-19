@@ -34,7 +34,6 @@
      cardumen    → se agrupa: entra en L.cardumen y los suyos se miran
                    entre ellos sin saber de qué especie son; necesita
                    x, y y ang. Dos especies que lo pidan hacen banco mixto.
-     escalaCalidad → su población se puede recortar al degradar
      campos(o, M, L, p) → opcional. Empujar campos a M.campos, como un
                    evento. Se llama para los tres planos ANTES de que se
                    actualice nadie, que es la única forma de que un campo

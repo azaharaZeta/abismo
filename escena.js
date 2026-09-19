@@ -185,41 +185,29 @@ export const ABISMO = {
   maxPx: 4.6e6,                   // tope de píxeles de lienzo
 
   /* ── LA CALIDAD ───────────────────────────────────────────────────
-     Lo que la pieza está dispuesta a gastar y lo que recorta cuando la
-     máquina no llega. El coste es RELLENO: varias pasadas a pantalla
-     completa por fotograma, así que lo que manda no es el dpr sino los
-     píxeles totales del lienzo (`maxPx`, arriba).
+     Lo que la pieza está dispuesta a gastar en píxeles, y ya no hay más:
+     el coste es RELLENO —varias pasadas a pantalla completa por
+     fotograma—, así que lo único que de verdad mueve el reloj es cuántos
+     píxeles tiene el lienzo.
 
-     `vigila()` lleva una media móvil del tiempo de fotograma y llama a
-     `degradar()` UNA SOLA VEZ Y SIN VUELTA ATRÁS: subir y bajar la
-     calidad según el reloj oscila y se ve peor que ir lento.
+       `dprMax`  tope de densidad. Por encima de 2 no se distingue y
+                 cuadruplica el relleno.
+       `dprMin`  suelo al recortar por `maxPx`: por debajo se ve el píxel
+                 y deja de haber agua.
 
-       `dprMax`    tope de densidad. Por encima de 2 no se distingue y
-                   cuadruplica el relleno.
-       `dprMin`    suelo al recortar por `maxPx`: por debajo se ve el
-                   píxel y deja de haber agua.
-       `calienta`  fotogramas que no cuentan. Los primeros son lentos por
-                   el JIT y el primer pintado, y contarlos degrada una
-                   máquina que iba bien.
-       `pausa`     ms por encima de los cuales el fotograma no es lentitud
-                   sino que el navegador se paró; tampoco cuenta.
-       `memoria`   cuánto pesa el último fotograma en la media.
-       `techo`     ms de media a partir de los cuales se va lento. 20 son
-                   50 fps: por debajo de eso el velo se ve a tirones.
-       `paciencia` fotogramas lentos seguidos antes de degradar. A 90 hace
-                   falta un segundo y medio MALO de verdad, no un pico.
+     AQUÍ HUBO UN `degradar()` que a los dos segundos recortaba población,
+     grano, niveles del velo y ondas del dedo, y se borró porque SE MIDIÓ
+     QUE NO GANABA NADA: en un Pixel 7a, 22 fps con la pieza entera y
+     22 fps con la pieza recortada, el mismo número. La razón es
+     estructural y vale la pena no volver a tropezar con ella: lo que
+     recortaba no escala con los píxeles, y lo que cuesta sí. El `dpr` se
+     calcula una vez en `setup()` y aquello no lo tocaba nunca, así que
+     recortaba todo menos lo único que manda. El precio era medio banco y
+     medio plancton.
 
-     Y lo que se recorta, todo a la vez: `poblacion` es el factor sobre
-     las especies con `escalaCalidad`, `ondas` el suyo sobre el tope del
-     dedo, y `niveles` a cuántos se queda la pirámide del velo. EL VELO NO
-     SE QUITA —es lo que hace que esto sea agua—, y el grano se apaga
-     entero. */
-  calidad: {
-    dprMax: 2, dprMin: 0.7,
-    calienta: 60, pausa: 200,
-    memoria: 0.05, techo: 20, paciencia: 90,
-    poblacion: 0.55, ondas: 0.5, niveles: 2,
-  },
+     Si algún día hay que recortar de verdad, el mando es `dprMax` y se
+     puede probar sin tocar nada: `?dpr=1.2` en el panel. */
+  calidad: { dprMax: 2, dprMin: 0.7 },
 
   /* Cuánto espera un evento exclusivo que le toca turno y se lo
      encuentra ocupado. Sin relevo se le sigue descontando el reloj, se
@@ -985,8 +973,7 @@ export const ABISMO = {
     { especie: 'pezlinterna',
       /* POCOS Y GRANDES, pero el banco sigue siendo el espectáculo, y lo
          que lo hace banco es la DENSIDAD y no la cuenta. Por debajo de una
-         docena no hay banco, hay una docena de peces. `escalaCalidad` los
-         recorta si la máquina no da.
+         docena no hay banco, hay una docena de peces.
 
          Y LA DENSIDAD ES POR PLANO, que es lo que no se ve en esta línea:
          `L.cardumen` se rehace por plano, así que un pez sólo mira a los
@@ -1125,8 +1112,8 @@ export const ABISMO = {
          toca la FORMA: la elongación se queda en 1,84.
 
          AL MEDIR: comprobar primero que `M.cardumen().length` es el que
-         toca. Con la población recortada por `degradar()` el banco sale
-         más denso y más redondo, y lleva a conclusiones falsas.
+         toca. Con menos peces de los que pide la escena el banco sale más
+         denso y más redondo, y lleva a conclusiones falsas.
 
          `comodo` es el mayor giro, en radianes y desde el rumbo que
          LLEVA, que un pez acepta por seguir al grupo: 2,4 son 137°, o

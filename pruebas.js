@@ -11,21 +11,33 @@ const A = window.Acuario;
 if (!A || !A.pruebas) return;            // motor viejo: no estorbar
 const P = A.pruebas;
 
-/* ── ?entero · MEDIR LO QUE CUESTA LA PIEZA SIN RECORTAR ────────────
-   `degradar()` entra sola a los pocos segundos y NO VUELVE, así que para
-   cuando alguien abre el panel el tiempo de fotograma que lee ya es el de
-   la pieza a la mitad. Y la pregunta que hay que contestar para tocar
-   `calidad.techo` es la otra: cuánto cuesta ENTERA.
+/* ── EL TIEMPO DE FOTOGRAMA LO MIDE EL PANEL ────────────────────────
+   Con su propio `requestAnimationFrame`, que da los mismos sellos que el
+   del motor. Vivía dentro del bucle para decidir si degradar; ahora que
+   no se degrada, no le queda un solo lector en la pieza, así que se viene
+   al andamio entero: borrar el <script> y no queda ni rastro.
 
-   Le pone el techo fuera de alcance, que es distinto de no vigilar: la
-   media móvil se sigue llevando y el panel la enseña. Llega a tiempo
-   porque esto es un módulo y corre antes del primer fotograma, y encima
-   la cuenta no empieza hasta `calidad.calienta`.
+   `PAUSA` descarta el fotograma en que el navegador se paró —volver de
+   otra pestaña no es ir lento— y `SUAVIZA` es cuánto pesa el último en la
+   media. Son el filtro de un instrumento, no mandos de la pieza. */
+const PAUSA = 200, SUAVIZA = 0.05;
+let ema = 16.7, tUlt = 0;
+requestAnimationFrame(function reloj(t){
+  requestAnimationFrame(reloj);
+  const ms = t - tUlt; tUlt = t;
+  if (ms > 0 && ms < PAUSA) ema += (ms - ema)*SUAVIZA;
+});
 
-   Vive en el andamio y no en el motor: es una pregunta de quien mide, no
-   una opción de la pieza. */
-const ENTERO = /[?&]entero/.test(location.search);
-if (ENTERO) P.escena.calidad.techo = Infinity;
+/* ── ?dpr=N · Y SI EL PROBLEMA SON LOS PÍXELES ──────────────────────
+   Lo que `degradar()` recorta —población, grano, niveles del velo— no
+   escala con el lienzo, y el coste de esto es RELLENO. El único mando
+   que toca de verdad los píxeles es `dprMax`, y `degradar()` no lo mira:
+   `calcDpr()` corre en `setup()` y no se vuelve a llamar.
+
+   Esto pisa el tope y recalcula, que es lo que `calcDpr()` necesita. No
+   repuebla: se compara la misma pecera con menos píxeles. */
+const DPR = /[?&]dpr=([\d.]+)/.exec(location.search);
+if (DPR){ P.escena.calidad.dprMax = parseFloat(DPR[1]); P.aplica(false); }
 
 /* ── lo que se puede tocar en caliente ──────────────────────────────
    UNA FILA NO TRAE NINGÚN VALOR DE LA ESCENA, sólo la ruta hasta él y el
@@ -358,10 +370,10 @@ let areaJSON = null, etiqJSON = null, elegido = null;
 }
 
 /* SALUD DEL FOTOGRAMA
-   Lo primero de todo porque es lo que explica por qué la pieza no es la
-   que se dejó escrita: `degradar()` entra sola, no vuelve y recorta
-   población, dither y velo. Sin esto, la única forma de notarlo era
-   contar bichos —catorce peces que en un móvil salían siete. */
+   Lo primero porque es lo que dice si un número medido aquí vale algo. La
+   pieza ya no recorta nada sola —ver `ABISMO.calidad`—, así que esto no
+   avisa de nada: sirve para JUZGAR un aparato, que es para lo que hizo
+   falta. */
 titulo('salud');
 const salud = h('p', {className:'nota'});
 caja.appendChild(salud);
@@ -373,10 +385,10 @@ caja.appendChild(reparto);
    mide: son 236 px de ancho con `backdrop-filter: blur(3px)` encima de
    un lienzo que se repinta ENTERO cada fotograma, así que el compositor
    vuelve a desenfocar ese trozo sesenta veces por segundo. En una
-   pantalla de móvil son casi dos tercios del ancho, y `?entero` abre el
-   panel a la fuerza: lo que se lee puede ser el coste de estar mirando.
+   pantalla de móvil son casi dos tercios del ancho, o sea que lo que se
+   lee puede ser en buena parte el coste de estar mirando.
 
-   Cierra, deja que la media se asiente —con `memoria` 0,05 el tiempo de
+   Cierra, deja que la media se asiente —con `SUAVIZA` 0,05 el tiempo de
    respuesta son unos 20 fotogramas— y vuelve con el número de ese rato. */
 let aSolas = null;
 const botSolas = h('button', {textContent:'medir a solas',
@@ -387,7 +399,7 @@ const botSolas = h('button', {textContent:'medir a solas',
     botSolas.textContent = 'midiendo…';
     alterna();
     setTimeout(() => {
-      aSolas = P.salud.ms;
+      aSolas = Math.round(ema*10)/10;
       alterna();
       botSolas.disabled = false;
       botSolas.textContent = 'medir a solas';
@@ -396,19 +408,10 @@ const botSolas = h('button', {textContent:'medir a solas',
   }});
 caja.appendChild(h('div', {className:'anc'}, botSolas));
 function pintaSalud(){
-  const s = P.salud;
-  /* el panel no depende del motor: con uno viejo esta línea no sale y ya */
-  if (!s){ salud.remove(); pintaSalud = () => {}; return; }
-  const fps = s.ms > 0 ? Math.round(1000/s.ms) : 0;
-  salud.className = 'nota' + (s.degradado ? ' roto' : '');
-  salud.textContent = s.ms + ' ms · ' + fps + ' fps · '
-    + s.px + ' Mpx a dpr ' + s.dpr + ' · ' + (s.degradado
-    ? '⚠ DEGRADADO: población ×' + s.poblacion + ', sin dither, velo a '
-      + s.niveles + ' niveles'
-    : ENTERO ? 'SIN DEGRADAR (?entero)'
-    : 'techo ' + s.techo + ' ms · ' + (s.lento > 0
-        ? 'DEGRADANDO ' + s.lento + '/' + s.paciencia
-        : 'entero'));
+  const s = P.salud || {};
+  const ms = Math.round(ema*10)/10;
+  salud.textContent = ms + ' ms · ' + Math.round(1000/Math.max(0.1, ms))
+    + ' fps · ' + s.px + ' Mpx a dpr ' + s.dpr;
   /* y a dónde se va el fotograma. Ordenado de mayor a menor porque lo que
      se busca es quién se lo lleva, no el orden de la tubería. */
   const e = s.etapas;
@@ -486,6 +489,6 @@ function pinta(){
 pinta();
 setInterval(() => { if (caja.classList.contains('abierto')) pinta(); }, 400);
 
-/* `?entero` abre también: sin el panel delante no enseña nada */
-if (ENTERO || /[?&]pruebas/.test(location.search)) alterna();
+/* `?dpr` abre también: sin el panel delante no enseña nada */
+if (DPR || /[?&]pruebas/.test(location.search)) alterna();
 })();

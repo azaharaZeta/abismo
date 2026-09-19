@@ -11,11 +11,8 @@ import { cableaTacto, envejeceOndas, olvidaOndas,
          avisaContactos } from './dedo.js';
 import { M } from './api.js';
 
-/* La escena dice qué se PIDE y `V` guarda lo que se ha RECORTADO, que es
-   lo que deja leer la configuración viva: `ABISMO.dither` a mano surte
-   efecto aunque ya se haya degradado. Los de aquí son el reloj del bucle
-   y el del redimensionado. */
-let calentando=0, lento=0, ema=16.7, ultimo=0;
+/* el reloj del bucle y el del redimensionado */
+let ultimo=0;
 let anchoPrev=0, altoPrev=0, tempRedim=null, corriendo=false;
 /* los grupos son el reloj de cada evento; evVivos, los que corren ahora */
 let evGrupos = [], evVivos = [];
@@ -67,13 +64,8 @@ function puebla(){
           avisa('planos:'+conf.especie+':'+k,
                 conf.especie + '.' + k + ' tiene ' + p[k].length + ' entradas y hay '
                 + PLANOS.length + ' planos: los que sobren se quedan vacíos');
-      const n = def.conteo ? def.conteo(li, p) : 0;
-      const q = Math.round(n * (def.escalaCalidad ? V.calidad : 1));
+      const q = def.conteo ? def.conteo(li, p) : 0;
       const gr = { def, p, items: [] };
-      /* `calidad` entra AQUÍ además de en degradar(): repoblar después de
-         haber degradado —redimensionado grande, botón del panel— le
-         devolvería la población entera a la máquina que ya demostró que no
-         podía con ella. */
       for (let i=0;i<q;i++) gr.items.push(def.crear(M, L, p));
       L.grupos.push(gr);
     }
@@ -244,23 +236,6 @@ function calcDpr(){
   return d;
 }
 
-/* Un solo escalón, y no se vuelve atrás (ver `ABISMO.calidad`). Se
-   recorta la población VIVA en vez de repoblar, que daría un salto
-   visible. Aquí no se decide cuánto: sólo se aplica lo que pide la
-   escena. */
-function degradar(){
-  const C = ABISMO.calidad;
-  V.degradado = true;
-  V.calidad = C.poblacion;
-  V.sinDither = true;
-  V.recorteOndas = C.ondas;
-  if (V.topeNiveles > C.niveles){ V.topeNiveles = C.niveles; buildDispersion(); }
-  for (const L of PLANOS)
-    for (const gr of L.grupos)
-      if (gr.def.escalaCalidad)
-        gr.items.length = Math.round(gr.items.length*V.calidad);
-}
-
 /* ══════════════════════════════════════════════════════════════════
    SETUP Y BUCLE
    ══════════════════════════════════════════════════════════════════ */
@@ -315,11 +290,7 @@ function setup(repoblar){
      · los RELOJES de los eventos.
      · las ONDAS del dedo, que son del gesto y no de la pecera.
 
-   La calidad NO se restaura: si la máquina ya demostró que no podía,
-   devolverle el detalle al reiniciar es volver a hacerle la misma
-   pregunta. Lo que sí se reinicia es la vigilancia, o los primeros
-   fotogramas —lentos, como los de cualquier arranque— cuentan como
-   máquina lenta. */
+   */
 function reinicia(){
   para();
   ABISMO.bichos.forEach(resiembraPaletas);
@@ -328,27 +299,7 @@ function reinicia(){
   olvidaOndas();
   preparaEventos();
   V.t = 0;
-  calentando = 0; lento = 0; ema = 16.7;
   setup(true);
-}
-
-/* ── VIGILANCIA DEL FOTOGRAMA ───────────────────────────────────────
-   La media móvil del tiempo de fotograma decide si degradar. Los primeros
-   son lentos por el JIT y el primer pintado, y uno de más de 200 ms es
-   una pausa del navegador: ni unos ni otros entran. */
-function vigila(ms){
-  const C = ABISMO.calidad;
-  if (calentando < C.calienta){ calentando++; return; }
-  if (ms >= C.pausa) return;
-  ema += (ms - ema)*C.memoria;
-  /* la media se sigue llevando DESPUÉS de degradar: es lo único que dice
-     si sirvió de algo, y el panel la enseña. Lo que no vuelve es la
-     decisión. */
-  if (V.degradado) return;
-  /* sube de uno en uno y baja de dos en dos: hace falta que la mayoría de
-     los fotogramas sean lentos, no la mitad */
-  lento = ema > C.techo ? lento+1 : Math.max(0, lento-2);
-  if (lento > C.paciencia) degradar();
 }
 
 /* Cada plano en su propio lienzo y en aditivo: primero la población y
@@ -528,11 +479,14 @@ function pasoPlanos(dt){
    primera etapa que necesite el resultado —normalmente `suma`, que es
    quien lee los tres lienzos de plano—. Sirve para ver quién se lleva el
    fotograma, no para sumar exactamente 100. */
+/* cuánto pesa el último fotograma en la media: no es un mando de la
+   pieza, es el filtro de un instrumento. */
+const SUAVIZA = 0.05;
 const etapas = {eventos:0, agua:0, planos:0, suma:0, velo:0, grano:0};
 let tEtapa = 0;
 function marca(k){
   const t = performance.now();
-  etapas[k] += (t - tEtapa - etapas[k]) * ABISMO.calidad.memoria;
+  etapas[k] += (t - tEtapa - etapas[k]) * SUAVIZA;
   tEtapa = t;
 }
 
@@ -550,7 +504,7 @@ function componePlanos(){
   pintaDispersion();
   marca('velo');
 
-  if (ABISMO.dither !== false && !V.sinDither){
+  if (ABISMO.dither !== false){
     /* la baldosa donde toque este fotograma: el patrón se ancla al origen
        del contexto, así que mover el origen mueve el grano. En enteros y
        dentro de una baldosa —de fracción, el patrón se interpola. */
@@ -578,7 +532,6 @@ function frame(ahora){
   const dt = clamp(ms/1000, 0, 1/20);
   ultimo = ahora;
   V.t += dt;
-  vigila(ms);
   envejeceOndas(dt);
 
   V.ctx.setTransform(V.dpr,0,0,V.dpr,0,0);
@@ -637,10 +590,10 @@ function arranca(){
   cableaTacto();
   addEventListener('resize', alRedimensionar);
   addEventListener('orientationchange', alRedimensionar);
-  /* volver de otra pestaña no es ir lento */
+  /* volver de otra pestaña trae un sello viejo, y con él el `dt` de ese
+     fotograma saldría enorme */
   document.addEventListener('visibilitychange', () => {
     ultimo = performance.now();
-    calentando = 0; lento = 0; ema = 16.7;
   });
 
   avisaContactos(contactoEventos);
@@ -659,25 +612,17 @@ window.Acuario = { arranca, reinicia, especie, evento, ESPECIES, EVENTOS, M,
     get vivos(){ return evVivos.map(e => ({nombre: e.def.nombre,
                                           t: +e.t.toFixed(1),
                                           exclusivo: !!e.def.exclusivo})); },
-    /* ── LA SALUD DEL FOTOGRAMA ──────────────────────────────────
-       `degradar()` va en un solo sentido y no avisaba a nadie: la pieza
-       se queda a la mitad —población de las especies con `escalaCalidad`,
-       dither y niveles del velo— y desde fuera la única forma de
-       enterarse era CONTAR BICHOS. Pasó: catorce peces y en un móvil
-       salían siete.
+    /* ── A DÓNDE SE VA EL FOTOGRAMA ──────────────────────────────
+       Sólo para el panel, y es lo único que queda de medir rendimiento
+       aquí: el motor ya no decide nada con ello. El tiempo de fotograma
+       lo lleva el propio panel con su `requestAnimationFrame`; esto es el
+       reparto por etapas, que desde fuera no se puede ver.
 
-       `lento` contra `paciencia` es la cuenta atrás, y es lo que hace
-       falta para ver una máquina al filo antes de que caiga. `ema` y
-       `lento` son privados de este módulo a propósito; esto es la única
-       ventana. */
-    get salud(){ const C = ABISMO.calidad;
-      return {degradado: V.degradado, ms: Math.round(ema*10)/10,
-              techo: C.techo, lento, paciencia: C.paciencia,
-              poblacion: V.calidad, niveles: V.topeNiveles,
-              /* el coste es RELLENO, así que los píxeles de lienzo son el
-                 término que manda y no se deducen de la pantalla: `dpr`
-                 sale de `calcDpr`, que ya recorta contra `maxPx`. */
-              dpr: Math.round(V.dpr*100)/100,
+       Y los PÍXELES DE LIENZO, que es el término que manda —el coste es
+       relleno— y no se deducen de la pantalla: `dpr` sale de `calcDpr()`,
+       que topa en `dprMax` y recorta contra `maxPx`. */
+    get salud(){
+      return {dpr: Math.round(V.dpr*100)/100,
               px: Math.round(V.W*V.dpr*V.H*V.dpr/1e4)/100,
               etapas}; },
     /* recoge los cambios de configuración. Con `nueva` sortea otra

@@ -32,7 +32,7 @@ function impulso(x, y){
      entrada —dos décimas en abrir—, así que una onda recién nacida puntúa
      casi 0 y se desaloja a sí misma. Con eso, arrastrando el dedo el
      rastro se congela donde EMPEZÓ el gesto. */
-  const tope = Math.max(1, Math.round(ABISMO.dedo.tope * V.recorteOndas));
+  const tope = Math.max(1, Math.round(ABISMO.dedo.tope));
   if (contactos.length >= tope){
     let peor = 0, va = Infinity;
     for (let i=0;i<contactos.length;i++){

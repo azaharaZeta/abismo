@@ -9,7 +9,6 @@ const {rgba, rnd, rango, opt, TAU} = M;
 import { porReparto, pintaHalo, paso, silencio } from './comun.js';
 
 especie('plancton', {
-  escalaCalidad: true,
   conteo: porReparto,
 
   crear(M, L, p){

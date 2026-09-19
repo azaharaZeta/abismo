@@ -162,7 +162,6 @@ especie('pezlinterna', {
   luz: true,                    // sus fotóforos también encienden plancton
   presa: true,
   cardumen: true,               // y hace banco con los suyos
-  escalaCalidad: true,
   conteo: porReparto,
 
   /* ── LOS TONOS QUE MANDAN ─────────────────────────────────────

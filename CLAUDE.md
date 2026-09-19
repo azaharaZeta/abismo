@@ -225,24 +225,43 @@ en `tramos` en vez de dar un color por bicho.
 
 ### Rendimiento
 
-El coste es relleno: varias pasadas a pantalla completa por fotograma.
-`vigila()` lleva una media móvil del tiempo de fotograma y llama a
-`degradar()` **una sola vez y sin vuelta atrás** (subir y bajar la calidad
-oscila y se ve peor que ir lento): recorta población viva de las especies
-con `escalaCalidad`, apaga el dither y baja niveles del velo. El velo nunca se quita: es lo que hace que esto sea agua.
+El coste es **relleno**: varias pasadas a pantalla completa por fotograma.
+Lo único que lo mueve de verdad son los píxeles del lienzo, y de eso se
+encargan `ABISMO.calidad.dprMax` y `maxPx`, una sola vez en `setup()`.
 
-**Y SE VE EN EL PANEL, en `salud`**, porque entrar sola y no avisar es lo
-mismo que no estar: la pieza se queda a la mitad y desde fuera la única
-forma de enterarse era contar bichos —catorce peces que en un móvil salían
-siete—. La línea da el tiempo de fotograma, los fps y la cuenta atrás
-(`lento`/`paciencia`), y en rojo lo que se ha recortado. **Un número medido
-en un móvil no vale nada sin mirarla antes.**
+**AQUÍ HUBO UN `degradar()` Y SE BORRÓ POR MEDIDA, no por gusto.** Entraba
+sola a los dos segundos, sin vuelta atrás, y recortaba población de las
+especies con `escalaCalidad`, el grano, los niveles del velo y el tope de
+ondas del dedo. En un Pixel 7a: **22 fps con la pieza entera y 22 fps con
+la pieza recortada.** Cero.
 
-Cuándo degradar y cuánto se recorta salen de **`ABISMO.calidad`**, con
-`maxPx` al lado: el motor aplica, no decide. Y lo recortado vive en `V`
-como FACTORES sobre la escena (`V.calidad`, `V.recorteOndas`,
-`V.sinDither`), nunca como copia de un valor suyo —copiándolo, la escena
-se queda congelada en el `import` y un mando sobre ella no hace nada.
+La razón es estructural y conviene no volver a tropezar con ella: **nada
+de lo que recortaba escala con los píxeles, y el coste sí**. El `dpr` se
+calcula en `setup()` y `degradar()` no lo tocaba nunca, así que recortaba
+todo menos lo único que manda. El precio eran catorce peces que salían
+siete.
+
+La lección general, que vale para el próximo mecanismo de este tipo: **un
+paliativo automático hay que medirlo contra sí mismo en el aparato lento,
+no razonarlo.** Y si se vuelve a necesitar uno, el mando es `dprMax` —se
+prueba con `?dpr=1.2` sin tocar código.
+
+El panel enseña, en `salud`, el tiempo de fotograma, los píxeles de lienzo
+y a dónde se va el fotograma por etapas. Ya no avisa de nada: sirve para
+**juzgar un aparato**, que es lo que hacía falta desde el principio. Dos
+trampas al usarlo, las dos medidas:
+
+- **el panel no es gratis** — 236 px con `backdrop-filter` encima de un
+  lienzo que se repinta entero, unos 7 ms en un móvil. Para eso está el
+  botón `medir a solas`, que lo cierra unos segundos y vuelve con el
+  número de ese rato.
+- **el reparto por etapas mide CPU, no GPU** — un `drawImage` se encola,
+  no se ejecuta. Si las etapas suman mucho menos que el fotograma, el
+  coste está aguas abajo y el mando son los píxeles.
+
+Y hay un **suelo duro a 20 fps** que no es de gusto: `dt` va topado en
+`1/20` en `frame()`, así que por debajo de eso la pieza no va a tirones,
+va a cámara lenta y sin decirlo.
 
 ## Añadir cosas
 
@@ -250,7 +269,7 @@ se queda congelada en el `import` y un mando sobre ella no hace nada.
 `especie('nombre', def)`, una línea en [catalogo.js](catalogo.js) y una
 entrada `{especie: 'nombre', …}` en `ABISMO.bichos`. El contrato completo de `def` (`conteo`, `siembra`,
 `crear`, `actualiza`, `dibuja`, `campos`, y las banderas `luz`, `presa`,
-`cardumen`, `rompible`, `escalaCalidad`) está documentado en
+`cardumen`, `rompible`) está documentado en
 **REGISTRO DE ESPECIES**, en [motor/registro.js](motor/registro.js).
 `siembra(M, p)` es el único que corre una vez por pecera en vez de por
 bicho: es donde va lo que toda la población comparte —los tonos que

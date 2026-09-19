@@ -123,7 +123,7 @@ function buildDispersion(){
   NIVELES.length = 0;
   const D = ABISMO.dispersion;
   if (!D) return;
-  const n = Math.min(D.niveles|0, V.topeNiveles);
+  const n = D.niveles|0;
   if (n < 2) return;
   let w = Math.round(V.W*V.dpr/Math.max(1, D.div));
   let h = Math.round(V.H*V.dpr/Math.max(1, D.div));

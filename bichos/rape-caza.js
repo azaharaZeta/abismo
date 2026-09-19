@@ -109,7 +109,7 @@ function caza(f, M, L, p, dt){
       }
       /* y se suelta la presa: el rape la sostiene mientras dura el bocado y no
          más. Normalmente ella se suelta antes, pero si deja de actualizarse a
-         media boca (al degradar se recorta población) el enlace quedaría vivo
+         media boca —un repoblado a mitad de bocado— el enlace quedaría vivo
          para siempre, arrastrando un objeto que ya no está. */
       f.tragando = null;
     }

@@ -17,7 +17,6 @@ function tiron(d, M, p, ang, escala){
 }
 
 especie('copepodo', {
-  escalaCalidad: true,
   conteo: porReparto,
 
   crear(M, L, p){
