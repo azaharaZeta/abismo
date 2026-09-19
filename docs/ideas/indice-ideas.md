@@ -28,8 +28,8 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 ## Ideas de usuario (pendientes de procesar)
 > Solo un humano edita esta sección. Texto breve; el detalle se desarrolla al crear la ficha.
 
-_(vacío)_
-
+- Claude: "- Los peces giran 92 °/s de media, o sea que casi nunca sostienen un rumbo. Se baja con `vira`, pero es el número que sostiene el cardumen —un pez que no vira no sigue al grupo— y mi medida de alineación (un parámetro global con ±0,16 de ruido a 38 peces) no distingue si lo rompe: haría falta medir la alineación por vecindario antes de tocarlo." - Respuesta de usuaria: Es más importante que naden bien a que naden en cardumen. mira si se puede hacer que los peces, todos, independientemente de su tamaño, intenten seguir a otros peces, pero solo si están a su alcance cercano y si no les supone un giro forzado, y que así de alguna forma emerjan más o menos conductas de cardumen, pero no forzadas.
+- hacer que los rapes tiendan ligeramente a ir posicionándose en una altura media de la pantalla. el objetivo es evitar qu se queden pillados arriba del todo o debajo del todo. no prohibir esas posiciones, pero hacer que sea más normal verles en altura media. creo que ya está implementado que tiendan a ponerse en los laterales mirando hacia el centro, compruébalo, que siga así.
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos de las ideas procesadas el 2026-09-17, el 2026-09-18 y el 2026-09-19.
 

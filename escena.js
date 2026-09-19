@@ -937,11 +937,17 @@ export const ABISMO = {
        cuadro; de cerca, lo que ALUMBRA. */
     { especie: 'pezlinterna',
       /* POCOS Y GRANDES, pero el banco sigue siendo el espectáculo, y lo
-         que lo hace banco es la DENSIDAD y no la cuenta: con estos y
-         `roce` a 3 U cada pez ve a 2,8 vecinos dentro de su `vista`. Por
-         debajo de una docena no hay banco, hay una docena de peces. El
-         tope alto es para pantallas grandes; `escalaCalidad` los recorta
-         si la máquina no da.
+         que lo hace banco es la DENSIDAD y no la cuenta. Por debajo de una
+         docena no hay banco, hay una docena de peces. `escalaCalidad` los
+         recorta si la máquina no da.
+
+         Y LA DENSIDAD ES POR PLANO, que es lo que no se ve en esta línea:
+         `L.cardumen` se rehace por plano, así que un pez sólo mira a los
+         de su misma distancia y `reparto` decide de cuántos dispone.
+         MEDIDO en caja de móvil, cada pez ve a 1,6 vecinos dentro de su
+         `vista` repartido en dos planos, contra 1,06 cuando estaban en los
+         tres: quitar el plano del fondo dejó el banco MÁS junto, no menos,
+         y la alineación se quedó igual (0,54 contra 0,57).
 
          UN NÚMERO SUELTO Y NO {cada, min, max}: el cuadro enseña siempre
          `escala`×`escala` U de mundo, o sea el mismo trozo de mar en un
@@ -950,21 +956,25 @@ export const ABISMO = {
          iPhone SE —el mismo mar con la mitad de peces—, que es parte de
          lo que hacía que en móvil se viera todo pequeño y apretado. */
       total: 14,
-      /* cargado hacia delante: el banco que se tiene que leer como banco
-         es el de cerca; el del fondo son motas */
-      reparto: [0.24, 0.34, 0.42],
+      /* NINGUNO AL FONDO, por el mismo motivo por el que no hay rapes
+         lejanos: a ese plano no le llega el bicho, le llega una mancha.
+         Un pez del fondo va a `scale` 0,40 Y ADEMÁS a un tercio de
+         resolución y al 58 % de alfa, así que en un móvil salía pálido,
+         borroso y de 18 px —y eso no se arregla desde `largo`: aunque se
+         igualara al extremo grande, el techo del plano del fondo son 22 px.
+
+         Quitándolos, el pez más chico pasa a ser el del plano de en medio:
+         33 px en una caja de 359x750, contra 73 del más grande. Se pierde
+         la capa más lejana del banco y se gana que TODOS se lean. */
+      reparto: [0, 0.45, 0.55],
       /* EL SUELO LO PONE EL MÓVIL, que es la pantalla contra la que se
-         ajusta esto. El extremo chico y el plano del fondo se multiplican
-         —`scale` 0,40—, así que el pez más pequeño salía a 13 px de largo
-         en una caja de 359x750 y no se leía como pez: era una raya. A 1,55
-         son 18, que es donde vuelve a tener forma. El extremo grande no se
-         toca: lo que se pedía era que los chicos no lo fueran tanto.
+         ajusta esto. El extremo chico salía a 13 px de largo y no se leía
+         como pez: era una raya. El extremo grande no se toca —73 px—, así
+         que lo que se estrecha es el rango: la razón entre el más grande y
+         el más chico queda en 2,2, repartida entre el largo (1,24) y los
+         dos planos que quedan (1,78).
 
-         El precio es variedad de tamaño —la razón entre el más grande del
-         frente y el más chico del fondo baja de 5,5 a 4,1—, y es lo que hay:
-         por debajo de 13 px no hay pez que valga.
-
-         Y `roce` NO SUBE CON ÉL, aunque la regla de al lado lo pida.
+         Y `roce` NO SUBE CON ÉL, aunque la regla de abajo lo pida.
          MEDIDO, seis semillas de 100 s en caja de móvil: agrandar el pez
          sube el apiñamiento en largos de cuerpo —vecinos a menos de 1,2
          largos, de 0,43 a 0,54—, pero subir `roce` a 3,4 no lo baja (0,56,
