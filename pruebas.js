@@ -367,6 +367,34 @@ const salud = h('p', {className:'nota'});
 caja.appendChild(salud);
 const reparto = h('p', {className:'nota'});
 caja.appendChild(reparto);
+
+/* ── MEDIR A SOLAS ────────────────────────────────────────────────
+   EL PANEL NO ES GRATIS, y esto es el instrumento perturbando lo que
+   mide: son 236 px de ancho con `backdrop-filter: blur(3px)` encima de
+   un lienzo que se repinta ENTERO cada fotograma, así que el compositor
+   vuelve a desenfocar ese trozo sesenta veces por segundo. En una
+   pantalla de móvil son casi dos tercios del ancho, y `?entero` abre el
+   panel a la fuerza: lo que se lee puede ser el coste de estar mirando.
+
+   Cierra, deja que la media se asiente —con `memoria` 0,05 el tiempo de
+   respuesta son unos 20 fotogramas— y vuelve con el número de ese rato. */
+let aSolas = null;
+const botSolas = h('button', {textContent:'medir a solas',
+  title:'cierra el panel unos segundos y enseña el fotograma de ese rato',
+  onclick: () => {
+    if (!caja.classList.contains('abierto')) return;
+    botSolas.disabled = true;
+    botSolas.textContent = 'midiendo…';
+    alterna();
+    setTimeout(() => {
+      aSolas = P.salud.ms;
+      alterna();
+      botSolas.disabled = false;
+      botSolas.textContent = 'medir a solas';
+      pinta();
+    }, 6000);
+  }});
+caja.appendChild(h('div', {className:'anc'}, botSolas));
 function pintaSalud(){
   const s = P.salud;
   /* el panel no depende del motor: con uno viejo esta línea no sale y ya */
@@ -384,10 +412,12 @@ function pintaSalud(){
   /* y a dónde se va el fotograma. Ordenado de mayor a menor porque lo que
      se busca es quién se lo lleva, no el orden de la tubería. */
   const e = s.etapas;
-  reparto.textContent = e
+  reparto.textContent = (e
     ? Object.keys(e).sort((a,b) => e[b]-e[a])
         .map(k => k + ' ' + (Math.round(e[k]*10)/10)).join(' · ') + ' ms'
-    : '';
+    : '')
+    + (aSolas ? '  ·  A SOLAS ' + aSolas + ' ms · '
+                + Math.round(1000/aSolas) + ' fps' : '');
 }
 
 /* EN MARCHA */
