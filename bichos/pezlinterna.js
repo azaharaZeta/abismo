@@ -53,7 +53,7 @@ function cardumen(z, M, L, p, libre, mira){
   const C = p.cardumen;
   if (!C) return;
   const vista = C.vista*M.U, v2 = vista*vista;
-  const roce  = (C.roce || 0)*M.U, r2 = roce*roce;
+  const roce  = C.roce*M.U, r2 = roce*roce;
   /* el cono ciego, como coseno y al cuadrado: así el reparto de vecinos se
      hace sin una sola raíz cuadrada, que en un bucle de todos contra todos
      es lo que importa */
@@ -105,10 +105,10 @@ function cardumen(z, M, L, p, libre, mira){
        sus vecinos converge a un solo rumbo y deja de fluir */
     let gx = 0, gy = 0;
     const jl = Math.hypot(jx, jy);
-    if (jl > 1e-4){ const w = C.junta*(z.kJunta || 1);
+    if (jl > 1e-4){ const w = C.junta*z.kJunta;
                     gx += jx/jl*w;  gy += jy/jl*w; }
     const al = Math.hypot(ax, ay);
-    if (al > 1e-4){ const w = C.alinea*(z.kAlinea || 1);
+    if (al > 1e-4){ const w = C.alinea*z.kAlinea;
                     gx += ax/al*w; gy += ay/al*w; }
     /* ── Y SÓLO SI LE SALE CÓMODO ────────────────────────────────
        El grupo sugiere, y esto es poder decirle que no: `comodo` es el
@@ -403,7 +403,7 @@ especie('pezlinterna', {
 
     z.susto = Math.max(0, z.susto - dt);
     const objVel = M.U * (z.susto ? p.velSusto
-                                  : (z.cebada ? p.velCebada : p.vel) * (z.brio || 1));
+                                  : (z.cebada ? p.velCebada : p.vel) * z.brio);
     z.vel = hacia(z.vel, objVel, 2.4, dt);
 
     /* EL DEDO. Aquí NO se toca `susto` ni `angObj`: el susto es lo que

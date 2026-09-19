@@ -364,8 +364,11 @@ let areaJSON = null, etiqJSON = null, elegido = null;
 
   etiqJSON = h('p', {className:'nota', textContent:'pulsa ≡ para editar parámetros'});
   caja.appendChild(etiqJSON);
+  /* y lo que se escriba aquí vale para ESE lanzamiento: `dispara()` lo
+     fusiona en un objeto aparte y la escena no se entera, así que los
+     deslizadores de abajo siguen mandando sobre el evento vivo. */
   areaJSON = h('textarea', {spellcheck:false,
-    placeholder:'{"vel":[3,6]}  → pisa parámetros al lanzar'});
+    placeholder:'{"vel":[3,6]}  → pisa parámetros, sólo en ese lanzamiento'});
   caja.appendChild(areaJSON);
 }
 

@@ -87,16 +87,25 @@ function preparaEventos(){
     /* `cada: null` es un evento DORMIDO: está en la escena, con sus
        parámetros, y no sale nunca por su cuenta. Es lo que deja probar
        uno desde el panel sin que se instale en la pieza, y sin que haya
-       una segunda copia de sus parámetros en ninguna parte. */
+       una segunda copia de sus parámetros en ninguna parte.
+
+       Y EL RELOJ TAMPOCO LO TRAE EL EVENTO. Los pares de aquí abajo son
+       el neutro del motor —«la escena no lo dijo»— y no una copia de
+       ella: puestos también en la def, eran dieciséis claves que nadie
+       ejercitaba y diez ya no coincidían con la escena. */
     evGrupos.push({ def, p, vivo: null,
                     prox: p.cada === null ? Infinity
-                        : rango(p.primero || def.primero || [20,60]) });
+                        : rango(opt(p.primero, [20,60])) });
   }
 }
 
-function lanza(gr, x, y){
-  const e = { def: gr.def, p: gr.p, gr, t: 0 };
-  Object.assign(e, gr.def.arranca(M, gr.p, x, y) || {});
+/* `p` es para el andamio: unos parámetros que valen SÓLO para este
+   lanzamiento. Sin él —que es el caso de la pieza— se lanza con los de la
+   escena. Ver `dispara`. */
+function lanza(gr, x, y, p){
+  const pe = p || gr.p;
+  const e = { def: gr.def, p: pe, gr, t: 0 };
+  Object.assign(e, gr.def.arranca(M, pe, x, y) || {});
   evVivos.push(e);
   gr.vivo = e;
   return e;
@@ -107,7 +116,7 @@ function lanza(gr, x, y){
 function reprograma(gr){
   gr.vivo = null;
   gr.prox = gr.p.cada === null ? Infinity
-                               : rango(gr.p.cada || gr.def.cada || [90,240]);
+                               : rango(opt(gr.p.cada, [90,240]));
 }
 
 function pasoEventos(dt){
@@ -126,7 +135,7 @@ function pasoEventos(dt){
        negativo arrancaba en el mismo fotograma en que moría el que lo
        tapaba. Ver `relevo` en la escena. */
     if (gr.def.exclusivo && hayGrande){
-      gr.prox = rango(gr.p.relevo || ABISMO.relevo || [25, 70]);
+      gr.prox = rango(opt(gr.p.relevo, ABISMO.relevo));
       continue;
     }
     lanza(gr);
@@ -163,7 +172,27 @@ function pasoEventos(dt){
    sin que la escena lo configurase, y eran 102 claves que la pieza
    cargaba sólo para alimentar al panel: nadie las ejercitaba, así que
    envejecían solas —23 ya no coincidían con la escena—. Para probar uno
-   sin instalarlo se le pone `cada: null` en la escena y queda dormido. */
+   sin instalarlo se le pone `cada: null` en la escena y queda dormido.
+
+   ── Y `extra` ES DE ESTE LANZAMIENTO, NO DEL GRUPO ─────────────────
+   La fusión va a un objeto APARTE y `gr.p` sigue siendo la entrada de
+   `ABISMO`. Eso importa porque `gr.p` no es una copia de la escena, ES la
+   escena —`paramsDe` devuelve la propia entrada—, y de ahí cuelga todo lo
+   demás: los deslizadores del panel escriben en `ABISMO` y el evento vivo
+   lo ve porque miran el mismo objeto. Sustituyéndolo por la fusión se
+   despegaba, y entonces el mando quedaba muerto sin decirlo, el `≡`
+   enseñaba los valores de la escena mientras el evento corría con otros, y
+   el `extra` de UNA prueba se lo quedaban también los lanzamientos
+   automáticos del resto de la sesión.
+
+   Y de paso arregla al DORMIDO: `reprograma()` lee `gr.p.cada`, así que un
+   `cada` escrito en el panel ya no puede instalar en la pieza un evento
+   que la escena dejó con `cada: null`.
+
+   Lo que el JSON sí hace es CONGELAR: el lanzamiento se queda con la foto
+   de la escena del momento, así que mover un deslizador no alcanza a esa
+   travesía —a las demás sí—. Es lo que se ha pedido al escribir valores a
+   mano, y se acaba con ella. */
 function dispara(nombre, extra){
   const def = EVENTOS[nombre];
   if (!def) return false;
@@ -174,20 +203,23 @@ function dispara(nombre, extra){
         + 'sin que salga solo.');
     return false;
   }
-  if (extra) gr.p = fusiona(gr.p, extra);
+  const p = extra ? fusiona(gr.p, extra) : gr.p;
   /* un `espectroX` que llega en `extra` tiene que tirar su `paletaX`:
      resuelveEspectros() respeta la paleta que ya esté puesta —es como se
      anula un espectro sin borrarlo—, así que sin esto el color editado
      desde el panel no se aplica nunca. Salvo que `extra` traiga también la
-     paleta: ahí manda ella, que es la regla de la casa. */
+     paleta: ahí manda ella, que es la regla de la casa.
+
+     Se borra de la FUSIÓN y no de la escena, así que el color de la pieza
+     sigue intacto cuando el evento del panel se acabe. */
   if (extra) for (const k in extra){
     const destino = paletaDe(k);
-    if (destino && extra[destino] === undefined) delete gr.p[destino];
+    if (destino && extra[destino] === undefined) delete p[destino];
   }
   /* y sus espectros: los de la escena ya se resolvieron al arrancar, pero
      un `espectroX` escrito en el panel no ha pasado por ahí y se quedaría
      en `M.color(undefined)`. */
-  resuelveEspectros(gr.p);
+  resuelveEspectros(p);
   para(nombre);
   /* un exclusivo a mano echa al que hubiera. Se saca de la lista aquí y no
      con otra llamada a para() porque para() recorre y corta la MISMA lista
@@ -198,7 +230,7 @@ function dispara(nombre, extra){
         reprograma(evVivos[i].gr);
         evVivos.splice(i,1);
       }
-  lanza(gr);
+  lanza(gr, undefined, undefined, p);
   return true;
 }
 
@@ -456,7 +488,10 @@ function pasoPlanos(dt){
   }
 
   /* Los eventos que dibujan lo hacen en su plano, después de los bichos:
-     son escena, no población. */
+     son escena, no población. Y EL DEFECTO DE `plano` VIVE AQUÍ SOLO: el
+     evento que lo declara lo lee pelado de la escena. Con una copia en
+     cada uno —y eran cuatro— el mismo evento podía poner sus campos en un
+     plano y dibujarse en otro. */
   for (const e of evVivos){
     if (!e.def.dibuja) continue;
     const L = PLANOS[clamp(opt(e.p.plano, PLANOS.length-1)|0, 0, PLANOS.length-1)];

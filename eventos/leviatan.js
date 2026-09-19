@@ -31,7 +31,6 @@ import { mancha, pintaHalo, reparte } from '../bichos/comun.js';
 const _lvQ = [0,0];
 evento('leviatan', {
   exclusivo: true,
-  cada: [150, 330], primero: [45, 120],
   arranca(M, p){
     const dir = Math.random() < 0.5 ? 1 : -1;
     /* EL RUMBO. `base` es el lado por el que cruza y `ang` el rumbo real,
@@ -96,7 +95,7 @@ evento('leviatan', {
     if (ca > 0 ? colaX > M.W : colaX < 0) return false;
 
     const n = Math.max(6, p.segmentos|0);
-    const plano = opt(p.plano, 0);
+    const plano = p.plano;
     const filo = p.filo;
     /* `penumbra` agranda la elipse: su máximo cae en el espinazo, así que
        sin agrandarla la silueta de verdad queda donde el apagado ya se

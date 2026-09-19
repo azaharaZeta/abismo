@@ -29,7 +29,6 @@ const _vsP = [0,0], _vsN = [0,0], _ant = [0,0,0,0];
 
 evento('visitante', {
   exclusivo: false,
-  cada: [45, 110], primero: [15, 40],
   arranca(M, p){
     const v = opt(p.variedad, 0);
     return {

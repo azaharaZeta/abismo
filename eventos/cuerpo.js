@@ -260,7 +260,6 @@ function cuerpoNuevo(M, p, x, y, espera){
 
 evento('cuerpo', {
   exclusivo: true,
-  cada: [320, 660], primero: [80, 200],
   arranca(M, p){
     /* el primero entra ya; los demás esperan lo suyo. El contacto no le
        pasa un sitio a ninguno: un cuerpo que sale del dedo se lee como
@@ -275,7 +274,7 @@ evento('cuerpo', {
     return { cuerpos };
   },
   actualiza(e, M, p, dt){
-    const plano = opt(p.plano, 1);
+    const plano = p.plano;
     const filo = p.filo;
     /* `penumbra` agranda cada elipse por encima del cuerpo, igual que en el
        leviatán: el máximo de un campo cae en su centro, así que sin esto la
@@ -301,7 +300,7 @@ evento('cuerpo', {
      Ver `pintaBordeCuerpo`. El cuerpo sigue siendo un hueco —no emite
      nada—; lo que se pinta es la luz de otro rebotando en él. */
   dibuja(e, M, p, g){
-    const plano = opt(p.plano, 1);
+    const plano = p.plano;
     for (const b of e.cuerpos)
       if (!b.hecho && b.espera <= 0) pintaBordeCuerpo(b, M, p, g, plano);
   },

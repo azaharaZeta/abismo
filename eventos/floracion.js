@@ -1,5 +1,5 @@
 import { M, evento } from '../motor.js';
-const {rnd, rango, opt} = M;
+const {rango, opt} = M;
 
 /* ══════════════════════════════════════════════════════════════════
    LA FLORACIÓN
@@ -23,7 +23,6 @@ const {rnd, rango, opt} = M;
    ══════════════════════════════════════════════════════════════════ */
 evento('floracion', {
   exclusivo: false,
-  cada: [90, 210], primero: [25, 70],
   arranca(M, p, x, y){
     return {
       x: opt(x, rango(p.banda)*M.W),

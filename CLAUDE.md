@@ -276,16 +276,18 @@ bicho: es donde va lo que toda la población comparte —los tonos que
 mandan en el banco salen de ahí.
 
 **Un evento nuevo**: igual, en `eventos/` y con `evento('nombre', def)`
-(`exclusivo`, `cada`, `primero`, `arranca`, `actualiza`, `dibuja`). El
-contrato está en **REGISTRO DE EVENTOS**, en el mismo fichero. Los mejores
-eventos **no dibujan nada** — apagan.
+(`exclusivo`, `arranca`, `actualiza`, `dibuja`). El contrato está en
+**REGISTRO DE EVENTOS**, en el mismo fichero. Los mejores eventos **no
+dibujan nada** — apagan.
 
-**NO LE PONGAS VALORES.** Todos sus parámetros salen de su entrada en
-`ABISMO.eventos`. Los eventos llevaban además un `def.prueba` para poder
-lanzarlos desde el panel sin que la escena los configurase, y eran 102
-claves que la pieza cargaba sólo para el andamio: nadie las ejercitaba, así
-que envejecían solas —23 ya no coincidían con la escena—. **El panel es
-temporal y la pieza no depende de él.**
+**NO LE PONGAS VALORES, NI SIQUIERA SU RELOJ.** Todos sus parámetros salen
+de su entrada en `ABISMO.eventos`, `cada` y `primero` incluidos. Los
+eventos llevaban además un `def.prueba` para poder lanzarlos desde el panel
+sin que la escena los configurase, y eran 102 claves que la pieza cargaba
+sólo para el andamio: nadie las ejercitaba, así que envejecían solas —23 ya
+no coincidían con la escena—. Con `cada`/`primero` en la def pasó lo mismo
+en pequeño: dieciséis claves que la escena pisaba siempre, y diez habían
+dejado de coincidir. **El panel es temporal y la pieza no depende de él.**
 
 Para probar uno sin instalarlo, se le pone **`cada: null`** en la escena y
 queda DORMIDO: configurado, lanzable a mano, y no sale nunca por su cuenta

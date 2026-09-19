@@ -1,5 +1,5 @@
 import { M, evento } from '../motor.js';
-const {rnd, rango, opt} = M;
+const {rango, opt} = M;
 
 /* ══════════════════════════════════════════════════════════════════
    EL CONTAGIO
@@ -11,7 +11,6 @@ const {rnd, rango, opt} = M;
    ══════════════════════════════════════════════════════════════════ */
 evento('contagio', {
   exclusivo: false,
-  cada: [50, 140], primero: [12, 45],
   arranca(M, p, x, y){
     return {
       x: opt(x, rango(p.banda)*M.W),

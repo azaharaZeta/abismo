@@ -1,5 +1,5 @@
 import { M, evento } from '../motor.js';
-const {rgba, clamp, rnd, rango, rangoE, opt, TAU} = M;
+const {rgba, clamp, rango, rangoE, opt, TAU} = M;
 import { pintaHalo, reparte } from '../bichos/comun.js';
 
 /* ── LA CARROÑA ─────────────────────────────────────────────────────
@@ -30,7 +30,6 @@ import { pintaHalo, reparte } from '../bichos/comun.js';
 
 evento('carrona', {
   exclusivo: false,
-  cada: [120, 260], primero: [30, 90],
   arranca(M, p, x, y){
     const Lg = M.U * rango(p.largo);
     /* UN SOLO SORTEO de vértebras: de aquí salen el contador Y el largo
@@ -100,7 +99,7 @@ evento('carrona', {
     e.x += Math.sin(M.t*0.13 + e.fase) * opt(p.deriva, 0) * M.U * dt;
     if (e.y - e.Lg > M.H) return false;
 
-    const plano = opt(p.plano, 1);
+    const plano = p.plano;
     /* ── CUÁNTA LUZ LE DA, Y DÓNDE ────────────────────────────────
        La misma idea que el cuerpo del rape —suma de los focos que
        alcanzan, `caida` alta es alcance corto y `ganancia` sube lo que
@@ -335,7 +334,7 @@ evento('carrona', {
    sale de pecho ancho lo es entera y no sólo por un sitio. */
 function carronaPerfil(u, caja){
   const craneo = u < 0.10 ? 0.55 + 4.5*u : 1;
-  const pecho  = 1 + opt(caja, 0.55)*Math.exp(-Math.pow((u-0.30)/0.16, 2));
+  const pecho  = 1 + caja*Math.exp(-Math.pow((u-0.30)/0.16, 2));
   const cola   = Math.pow(1-u, 0.7);
   return craneo*pecho*cola*0.62;
 }

@@ -21,7 +21,7 @@ const panza = u => 0.34*Math.pow(Math.sin(Math.PI*Math.pow(u,0.60)),1.20) + 0.02
    curva. */
 const flex = (u,f,t) => Math.sin(u*2.6 - t*f.velCola + f.fase)
                         * f.amplitudCola * Math.pow(u,1.6)
-                        * (1 - 0.9*(f.congela || 0));
+                        * (1 - 0.9*f.congela);
 
 /* Construye un trazado en coordenadas del pez y lo deja vivo en
    coordenadas de mundo: los puntos se transforman al crearse, así que tras
@@ -416,10 +416,10 @@ function quijadas(f, p){
            + Math.sin(Math.pow(Math.min(1, 1-f.ataque), 0.55)*Math.PI) * p.abertura
            /* y el trabajo de masticar, que es lo mismo pero pequeño y repetido: lo
               calcula actualiza() y lo deja puesto */
-           + (f.masticaAb || 0)
+           + f.masticaAb
            /* y el bombeo de las branquias, lo mismo otra vez pero minúsculo y
               constante. También lo deja puesto actualiza(). */
-           + (f.respAb || 0);
+           + f.respAb;
   /* EL REPARTO DE LA ABERTURA. `quijadaArriba` es la parte que se lleva la
      de arriba y el resto lo baja la de abajo, así que la abertura total no
      cambia. Girando las dos por igual, a pleno bocado la de arriba le pasa

@@ -5,7 +5,7 @@
    que una especie necesita para que algo pueda apagarla.
    ══════════════════════════════════════════════════════════════════ */
 import { M } from '../motor.js';
-const {rgba, clamp, opt, TAU} = M;
+const {rgba, opt, TAU} = M;
 
 /* ── CONTEO ─────────────────────────────────────────────────────────
    CUÁNTOS HAY, Y SON NÚMEROS ABSOLUTOS. No se cuenta por área de pantalla:
@@ -42,7 +42,7 @@ const porPlano   = (li, p) => p.por[li];
    revés no se lee ninguna de las dos cosas.
 
    Y EL MÓDULO DE `e` VA CON TOPE: `M.empuje` suma una onda por contacto
-   vivo y no normaliza, así que arrastrando el dedo se apilan y el peso
+   vivo y no normaliza, así que arrastrando el dedo se apilan y el módulo
    llega a 2,5 —el desvío se iría a 2,8 U/s, el doble de lo que se mueve
    una medusa—. El tope conserva la DIRECCIÓN de la suma y quita el
    exceso, de modo que `apartaDedo` es de verdad la velocidad máxima.

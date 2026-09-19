@@ -89,17 +89,18 @@ function luzDedo(x, y){
   return v > 1 ? 1 : v;
 }
 
-/* Cuánto empuja el frente de las ondas a un punto: [ox, oy, peso], la
-   suma de las direcciones unitarias de cada una que lo alcanza,
-   ponderada por lo cerca que está del frente. NO viene normalizado.
-   `banda` es el grosor del frente; omitido, cada onda usa el suyo.
+/* Cuánto empuja el frente de las ondas a un punto: [ox, oy], la suma de
+   las direcciones unitarias de cada una que lo alcanza, ponderada por lo
+   cerca que está del frente. NO viene normalizado —del módulo se encarga
+   quien lo lea—. `banda` es el grosor del frente; omitido, cada onda usa
+   el suyo. Array compartido: consúmelo en el acto.
 
    Lo leen los dos que se mueven con el gesto, el banco y la medusa. El
    plancton NO: la nieve marina está en suspensión y del contacto sólo
    recibe luz (`luzDedo`). */
-const _emp = [0,0,0];
+const _emp = [0,0];
 function empuje(x, y, banda){
-  let ox=0, oy=0, w=0;
+  let ox=0, oy=0;
   for (let i=0;i<contactos.length;i++){
     const k = contactos[i], rr = ondaR(k);
     const b = banda > 0 ? banda : k.lam*ABISMO.dedo.banda;
@@ -108,9 +109,9 @@ function empuje(x, y, banda){
     if (d2 > hi*hi || (lo > 0 && d2 < lo*lo)) continue;
     const dist = Math.sqrt(d2) || 1;
     const peso = 1 - Math.abs(dist - rr)/b;
-    ox += dx/dist*peso; oy += dy/dist*peso; w += peso;
+    ox += dx/dist*peso; oy += dy/dist*peso;
   }
-  _emp[0]=ox; _emp[1]=oy; _emp[2]=w;
+  _emp[0]=ox; _emp[1]=oy;
   return _emp;
 }
 

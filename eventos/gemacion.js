@@ -51,7 +51,6 @@ import { M, evento } from '../motor.js';
    ══════════════════════════════════════════════════════════════════ */
 evento('gemacion', {
   exclusivo: false,
-  cada: [150, 340], primero: [40, 110],
   arranca(){
     return { cupo: { quedan: 1, mejorR: 0, lista: false }, fot: 0 };
   },
