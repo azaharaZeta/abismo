@@ -649,7 +649,12 @@ window.Acuario = { arranca, reinicia, especie, evento, ESPECIES, EVENTOS, M,
     get salud(){ const C = ABISMO.calidad;
       return {degradado: V.degradado, ms: Math.round(ema*10)/10,
               techo: C.techo, lento, paciencia: C.paciencia,
-              poblacion: V.calidad, niveles: V.topeNiveles}; },
+              poblacion: V.calidad, niveles: V.topeNiveles,
+              /* el coste es RELLENO, así que los píxeles de lienzo son el
+                 término que manda y no se deducen de la pantalla: `dpr`
+                 sale de `calcDpr`, que ya recorta contra `maxPx`. */
+              dpr: Math.round(V.dpr*100)/100,
+              px: Math.round(V.W*V.dpr*V.H*V.dpr/1e4)/100}; },
     /* recoge los cambios de configuración. Con `nueva` sortea otra
        población; sin ella sólo recalcula (corriente, escala, planos). */
     aplica(nueva){ setup(!!nueva); },

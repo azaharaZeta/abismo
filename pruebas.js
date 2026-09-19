@@ -11,6 +11,22 @@ const A = window.Acuario;
 if (!A || !A.pruebas) return;            // motor viejo: no estorbar
 const P = A.pruebas;
 
+/* ── ?entero · MEDIR LO QUE CUESTA LA PIEZA SIN RECORTAR ────────────
+   `degradar()` entra sola a los pocos segundos y NO VUELVE, así que para
+   cuando alguien abre el panel el tiempo de fotograma que lee ya es el de
+   la pieza a la mitad. Y la pregunta que hay que contestar para tocar
+   `calidad.techo` es la otra: cuánto cuesta ENTERA.
+
+   Le pone el techo fuera de alcance, que es distinto de no vigilar: la
+   media móvil se sigue llevando y el panel la enseña. Llega a tiempo
+   porque esto es un módulo y corre antes del primer fotograma, y encima
+   la cuenta no empieza hasta `calidad.calienta`.
+
+   Vive en el andamio y no en el motor: es una pregunta de quien mide, no
+   una opción de la pieza. */
+const ENTERO = /[?&]entero/.test(location.search);
+if (ENTERO) P.escena.calidad.techo = Infinity;
+
 /* ── lo que se puede tocar en caliente ──────────────────────────────
    UNA FILA NO TRAE NINGÚN VALOR DE LA ESCENA, sólo la ruta hasta él y el
    recorrido del deslizador. La distinción es la que sostiene el panel:
@@ -355,9 +371,11 @@ function pintaSalud(){
   if (!s){ salud.remove(); pintaSalud = () => {}; return; }
   const fps = s.ms > 0 ? Math.round(1000/s.ms) : 0;
   salud.className = 'nota' + (s.degradado ? ' roto' : '');
-  salud.textContent = s.ms + ' ms · ' + fps + ' fps · ' + (s.degradado
+  salud.textContent = s.ms + ' ms · ' + fps + ' fps · '
+    + s.px + ' Mpx a dpr ' + s.dpr + ' · ' + (s.degradado
     ? '⚠ DEGRADADO: población ×' + s.poblacion + ', sin dither, velo a '
       + s.niveles + ' niveles'
+    : ENTERO ? 'SIN DEGRADAR (?entero)'
     : 'techo ' + s.techo + ' ms · ' + (s.lento > 0
         ? 'DEGRADANDO ' + s.lento + '/' + s.paciencia
         : 'entero'));
@@ -429,5 +447,6 @@ function pinta(){
 pinta();
 setInterval(() => { if (caja.classList.contains('abierto')) pinta(); }, 400);
 
-if (/[?&]pruebas/.test(location.search)) alterna();
+/* `?entero` abre también: sin el panel delante no enseña nada */
+if (ENTERO || /[?&]pruebas/.test(location.search)) alterna();
 })();
