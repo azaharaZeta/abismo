@@ -22,8 +22,11 @@
                               corto; sin él se usa `rLuz`.
                      luzI     cuánto emite ahora mismo. Quien no lo declare
                               vale 1, o sea más que un pez linterna entero.
-                     senuelo  si es una trampa. Lo mira la presa para no
-                              perseguir a cualquiera que brille.
+                     senuelo  CUÁNTO tira como trampa, de 0 a 1 —no si lo
+                              es—. Lo mira la presa, que escala su alcance
+                              por él, así que una trampa apagada deja de
+                              juntar clientes. Quien no lo declare, no es
+                              una trampa.
      presa       → es comestible: entra en L.presas
      rompible    → se le puede romper el DIBUJO: un campo `tajo` encima y
                    el motor lo pinta cortado en bandas (ver pintaBicho).

@@ -780,6 +780,33 @@ export const ABISMO = {
          que hay aquí abajo. El techo pasa de 1 porque es lo ÚNICO que
          tiene que quemar. */
       intensidad: [0.42, 1.00],
+      /* ── Y CUANDO ESTÁ SACIADO ─────────────────────────────────
+         El parpadeo sigue, pero aquí abajo: mientras dura `reposo` la esca
+         queda CASI apagada, a un séptimo de lo que da normalmente. No a
+         cero, porque es el único punto de referencia del cuadro —lo que
+         tiene que leerse es una brasa, no un hueco.
+
+         DE AQUÍ SALEN TRES COSAS, no una, porque las tres cuelgan del
+         brillo de ahora normalizado contra `intensidad[0]`: lo que se ve,
+         lo que TIRA (`senuelo`, que la presa multiplica por su
+         `atraccion`) y hasta dónde enciende plancton (`rLuz`). Bajar sólo
+         lo que se ve sería cosmético: el banco seguiría acudiendo a un
+         señuelo negro y quedaría una nube de motas prendidas alrededor.
+
+         MEDIDO en pantalla, en un cuadro de 140 px alrededor de la esca:
+         lo que se derrumba es la CORONA, no el punto. Los píxeles por
+         encima de 120 pasan de 17.454 a 671 —26 veces menos— y la luz
+         total cae 3,9 veces, pero quedan 5.296 píxeles por encima de 60.
+         O sea que deja de ser una lámpara y sigue siendo una brasa, que es
+         lo que se le pide: sin ella el cuadro se queda sin ancla.
+
+         Y arregla el picoteo. Medido sobre 600 s y tres semillas: los
+         episodios de «pez pegado a un señuelo al que nadie responde» caen
+         del 9,8 % al 4,2 % del tiempo, y —lo que los hacía leer como
+         avería— la esca está encendida en el 9 % de ellos contra el 72 %.
+         El precio: la esca tira a pleno el 48 % del tiempo en vez del
+         100 %. Si el cuadro se queda sin ancla, ÉSTE es el número. */
+      escaSaciada: [0.06, 0.16],
 
       /* Delante del morro, no encima del lomo: es para lo que sirve, y es
          lo que mantiene al pez a oscuras —cuanto más separada está la luz

@@ -159,3 +159,49 @@ documentación.
 - El arnés de Node con `Math.random` sembrado permite exigir **firma de estado
   bit-idéntica** en un refactor que no debe cambiar nada. Es lo que cazó la
   colisión de nombre de `tent` y lo que dio confianza en los ocho cambios.
+
+## 2026-09-19 · el rape saciado
+
+- **Los peces picotean el señuelo y el rape no responde** · la queja era
+  real y se midió: la caza empieza con `if (f.reposo > 0) return;`, o sea que
+  durante el reposo el rape **no mira**, y `reposo` ocupa el 35-59 % del
+  tiempo según la semilla. Dos tercios de las veces que un pez llegaba a la
+  boca lo ignoraba, con episodios de hasta 17 s **y la esca encendida en el
+  72 % de ellos**, que es lo que lo hacía leer como avería y no como
+  saciedad. Bajar `reposo` estaba descartado de salida: un reposo largo ES el
+  bicho —«uno quieto veinte segundos con la esca colgando es una trampa
+  esperando»—, así que la solución no podía ser cazar más.
+
+  Elegido: **la esca casi se apaga mientras está saciado** (`escaSaciada`,
+  que cubre todo el `reposo` y no sólo la digestión). Resultado: el picoteo
+  cae del 9,8 % al 4,2 % del tiempo y la esca está encendida en el 9 % de los
+  episodios en vez del 72 %.
+
+  **EL DATO QUE COSTÓ, y que invalidaba el plan escrito:** apagar la esca
+  **no bastaba, y a solas habría sido cosmético**. Ni la atracción del banco
+  ni el plancton miraban lo que la esca EMITE. La presa sólo comprobaba la
+  bandera `senuelo` y la distancia, así que habría seguido acudiendo a un
+  señuelo negro; y el plancton usa `o.rLuz` a pelo, así que habría quedado una
+  nube de motas prendidas alrededor de un señuelo apagado —peor que el
+  problema original—. Hicieron falta tres cosas atadas al mismo brillo: lo que
+  se ve, `senuelo` (que pasó de bandera a **0..1**: cuánto tira ahora mismo, y
+  la presa multiplica su `atraccion` por él) y `rLuz`.
+
+  **Lo que se paga, y es el número a vigilar:** la esca tira a pleno el 48 %
+  del tiempo en vez del 100 %. La esca es «el único punto de referencia que
+  hay aquí abajo», así que si el cuadro se queda sin ancla, el mando es
+  `escaSaciada`. Medido, lo que se derrumba es la CORONA y no el punto: los
+  píxeles sobre 120 caen 26 veces y la luz total 3,9, pero quedan 5.296 sobre
+  60. Deja de ser una lámpara y sigue siendo una brasa.
+
+  Quedan sin usar tres alternativas que el análisis dejó descritas, por si
+  esto no basta: que se le NOTE saciado (quijada lenta, ilicio recogido —los
+  dos mecanismos ya existen), que AMAGUE sin morder, y que la presa se canse
+  de esperar. Las tres suman al arreglo en vez de sustituirlo.
+
+- **Ojo con los controles al medir esto:** el porcentaje de reposo oscila
+  entre 35 % y 59 % **entre semillas del mismo código**, así que una sola
+  tirada no distingue nada. Y un control hecho «deshaciendo el cambio en
+  caliente» (poner `escaSaciada = intensidad`) NO es el original: deja la
+  esca encendida también tras comer, que antes sí se apagaba. Para comparar
+  hay que restaurar los ficheros desde git.

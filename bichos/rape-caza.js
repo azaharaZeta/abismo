@@ -4,7 +4,7 @@
    campos con los que tapa y asusta, la mirada y la luz que le llega.
    ══════════════════════════════════════════════════════════════════ */
 import { M } from '../motor.js';
-const {rnd, rango, opt} = M;
+const {rango, opt} = M;
 import { centro, aMundo } from './rape-cuerpo.js';
 import { hacia } from './comun.js';
 
@@ -59,8 +59,8 @@ function querencia(f, M, p, dt){
      `masticaTotal`       la escala de `mastica`, para su envolvente.
      `masticaPend`        lo ganado al acertar, esperando turno. Ver abajo. */
 /* la esca se apaga después de tragar, o sea después de masticar */
-function apagaTrasComer(f){
-  f.objBrillo = rnd(0.08, 0.22);
+function apagaTrasComer(f, p){
+  f.objBrillo = rango(p.escaSaciada);
   f.proxBrillo = f.digiere;
   f.digiere = 0;
 }
@@ -73,7 +73,7 @@ function caza(f, M, L, p, dt){
      junto a la boca, o sea con su propia luz encima. Ahí se le ve. */
   if (f.mastica > 0){
     f.mastica = Math.max(0, f.mastica - dt);
-    if (f.mastica === 0 && f.digiere > 0) apagaTrasComer(f);
+    if (f.mastica === 0 && f.digiere > 0) apagaTrasComer(f, p);
   }
   if (f.ataque > 0){
     f.ataque = Math.max(0, f.ataque - dt/p.bocado);
@@ -94,7 +94,7 @@ function caza(f, M, L, p, dt){
         if (f.masticaPend > 0){
           f.mastica = f.masticaTotal = f.masticaPend;
           f.masticaPend = 0;
-        } else apagaTrasComer(f);
+        } else apagaTrasComer(f, p);
       }
       /* y se suelta la presa: el rape la sostiene mientras dura el bocado y no
          más. Normalmente ella se suelta antes, pero si deja de actualizarse a

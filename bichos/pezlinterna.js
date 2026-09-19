@@ -299,9 +299,14 @@ especie('pezlinterna', {
     let cebo = null, md2 = Infinity;
     const R = p.atraccion*M.U;
     for (const o of L.luces){
-      if (!o.senuelo) continue;
+      /* `senuelo` no es una bandera: es CUÁNTO tira ahora mismo, y el radio
+         va con ello. Una esca apagada —un rape saciado— deja de juntar
+         peces en la boca, que es lo que se veía mal: el pez picoteando un
+         señuelo encendido al que nadie responde. A 0 ni se mira. */
+      if (!(o.senuelo > 0)) continue;
+      const r = R*o.senuelo;
       const dx = o.x - z.x, dy = o.y - z.y, d2 = dx*dx + dy*dy;
-      if (d2 < R*R && d2 < md2){ md2 = d2; cebo = o; }
+      if (d2 < r*r && d2 < md2){ md2 = d2; cebo = o; }
     }
     z.cebada = !!cebo && !z.susto;
 

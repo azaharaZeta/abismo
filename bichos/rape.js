@@ -58,6 +58,8 @@ especie('rape', {
       /* x,y son la esca: es lo que el motor reparte como luz, y no hay una
          segunda copia del mismo punto que mantener al día */
       x: bx, y: by, lvx: 0, lvy: 0,
+      /* `rLuz` y `senuelo` los recalcula `actualiza()` con el brillo de
+         cada fotograma; esto es sólo el valor con el que nace. */
       rLuz: Lg*p.alcanceLuz, rCuerpo: Lg*p.alcanceCuerpo, luzI: 0.6,
       vx: 0, vy: 0,
       fase: Math.random()*TAU,
@@ -79,10 +81,11 @@ especie('rape', {
       giroProx: rango(p.giro),
       /* inclinación de nado: cruza en diagonal, no sólo en horizontal */
       ang: 0, angObj: rango(p.inclina), angProx: rango(p.cadaInclina),
-      /* senuelo: es la bandera que las presas buscan en L.luces */
+      /* `senuelo` es CUÁNTO tira, de 0 a 1, no si es una trampa: lo
+         recalcula actualiza() con el brillo. Nace a 1. */
       /* `fogonazo` es la fase de la ráfaga y `chispa` la luz que sale de
          ella; `espanta` es la fase del susto que reparte al morder. */
-      ataque: 0, senuelo: true, fogonazo: 0, chispa: 0, espanta: 0, digiere: 0,
+      ataque: 0, senuelo: 1, fogonazo: 0, chispa: 0, espanta: 0, digiere: 0,
       /* masticar: lo que queda, lo que duraba y lo que abre la quijada ahora
          mismo. `masticaPend` es lo ganado al acertar, que espera a que termine
          el bocado. */
@@ -117,12 +120,38 @@ especie('rape', {
   actualiza(f, M, L, p, dt){
     const t = M.t, Lg = f.Lg;
 
+    /* ── EL PARPADEO, Y LA TRAMPA APAGADA ─────────────────────────
+       Mientras está SACIADO (`reposo > 0`) el parpadeo sigue, pero dentro
+       de `escaSaciada` en vez de `intensidad`: la esca no se apaga —es el
+       único punto de referencia que hay aquí abajo— pero deja de ser una
+       trampa. Cubre todo el reposo y no sólo la digestión, que es la
+       ventana por la que se colaba el picoteo. */
     f.proxBrillo -= dt;
     if (f.proxBrillo <= 0){
-      f.objBrillo = rango(p.intensidad);
+      f.objBrillo = rango(f.reposo > 0 ? p.escaSaciada : p.intensidad);
       f.proxBrillo = rango(p.parpadeo);
     }
+    /* y si le entra el reposo a mitad de parpadeo, no espera al siguiente:
+       lo que se tiene que ver es que se apaga AL tragar */
+    if (f.reposo > 0 && f.objBrillo > p.escaSaciada[1])
+      f.objBrillo = rango(p.escaSaciada);
     f.brillo = hacia(f.brillo, f.objBrillo, 1.6, dt);
+
+    /* ── LO QUE LA ESCA TIRA Y HASTA DÓNDE ALCANZA ────────────────
+       Las dos salen del brillo de AHORA, normalizado contra el suelo del
+       parpadeo normal: a brillo de `intensidad` valen 1 y no cambia nada;
+       apagada, caen con ella.
+
+         `senuelo` es cuánto tira, y la presa multiplica su `atraccion` por
+                   él (ver `cardumen` en pezlinterna). Sin esto, apagar la
+                   esca es cosmético: el banco sigue acudiendo igual y el
+                   picoteo no se arregla.
+         `rLuz`    hasta dónde enciende plancton. Sin esto queda una nube
+                   de motas prendidas alrededor de un señuelo oscuro, que
+                   es peor que el problema que se venía a arreglar. */
+    const tira = Math.min(1, f.brillo/p.intensidad[0]);
+    f.senuelo = tira;
+    f.rLuz = Lg*p.alcanceLuz*tira;
     /* ── LA RÁFAGA, Y NO HAY MÁS QUE UNA ──────────────────────────
        El bocado no enciende una luz aparte: es la esca, que durante un
        instante emite mucho más, y el cuerpo se enciende por el mismo
