@@ -13,27 +13,38 @@ import { hacia } from './comun.js';
    hacia dentro. Va contra la tendencia de la casa —`M.borde` empuja hacia
    el centro—, y bajarle el `borde` no basta: eso lo deja a la deriva.
 
-   La distancia al canto se mide por ejes y no radialmente: en un cuadro
-   apaisado «al 80 % del radio» es el borde lateral pero todavía el centro
-   por arriba, así que un empuje radial los amontona a los lados.
+   Y EL CANTO ES EL LATERAL, no el más cercano. El aro se medía por ejes
+   —`max(|ex|,|ey|)`, o sea que el techo lo cumplía igual que el lado— y
+   el empuje iba en RADIAL, así que en cuanto la vertical le ganaba a la
+   horizontal el empuje apuntaba casi hacia arriba y lo remataba contra el
+   techo, donde el aro se daba por cumplido y se apagaba. Y lo que hacía
+   que la vertical ganara es la propia embestida, que va inclinada hasta
+   ±0,34 rad: un paseo aleatorio con un embudo al final. MEDIDO, ocho
+   semillas de 600 s en caja de móvil: nacían todos en un lateral y los
+   ocho acababan contra el techo o el suelo y en el centro horizontal, el
+   84-97 % del tiempo por encima de 0,70 de altura. Justo lo contrario de
+   lo que la escena dice que hace.
 
-   `aro` es dónde se planta, y el empuje se apaga al llegar.         */
+   `aro` es a qué distancia del centro se planta, ya SÓLO en x, y el
+   empuje se apaga al llegar. `altura` es el tirón hacia la media altura y
+   va APARTE del aro, sin apagarse nunca: es lo único que saca a uno ya
+   plantado en un canto horizontal, y flojo a propósito —no prohíbe el
+   techo, lo hace raro.                                              */
 function querencia(f, M, p, dt){
   if (!p.querencia) return;
   const cx = M.W*0.5, cy = M.H*0.5;
   const ex = (f.bx - cx)/cx, ey = (f.by - cy)/cy;   // -1..1 por eje
-  const falta = p.aro - Math.max(Math.abs(ex), Math.abs(ey));
+  f.vy -= ey * opt(p.altura, 0) * M.U * dt;
+  const falta = p.aro - Math.abs(ex);
   if (falta <= 0) return;
-  const d = Math.hypot(ex, ey);
-  /* justo en el centro no hay «hacia fuera» que valga: se le da un lado y
-     ya se encarga el resto */
-  const nx = d > 1e-3 ? ex/d : (Math.random() < 0.5 ? 1 : -1);
-  const ny = d > 1e-3 ? ey/d : 0;
+  /* justo en la vertical del centro no hay «hacia fuera» que valga: se le
+     da un lado y ya se encarga el resto */
+  const nx = Math.abs(ex) > 1e-3 ? Math.sign(ex)
+                                 : (Math.random() < 0.5 ? 1 : -1);
   /* la rampa sube rápido: con `falta*2.5` el empuje se queda en un tercio
      a mitad de camino y la corriente —que aquí da más que el crucero del
      bicho— lo devuelve al centro; se plantaba en 0,69 y no en 0,84. */
-  const k = p.querencia * M.U * Math.min(1, falta*6) * dt;
-  f.vx += nx*k; f.vy += ny*k;
+  f.vx += nx * p.querencia * M.U * Math.min(1, falta*6) * dt;
 }
 
 /* ── LA CAZA ────────────────────────────────────────────────────────

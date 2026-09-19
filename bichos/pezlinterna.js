@@ -7,7 +7,7 @@
    lo va alumbrando.
    ══════════════════════════════════════════════════════════════════ */
 import { M, especie } from '../motor.js';
-const {rgba, clamp, mezcla, rnd, rango, rangoE, opt, TAU} = M;
+const {rgba, clamp, mezcla, rnd, rango, rangoE, opt, suave, TAU} = M;
 import { porReparto, pintaHalo, reparte, giroCorto, mezclaAng,
          seAparta, reaccionBorde, avanza, hacia, gxSano,
          silencio } from './comun.js';
@@ -103,12 +103,38 @@ function cardumen(z, M, L, p, libre, mira){
   if (libre && n){
     /* los pesos van por pez: un banco en el que todos hacen el mismo caso a
        sus vecinos converge a un solo rumbo y deja de fluir */
+    let gx = 0, gy = 0;
     const jl = Math.hypot(jx, jy);
     if (jl > 1e-4){ const w = C.junta*(z.kJunta || 1);
-                    sx += jx/jl*w;  sy += jy/jl*w; }
+                    gx += jx/jl*w;  gy += jy/jl*w; }
     const al = Math.hypot(ax, ay);
     if (al > 1e-4){ const w = C.alinea*(z.kAlinea || 1);
-                    sx += ax/al*w; sy += ay/al*w; }
+                    gx += ax/al*w; gy += ay/al*w; }
+    /* ── Y SÓLO SI LE SALE CÓMODO ────────────────────────────────
+       El grupo sugiere, y esto es poder decirle que no: `comodo` es el
+       mayor giro —desde el rumbo que LLEVA, no desde el que se había
+       propuesto— que el pez acepta por seguir a nadie. Cae suave hasta
+       ahí y de ahí para allá el grupo no existe.
+
+       Es la diferencia entre un banco y una orden. Sin la puerta, a un
+       pez que acaba de cruzarse con otros se le pide media vuelta, y lo
+       que se ve no es que se una al grupo: es que pasa varios segundos
+       virando a tope sin ir a ninguna parte, porque `vira` le tapa el
+       giro pero no se lo perdona. Con ella sigue a lo suyo y ya se
+       encontrarán, que es lo que hace un pez de verdad.
+
+       LO QUE NO ES: el mando de que sostengan el rumbo. MEDIDO, tres
+       semillas de 300 s: de los 117 °/s que giran, el cardumen ENTERO
+       pone 28 —a solas, sin ninguna regla de grupo, ya giran 89—. Quien
+       manda ahí es `rumbo`. Esto arregla cómo se ve seguir a alguien, no
+       cuánto vira el banco. */
+    const cm = opt(C.comodo, 0);
+    if (cm > 0 && (gx || gy)){
+      const dg = Math.abs(giroCorto(Math.atan2(gy, gx), z.ang));
+      const k = 1 - suave(clamp(dg/cm, 0, 1));
+      gx *= k; gy *= k;
+    }
+    sx += gx; sy += gy;
   }
   sx += ex*C.aparta; sy += ey*C.aparta;
   if (sx || sy) z.angObj = Math.atan2(sy, sx);

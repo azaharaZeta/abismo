@@ -28,12 +28,14 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 ## Ideas de usuario (pendientes de procesar)
 > Solo un humano edita esta sección. Texto breve; el detalle se desarrolla al crear la ficha.
 
-- Claude: "- Los peces giran 92 °/s de media, o sea que casi nunca sostienen un rumbo. Se baja con `vira`, pero es el número que sostiene el cardumen —un pez que no vira no sigue al grupo— y mi medida de alineación (un parámetro global con ±0,16 de ruido a 38 peces) no distingue si lo rompe: haría falta medir la alineación por vecindario antes de tocarlo." - Respuesta de usuaria: Es más importante que naden bien a que naden en cardumen. mira si se puede hacer que los peces, todos, independientemente de su tamaño, intenten seguir a otros peces, pero solo si están a su alcance cercano y si no les supone un giro forzado, y que así de alguna forma emerjan más o menos conductas de cardumen, pero no forzadas.
-- hacer que los rapes tiendan ligeramente a ir posicionándose en una altura media de la pantalla. el objetivo es evitar qu se queden pillados arriba del todo o debajo del todo. no prohibir esas posiciones, pero hacer que sea más normal verles en altura media. creo que ya está implementado que tiendan a ponerse en los laterales mirando hacia el centro, compruébalo, que siga así.
+_(ninguna)_
+
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos de las ideas procesadas el 2026-09-17, el 2026-09-18 y el 2026-09-19.
 
-- Unidades del pez linterna: `alcanceLuz`, `alcanceCuerpo` y `revelado` van en LARGOS y escalan solos con el bicho, pero `atraccion`, `roce` y `vista` van en U y no. Al cambiar el tamaño del banco unos se mueven y otros no. Decidir un convenio.
+- El rape mira hacia FUERA el 25-40 % del tiempo, que es lo contrario de lo que promete `miraAlCentro`: `f.dir` sólo se replantea cada `giro: [14, 38]` s y además exige estar casi parado, así que cruzar la vertical del centro le cuesta hasta medio minuto de espaldas.
+- El banco va suelto: cada pez tiene 1,1 vecinos dentro de `vista` y pasa el 29 % del tiempo sin ver a ninguno. Los mandos son `vista` (4,2 U) y `total` (14). Decidir si eso es un banco deshilachado o es lo que impide que parezca un enjambre.
+- Unidades del pez linterna: `alcanceLuz`, `alcanceCuerpo` y `revelado` van en LARGOS y escalan solos con el bicho, pero `atraccion`, `roce` y `vista` van en U y no. Ya está medido lo que cuesta: `vista` 4,2 U son 1,8 largos para el pez de delante y 3,2 para el de en medio, o sea que el mismo banco tiene dos alcances según el plano. Decidir un convenio.
 - `plano` es la única clave que conserva un valor por defecto copiado de la escena (4 sitios), y el suyo no coincide con el que usa el motor al dibujar (`PLANOS.length-1`). Unificarlo.
 - Evento `E-06 La estampida`: ya sólo le falta el registro, el campo `asusta` está hecho.
 - Evento `E-02 El apagón`: sigue siendo el de más efecto por línea de código.
@@ -42,4 +44,3 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 - Un `manifest.json` con `orientation: portrait` y `display: standalone` dejaría la pieza instalable en la pantalla de inicio.
 - El leviatán vive en el plano del fondo —un tercio de resolución y 58 % de alfa—: si aun con la luz subida se ve poco, el único mando que queda es el plano, y eso le quita el «enorme y lejos», que es su tema.
 - La cola del rape va a reloj fijo (`velCola`) y no al avance, como ya hace el banco: a su crucero son unos 24 coletazos por largo de cuerpo. Puede estar bien —cimbrea sin ir a ninguna parte—, pero está sin decidir.
-- Los peces giran 92 °/s de media, o sea que casi nunca sostienen un rumbo. Se baja con `vira`, pero es el número que sostiene el cardumen —un pez que no vira no sigue al grupo— y la alineación global no distingue si lo rompe: con los 14 peces de hoy son ±0,04 entre semillas, del orden de lo que se busca. Haría falta medirla por vecindario antes de tocarlo.

@@ -205,3 +205,88 @@ documentación.
   caliente» (poner `escaSaciada = intensidad`) NO es el original: deja la
   esca encendida también tras comer, que antes sí se apagaba. Para comparar
   hay que restaurar los ficheros desde git.
+
+## 2026-09-19 · el rape en el techo
+
+- **«Que tiendan ligeramente a una altura media, sin prohibir arriba ni
+  abajo; comprueba que lo de ponerse en los laterales mirando al centro
+  siga así»** · lo segundo **no era cierto y se midió**: el rape se plantaba
+  en el techo o en el suelo el 84-97 % del tiempo, ocho semillas de ocho, y
+  **nunca** en el tercio central. La escena decía lo contrario («las escas
+  quedan por el perímetro apuntando al centro»).
+
+  El fallo eran dos decisiones que por separado parecen bien y juntas se
+  realimentan: el aro se medía con `max(|ex|,|ey|)` —el techo lo cumplía
+  igual que el lado— y el empuje iba en RADIAL. Nace en un lateral; la
+  embestida, que va inclinada hasta ±0,34 rad, lo sube unas décimas; en
+  cuanto `|ey|` le gana a `|ex|` el empuje radial apunta casi hacia arriba y
+  lo remata contra el techo, donde el aro se da por cumplido y el empuje se
+  apaga. **Un embudo, no una deriva.** El aro pasa a medirse sólo en x y
+  `altura` es un tirón aparte hacia la media, que no se apaga nunca.
+
+  **EL DATO QUE COSTÓ:** `altura` no se puede elegir por el valor medio, hay
+  que mirar la VARIANZA entre semillas. A 0,08 la media parece buena (9 % de
+  tiempo arriba) y sin embargo una semilla de cada cuatro se queda pegada al
+  techo el 28 % del tiempo —o sea que el bug sigue ahí, sólo que escondido en
+  el promedio—. A 0,10 desaparece: máxima excursión 0,54-0,74 en seis
+  semillas de 600 s, así que arriba se visita y no se vive. A 0,16 empieza a
+  pinchar el bicho en el centro y a 0,45 lo clava (97 % en el tercio
+  central), que es prohibir, no tender. Con UN rape por pecera, una sola
+  tirada no distingue nada de nada.
+
+  **Sin tocar, y anotado:** el rape mira hacia FUERA el 25-40 % del tiempo,
+  antes y después. No es de esto: `f.dir` sólo se replantea cada
+  `giro: [14, 38]` s y además exige estar casi parado, así que cruzar la
+  vertical del centro le cuesta hasta medio minuto de espaldas.
+
+## 2026-09-19 · seguir sin que sea una orden
+
+- **«Es más importante que naden bien a que naden en cardumen; que sigan a
+  otros sólo si están cerca y si no les supone un giro forzado»** · la
+  premisa era que el cardumen es lo que les impide sostener un rumbo.
+  **Es falsa, y medirlo fue lo que salvó la idea.** Tres semillas de 300 s:
+  el banco gira a 116 °/s —un 68 % del tope que le da `vira`—, pero
+  quitándole las tres reglas de grupo ENTERAS sigue girando a 89. El
+  cardumen pone 28 de los 116. Quien manda es `rumbo`, el reloj del rumbo
+  propio, que estaba en [0,6 · 2,0] s.
+
+  **RESULTADO NEGATIVO, y es el que hay que no repetir: la puerta del giro
+  cómodo, apretada, hace lo contrario de lo que se le pide.** A `comodo` 0,9
+  (52°) el giro baja de 117 a 104 °/s, pero la alineación entre vecinos se
+  hunde de 0,43 a 0,07 y **el tiempo sosteniendo el rumbo EMPEORA, de 40 a
+  36 %**. El motivo es que la alineación NO es lo que los hace virar: es lo
+  que los ESTABILIZA. `propio` vale 0,40 y multiplica al rumbo anterior —que
+  se sortea de nuevo cada poco—, mientras que `alinea` vale 1,6 y apunta a
+  la media de los vecinos, que es un vector mucho más quieto. Quitándole el
+  grupo, el pez se queda a solas con su propio reloj, que es peor. Y el pez
+  se niega a seguir justo cuando no va ya alineado, o sea justo cuando la
+  regla serviría para algo: la puerta apretada es circular.
+
+  Lo que sí funciona es **alargar `rumbo` a [1,8 · 5,0] y dejar la puerta
+  ANCHA (`comodo` 2,4 = 137°, sólo descarta medias vueltas)**. Cinco
+  semillas, contra los valores viejos: giro 116 → **90 °/s**, tiempo
+  sosteniendo rumbo 39 → **52 %**, giro que le pide el grupo 42° → **30°**, y
+  la alineación entre vecinos NO se paga: 0,445 → 0,451.
+
+  **Y LAS DOS COSAS SE AYUDAN, que es lo que no se veía:** la puerta es
+  barata precisamente cuando los peces ya nadan bien. Con el `rumbo` corto
+  el grupo pedía giros grandes todo el rato y cerrarles el paso mataba el
+  banco; con el largo casi nunca hacen falta, así que a 2,4 cuesta 0,04 de
+  alineación en vez de 0,15. Al revés —puerta estrecha sobre rumbo corto— es
+  la peor esquina de las cuatro.
+
+  **Lo que se paga:** el tiempo sin ningún vecino a la vista sube del 21 al
+  29 %. Un pez que sostiene el rumbo se descuelga. Si el banco se ve
+  deshilachado, el mando es `vista` (4,2 U), no `rumbo`.
+
+  **Al medir esto:** la alineación hay que tomarla POR VECINDARIO y por
+  plano —la media de cos(Δrumbo) con los que cada pez tiene dentro de
+  `vista`—. El parámetro global de toda la pecera no distingue nada con 14
+  peces en dos planos. Y «nadar bien» necesita su propia métrica, porque el
+  giro medio no la da: la que sirvió es qué parte del tiempo el pez gira
+  menos de 30° en un segundo.
+
+  **Lo que ya estaba resuelto:** «sólo si están a su alcance cercano» no
+  hizo falta tocarlo. `vista` son 4,2 U, que para el pez del plano de
+  delante son 1,8 largos de cuerpo. Ya es cerca —de hecho es la razón de que
+  cada pez vea a 1,2 vecinos de media y esté solo un cuarto del tiempo.

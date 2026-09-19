@@ -881,12 +881,32 @@ export const ABISMO = {
       barba: 0.50, barbas: [3, 5], barbaBrillo: 0.42,
       /* y el detalle del cuerpo, que sólo existe a este tamaño */
       miomeros: [7, 10], radios: [5, 7],
-      /* Se arrima al canto y mira hacia dentro: `querencia` es el empuje
-         hacia fuera y `aro` dónde se planta, medido por ejes. El `borde`
-         de la casa empuja al revés, así que va bajo. Las escas quedan por
-         el perímetro apuntando al centro y el centro del cuadro se vacía. */
-      querencia: 0.55, aro: 0.84, miraAlCentro: true,
-      banda: [0.08, 0.92], bandaY: [0.10, 0.90],
+      /* Se arrima al LATERAL y mira hacia dentro: `querencia` es el empuje
+         hacia el lado y `aro` a qué distancia del centro se planta, ya sólo
+         en x. El `borde` de la casa empuja al revés, así que va bajo. Las
+         escas quedan a un lado apuntando al centro y el centro se vacía.
+
+         `altura` es lo que le falta al aro, que no mira la vertical: un
+         tirón flojo y permanente hacia la media altura. Sin él el rape
+         acababa contra el techo o el suelo —medido, ocho semillas de
+         600 s en caja de móvil: el 84-97 % del tiempo por encima de 0,70
+         de altura, y NUNCA en el tercio central—, que es donde peor se le
+         ve la cara y donde menos tiene sentido una trampa. Con él se pone
+         al revés: el 81 % del tiempo en el tercio central y excursiones de
+         hasta 0,69, o sea que arriba se visita y no se vive.
+
+         Y HAY QUE ELEGIRLO POR LA VARIANZA, no por la media: a 0,08 la
+         media sale bien y sin embargo una semilla de cada cuatro se queda
+         pegada al techo el 28 % del tiempo, que es el fallo otra vez
+         escondido en el promedio. A 0,16 empieza a pincharlo en el centro
+         y a 0,45 lo clava. Con UN rape por pecera, una tirada no dice
+         nada.
+
+         `bandaY` es a qué altura nace, con querencia o sin ella. Estrecha,
+         porque el tirón es lento a propósito: naciendo en el techo lo que
+         se ve es el minuto que tarda en bajar. */
+      querencia: 0.55, aro: 0.84, altura: 0.10, miraAlCentro: true,
+      banda: [0.08, 0.92], bandaY: [0.30, 0.70],
       borde: 0.30,
       /* ACECHO: crucero mínimo y ratos largos clavado entre embestidas. Un
          rape que patrulla es un pez que pasa; uno quieto veinte segundos
@@ -1106,10 +1126,25 @@ export const ABISMO = {
 
          AL MEDIR: comprobar primero que `M.cardumen().length` es el que
          toca. Con la población recortada por `degradar()` el banco sale
-         más denso y más redondo, y lleva a conclusiones falsas. */
+         más denso y más redondo, y lleva a conclusiones falsas.
+
+         `comodo` es el mayor giro, en radianes y desde el rumbo que
+         LLEVA, que un pez acepta por seguir al grupo: 2,4 son 137°, o
+         sea que lo único que descarta son las medias vueltas. El grupo
+         sugiere y esto es poder decirle que no, para que seguir a otro
+         se lea como una decisión y no como una orden.
+
+         NO ES EL MANDO DE QUE SOSTENGAN EL RUMBO, aunque lo parezca, y
+         además CUESTA SI SE APRIETA. Medido, tres semillas de 300 s: a
+         0,9 (52°) el giro medio baja de 117 a 104 °/s pero la alineación
+         entre vecinos se hunde de 0,43 a 0,07 —el pez se niega a seguir
+         justo cuando no va ya alineado, que es cuando serviría— y el
+         tiempo sosteniendo rumbo EMPEORA, de 40 a 36 %. Lo barato es
+         dejarlo ancho: a 2,4, y con el `rumbo` de abajo largo, cuesta
+         0,04 de alineación porque casi nunca hace falta. */
       cardumen: { vista: 4.2, roce: 3.0, propio: 0.40,
                   aparta: 1.8, alinea: 1.6, junta: 0.9,
-                  ciego: 1.9, reacciona: [0.18, 0.68] },
+                  ciego: 1.9, reacciona: [0.18, 0.68], comodo: 2.4 },
       /* Segundos de pánico cuando algo muerde al lado, a peso pleno del
          campo. Entra en el mismo `susto` que usan el dedo y el fallo de un
          rape: triplica el viraje, sube el nado a `velSusto` y suelta las
@@ -1149,7 +1184,22 @@ export const ABISMO = {
          dardo vuelve a ser un acento. */
       vel: 0.66, velCebada: 0.92, velSusto: 3.4,
       vira: [2.0, 3.8],           // rad/s: vira rápido y corrige a menudo
-      rumbo: [0.6, 2.0],          // cambia de idea cada poco
+      /* CADA CUÁNTO SE SORTEA UN RUMBO NUEVO, y es EL mando de que el pez
+         nade en vez de corregir. MEDIDO, cinco semillas de 300 s: a
+         [0,6 · 2,0] el banco giraba a 116 °/s —un 68 % del tope que le da
+         `vira`, o sea virando casi siempre— y sólo sostenía el rumbo
+         (menos de 30° en un segundo) el 40 % del tiempo.
+
+         Y NO ES EL CARDUMEN el que lo hace, que era lo que se sospechaba:
+         quitándole las tres reglas de grupo enteras seguía girando a
+         89 °/s. El cardumen pone 28 de los 117.
+
+         Alargándolo, la alineación entre vecinos NO cae: SUBE. Un vecino
+         que sostiene el rumbo es un vecino al que se puede seguir, así
+         que el banco sale mejor de aflojarle la mano. Lo que sí se paga
+         es soledad: el pez que va recto se descuelga, y el tiempo sin
+         nadie a la vista pasa del 25 al 30 %. */
+      rumbo: [1.8, 5.0],          // segundos entre rumbo y rumbo
       /* NERVIO: un dardo corto por encima del crucero, con un desvío de
          rumbo en el mismo instante. Es un ACENTO: a `cadaNervio` corto deja
          de leerse como que el pez ha decidido algo. */

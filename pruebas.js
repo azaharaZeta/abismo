@@ -81,7 +81,16 @@ const MANDOS = [
    min:0.2, max:4, paso:0.05, aplica:'nueva'},
   {nombre:'banco · desorden',  ruta:'bichos.@pezlinterna.desorden',
    min:0, max:0.6, paso:0.02, aplica:'nueva'},
+  /* los dos del nado: cada cuánto se replantea el rumbo —el que decide si
+     nada o corrige— y hasta qué giro acepta por seguir al grupo. A 0 el
+     grupo no manda nunca. */
+  {nombre:'peces · rumbo ×', ruta:'bichos.@pezlinterna.rumbo', escala:true,
+   min:0.2, max:3, paso:0.1, aplica:null},
+  {nombre:'banco · giro cómodo', ruta:'bichos.@pezlinterna.cardumen.comodo',
+   min:0, max:3.2, paso:0.1, aplica:null},
   {nombre:'rape · cuerpo',     ruta:'bichos.@rape.cuerpo',    min:0, max:2,   paso:0.02, aplica:null},
+  {nombre:'rape · media altura', ruta:'bichos.@rape.altura',
+   min:0, max:0.5, paso:0.02, aplica:null},
 ];
 
 /* Un tramo de ruta puede ser `@nombre`: busca en el array la entrada cuya

@@ -31,14 +31,14 @@ especie('rape', {
     const Lg = rango(p.largo) * M.U * L.scale;
     /* NACE YA EN SU SITIO si la escena le pide querencia de borde: con un
        crucero de centésimas de unidad por segundo tardaría minutos en llegar
-       al canto, y ésos son justo los minutos que alguien está mirando. */
+       al canto, y ésos son justo los minutos que alguien está mirando. Un
+       lateral, que es el único canto que la querencia sostiene, y la altura
+       de `bandaY` —la misma que usa un rape sin querencia, así que la
+       escena dice en un solo sitio a qué altura nace uno. */
     let bx, by;
     if (p.querencia){
-      const aro = p.aro;
-      const lado = (Math.random()*4)|0, t = rnd(-aro, aro);
-      const ex = lado === 0 ? -aro : lado === 1 ? aro : t;
-      const ey = lado === 2 ? -aro : lado === 3 ? aro : t;
-      bx = (1 + ex)*0.5*M.W; by = (1 + ey)*0.5*M.H;
+      bx = (1 + (Math.random() < 0.5 ? -p.aro : p.aro))*0.5*M.W;
+      by = rango(p.bandaY)*M.H;
     } else {
       bx = rango(p.banda)*M.W; by = rango(p.bandaY)*M.H;
     }
