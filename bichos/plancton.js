@@ -5,7 +5,7 @@
    única relación causal entre organismos.
    ══════════════════════════════════════════════════════════════════ */
 import { M, especie } from '../motor.js';
-const {rgba, rnd, rango, TAU} = M;
+const {rgba, rnd, rango, opt, TAU} = M;
 import { porReparto, pintaHalo, paso, silencio } from './comun.js';
 
 especie('plancton', {
@@ -92,7 +92,7 @@ especie('plancton', {
     const q = paso(M, L, dt, m.x, m.y,
                    Math.sin(m.ph + t*m.sp)*M.U*0.05,
                    Math.cos(m.ph*1.7 + t*m.sp)*M.U*0.05
-                     + (p.caida||0)*M.U*m.sentido);
+                     + (opt(p.caida, 0))*M.U*m.sentido);
     m.x = q[0]; m.y = q[1];
     /* el plancton no llama a reaccionBorde: el cristal es lo único que lo
        retiene. La caída se invierte SÓLO si sigue empujando contra esa

@@ -3,7 +3,7 @@
    Pulso propio, tentáculos por historial y silueta paramétrica.
    ══════════════════════════════════════════════════════════════════ */
 import { M, especie } from '../motor.js';
-const {rgba, clamp, rnd, rango, rangoE, opt, TAU} = M;
+const {rgba, clamp, rnd, rango, rangoE, TAU} = M;
 import { porPlano, mancha, reparte, seAparta, reaccionBorde,
          avanza, silencio } from './comun.js';
 
@@ -159,9 +159,9 @@ function topa(j, M, p){
    30/20/50 sobre unos dieciocho segundos, brota en cinco, se suelta en
    tres y tarda nueve en irse. */
 function gemar(j, p){
-  j.cria = { t: 0, vida: rango(p.gemaVida || 18),
-             escMax: rango(p.gemaEsc || 0.5),
-             lejos: rango(p.gemaLejos || 9) * j.r,
+  j.cria = { t: 0, vida: rango(p.gemaVida),
+             escMax: rango(p.gemaEsc),
+             lejos: rango(p.gemaLejos) * j.r,
              /* por el costado —perpendicular a su eje— y de ahí derecha:
                 una cría que cambia de rumbo no se lee como que se aleja */
              ang: j.tilt + (Math.random() < 0.5 ? 1 : -1)*Math.PI*0.5
@@ -211,7 +211,7 @@ const MEDUSA = {
     const nT = Math.max(6, Math.round(clamp(r/2.1, p.nTent[0], p.nTent[1])
                                       * (L.resDiv >= 3 ? 0.5 : 1)));
     const per = rango(p.periodo), fl = rango(p.flota);
-    const pat = p.patrulla || [0.05, 0.45];
+    const pat = p.patrulla;
     /* la proporción se normaliza por área: variar la forma no puede
        convertir a unas en el doble de grandes que otras */
     let an = rango(p.ancho), al = rango(p.alto);
@@ -219,7 +219,7 @@ const MEDUSA = {
 
     const j = {
       c: M.color(p.paleta), r, nT,
-      x: rnd(0.04,0.96)*M.W, y: rnd(0.04,0.96)*M.H,
+      x: rango(p.banda)*M.W, y: rango(p.banda)*M.H,
       periodo: per, fase: Math.random(), contract: 0, destello: 0,
       /* flotabilidad medida contra su propio periodo: el pulso da EMPUJE de
          golpe y esto acumula hundimiento·T. Bajo 1 sube, sobre 1 baja, y
@@ -256,7 +256,7 @@ const MEDUSA = {
          declara porque quien no lo declara vale 1, o sea más que un pez
          linterna entero. */
       rLuz: r*p.alcanceLuz,
-      rCuerpo: r*opt(p.alcanceCuerpo, 2.2),
+      rCuerpo: r*p.alcanceCuerpo,
       luzI: 0,
     };
     for (let t=0;t<nT;t++){
@@ -339,7 +339,7 @@ const MEDUSA = {
 
     /* lo que alumbra va con el pulso, no fijo: así lo que la medusa revela
        de paso late con ella —un rape asomando al ritmo de una campana */
-    j.luzI = (0.58 + 0.42*j.contract) * j.vigor * opt(p.emision, 0.55);
+    j.luzI = (0.58 + 0.42*j.contract) * j.vigor * p.emision;
 
     /* HISTORIAL: buffer circular a intervalo fijo. Sin muelles, sin Verlet,
        sin física: sólo dónde estuvo la campana. */

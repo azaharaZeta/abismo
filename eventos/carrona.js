@@ -31,15 +31,6 @@ import { pintaHalo, reparte } from '../bichos/comun.js';
 evento('carrona', {
   exclusivo: false,
   cada: [120, 260], primero: [30, 90],
-  prueba: { vel: [0.55, 0.95], largo: [4.85, 8.3], vertebras: 13,
-            giro: [-0.10, 0.10], deriva: 0.25, costillas: 7,
-            caja: [0.30, 0.90], falta: 0.18, chevrones: [3, 6], craneo: 0.85,
-            alcance: 3.0, caida: 2.2, ganancia: 1.9, techo: 1.5, base: 0.03,
-            tapa: 0.85, tapaFilo: 6, enciende: 0.55, plano: 1,
-            espectro: { tono: [30, 48], tramos: 4,
-                        sat: [0.10, 0.20], luz: [0.80, 0.90],
-                        satGlow: [0.14, 0.26], luzGlow: [0.26, 0.36],
-                        luzCore: [0.93, 0.98], giroGlow: 4 } },
   arranca(M, p, x, y){
     const Lg = M.U * rango(p.largo);
     /* UN SOLO SORTEO de vértebras: de aquí salen el contador Y el largo
@@ -47,9 +38,9 @@ evento('carrona', {
        `e.luz[n-1]` es `undefined`, el alfa del jirón de la cola sale NaN y
        el navegador tira una excepción a mitad de fotograma. */
     const nv = Math.max(4, rangoE(p.vertebras)|0);
-    const nc = rangoE(p.costillas || 0)|0;
+    const nc = rangoE(opt(p.costillas, 0))|0;
     return {
-      x: opt(x, rnd(0.14, 0.86)*M.W),
+      x: opt(x, rango(p.banda)*M.W),
       /* arranca FUERA por arriba, y por su largo: entrando por el canto se
          la ve aparecer de la nada si justo la alumbra algo */
       y: opt(y, -Lg*0.6),
@@ -58,7 +49,7 @@ evento('carrona', {
       /* voltea, y despacio: una vuelta cada medio minuto o más. El signo
          se sortea, que si no todas caen girando igual. */
       ang:  Math.random()*TAU,
-      vGiro: rango(p.giro || 0),
+      vGiro: rango(opt(p.giro, 0)),
       /* se va de lado mientras baja, con su propia fase: la corriente la
          lleva, no cae a plomo */
       fase: Math.random()*TAU,
@@ -81,8 +72,8 @@ evento('carrona', {
                      y entonces el espinazo empieza en seco, que es peor.
          Y `chevrones`, que va con `vertebras` y `costillas`: cuántas
          espinas hemales le quedan en la cola. */
-      caja: rango(p.caja || 0.55),
-      chevrones: rangoE(p.chevrones || 0)|0,
+      caja: rango(p.caja),
+      chevrones: rangoE(opt(p.chevrones, 0))|0,
       falta: huecos(nc, opt(p.falta, 0)),
       craneo: Math.random() < opt(p.craneo, 1),
       /* HUESO, y de una vez por todas: se sortea al nacer y no lo vuelve a
@@ -128,8 +119,8 @@ evento('carrona', {
        es cuánta llega. */
     const n = e.vertebras;
     const ca = Math.cos(e.ang), sa = Math.sin(e.ang);
-    const alc = opt(p.alcance, 1), caida = opt(p.caida, 2.2);
-    const gan = opt(p.ganancia, 1.9), techo = opt(p.techo, 1.5);
+    const alc = opt(p.alcance, 1), caida = p.caida;
+    const gan = p.ganancia, techo = p.techo;
     const base = opt(p.base, 0), k = Math.min(1, 7*dt);
     const luces = M.luces(plano);
     let pico = 0;
@@ -165,7 +156,7 @@ evento('carrona', {
         M.campos.push({ tipo:'tapa', plano,
                         x: e.x + s*ca, y: e.y + s*sa,
                         r: paso*0.9, ky: Math.max(0.06, gro*e.Lg*0.16/(paso*0.9)),
-                        rot: e.ang, filo: opt(p.tapaFilo, 6), fuerza: t });
+                        rot: e.ang, filo: p.tapaFilo, fuerza: t });
       }
     }
     const en = opt(p.enciende, 0);

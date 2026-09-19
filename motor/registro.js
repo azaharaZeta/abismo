@@ -59,13 +59,20 @@ const paramsDe = conf => conf.params || conf;
 
 /* ── REGISTRO DE EVENTOS ────────────────────────────────────────────
    Acuario.evento(nombre, def). Un evento no es una población: es algo
-   que le pasa a la escena entera cada tanto. def es:
+   que le pasa a la escena entera cada tanto.
+
+   NO LLEVA VALORES. Todos sus parámetros salen de su entrada en
+   `ABISMO.eventos` y de ningún otro sitio: un bloque de valores propios
+   para poder lanzarlo desde el panel es una segunda copia que nadie
+   ejercita y que envejece sola. Para probar uno sin que salga por su
+   cuenta se le pone `cada: null` en la escena y queda DORMIDO.
+
+   def es:
 
      exclusivo     → no admite otro exclusivo a la vez
-     cada, primero → [a,b] segundos. La escena los puede pisar.
+     cada, primero → [a,b] segundos. La escena los puede pisar, y con
+                     `cada: null` lo deja dormido: no sale nunca solo.
      arranca(M, p, x, y)    → el estado. x,y sólo si lo disparó un contacto.
-     prueba        → valores por defecto para lanzarlo desde el panel
-                     aunque la escena no lo configure.
      actualiza(e, M, p, dt) → false cuando ha terminado. Aquí es donde
                      empuja campos y modulación.
      dibuja(e, M, p, g)     → opcional. Muchos de los buenos NO dibujan.

@@ -63,10 +63,35 @@ Cuatro separaciones, y son el punto:
    agua, planos, y la lista de bichos y eventos con sus parámetros. Es el
    único fichero que hay que abrir para ajustar cómo se ve la pieza. Un
    valor ajustable va ahí, nunca incrustado en una criatura.
+
+   **Y CUÁL ES AJUSTABLE.** Hay más de mil literales decimales en las
+   criaturas y la mayoría están bien donde están: una parada de degradado
+   o una proporción de anatomía no es un mando, es el bicho. El corte:
+
+   > Va a la escena si **cambiarlo a solas da otra pieza que sigue en
+   > pie**. Se queda en la criatura si **cambiarlo a solas la rompe**,
+   > porque lo sostienen sus vecinos.
+
+   La `luz` de un espectro va a la escena; el `0.22` de la parada del
+   halo se queda. Y si un concepto ya tiene bloque en la escena, sus
+   números van CON él: un bloque partido por la mitad —la mitad en
+   `ABISMO.dedo` y la mitad en `motor/dedo.js`— es la forma en que esto
+   se deshace.
 2. **motor ↔ criaturas.** Una criatura no tiene parámetros propios: los
    recibe de la escena, así que el mismo bicho puede ser pálido y lento o
    nervioso y quemado sin tocar una línea suya. Y el motor no conoce a
    ninguna: las busca por nombre en su registro.
+
+   **UN VALOR POR DEFECTO ES UN NEUTRO, NUNCA UNA COPIA.** `opt(p.x, 0)`
+   y `opt(p.x, 1)` dicen «si la escena no lo pide, esto está apagado o es
+   la identidad», y eso está bien. `opt(p.x, 0.84)` es otra cosa: es una
+   segunda copia del valor de escena que nadie ejercita y que envejece
+   sola —había 57, y 33 ya no coincidían con la escena—. Si la escena
+   siempre lo da, se lee `p.x` pelado.
+
+   Y el neutro se escribe con **`opt()`, nunca con `p.x || d`**: `||`
+   se traga un 0 escrito a mano, que es justo lo que `opt` existe para
+   respetar (ver [motor/util.js](motor/util.js)).
 3. **la pieza ↔ el andamio.** [pruebas.js](pruebas.js) **no forma parte de
    la pieza**: borrar su `<script>` de `index.html` lo hace desaparecer.
 4. **el abismo ↔ el marco.** La chapa, el título y el botón son
@@ -206,6 +231,12 @@ El coste es relleno: varias pasadas a pantalla completa por fotograma.
 oscila y se ve peor que ir lento): recorta población viva de las especies
 con `escalaCalidad`, apaga el dither y baja niveles del velo. El velo nunca se quita: es lo que hace que esto sea agua.
 
+Cuándo degradar y cuánto se recorta salen de **`ABISMO.calidad`**, con
+`maxPx` al lado: el motor aplica, no decide. Y lo recortado vive en `V`
+como FACTORES sobre la escena (`V.calidad`, `V.recorteOndas`,
+`V.sinDither`), nunca como copia de un valor suyo —copiándolo, la escena
+se queda congelada en el `import` y un mando sobre ella no hace nada.
+
 ## Añadir cosas
 
 **Un bicho nuevo**: un fichero en `bichos/` que llame a
@@ -220,14 +251,21 @@ mandan en el banco salen de ahí.
 
 **Un evento nuevo**: igual, en `eventos/` y con `evento('nombre', def)`
 (`exclusivo`, `cada`, `primero`, `arranca`, `actualiza`, `dibuja`). El
-contrato está en **REGISTRO DE EVENTOS**, en el mismo fichero. Dale un
-`def.prueba` con valores por defecto: es lo que permite lanzarlo desde el
-panel aunque la escena no lo configure. Los mejores eventos **no dibujan
-nada** — apagan.
+contrato está en **REGISTRO DE EVENTOS**, en el mismo fichero. Los mejores
+eventos **no dibujan nada** — apagan.
 
-Un evento o especie puede estar registrado y **no** estar en la escena
-(hoy no hay ninguno). Se siguen lanzando desde el panel; para devolverlos
-basta volver a listarlos en `ABISMO.eventos`.
+**NO LE PONGAS VALORES.** Todos sus parámetros salen de su entrada en
+`ABISMO.eventos`. Los eventos llevaban además un `def.prueba` para poder
+lanzarlos desde el panel sin que la escena los configurase, y eran 102
+claves que la pieza cargaba sólo para el andamio: nadie las ejercitaba, así
+que envejecían solas —23 ya no coincidían con la escena—. **El panel es
+temporal y la pieza no depende de él.**
+
+Para probar uno sin instalarlo, se le pone **`cada: null`** en la escena y
+queda DORMIDO: configurado, lanzable a mano, y no sale nunca por su cuenta
+—ni se instala por haberlo lanzado—. Un evento registrado y sin entrada en
+la escena no se puede lanzar, y el panel lo enseña apagado diciendo por
+qué.
 
 **Un mando nuevo en el panel**: añade una fila a `MANDOS` en
 [pruebas.js](pruebas.js) con la ruta dentro de `ABISMO`. Los tramos
@@ -235,13 +273,28 @@ basta volver a listarlos en `ABISMO.eventos`.
 dice qué hace falta después: `null` (se lee cada fotograma), `'calc'`
 (recalcular) o `'nueva'` (repoblar).
 
-Una fila mueve un escalar, o VARIOS a la vez si `ruta` es una lista y
-lleva un `factores` a juego: el valor se reparte por todas multiplicado
-por el suyo, y el que se enseña sale de la primera. Es lo que permite
-gobernar un `[min, max]` con un deslizador: «peces · tamaño ×» escala
-los dos extremos del largo del banco conservando su reparto. Los rangos
-de los eventos se siguen editando
-como JSON en el panel, o directamente en `ABISMO`.
+Una fila mueve un escalar, o un ARRAY entero si lleva `escala`: entonces
+el deslizador es un multiplicador sobre lo que la escena traía, así que a
+1 la reproduce exacta y al moverlo conserva el reparto entre los
+extremos. Es lo que permite gobernar un `[min, max]` con un mando:
+«peces · tamaño ×» escala los dos extremos del largo del banco. Los
+rangos de los eventos se siguen editando como JSON en el panel, o
+directamente en `ABISMO`.
+
+**UNA FILA NO TRAE NINGÚN VALOR DE LA ESCENA**, sólo la ruta hasta él y
+el recorrido del deslizador. El valor y su porqué son de la pieza; hasta
+dónde llega un deslizador es del andamio. Un número de la escena tecleado
+en `MANDOS` —los factores de un par, por ejemplo— deja de reproducirla en
+cuanto alguien toca el otro, y nada lo avisa: los factores se leen de la
+escena al armar el panel.
+
+Y el enlace se comprueba: `revisa()` pinta la fila en ROJO y con su ruta
+a la vista si no resuelve, si el valor cae fuera de `[min, max]` o si
+`paso` no lo divide contando desde `min` —un `range` redondea el valor
+inicial al múltiplo más cercano, así que sin eso el deslizador arranca en
+un sitio y la escena está en otro—. Antes se descartaba en silencio: la
+fila del plancton llevaba rota desde que el conteo pasó a ser absoluto y
+el panel enseñaba un mando menos sin decirlo.
 
 ## El backlog de ideas
 

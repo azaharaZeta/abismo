@@ -5,7 +5,7 @@
    dispersión. Son las pasadas a pantalla completa de cada fotograma.
    ══════════════════════════════════════════════════════════════════ */
 import { ABISMO } from '../escena.js';
-import { rgba, opt, rnd, rango, TAU } from './util.js';
+import { rgba, opt, rango, TAU } from './util.js';
 import { V, campos, MOD, PLANOS } from './estado.js';
 
 let agua = null, ruido = null;
@@ -63,12 +63,12 @@ function buildOndulacion(){
     for (let i=0;i<O.manchas;i++)
       MANCHAS.push({
         c: O.tonos[i % O.tonos.length],
-        /* cada mancha con su recorrido: dos senos lentos y desfasados */
-        cx: rnd(0.15,0.85), cy: rnd(0.12,0.88),
-        ax: rnd(0.16,0.40), ay: rnd(0.10,0.32),
-        fx: rnd(0.55,1.35),  fy: rnd(0.45,1.20),
+        /* cada mancha con su recorrido; las medidas, en la escena */
+        cx: rango(O.centroX), cy: rango(O.centroY),
+        ax: rango(O.vaivenX), ay: rango(O.vaivenY),
+        fx: rango(O.ritmoX),  fy: rango(O.ritmoY),
         px: Math.random()*TAU, py: Math.random()*TAU,
-        r:  rango(O.radio), a: rnd(0.62, 1.0),
+        r:  rango(O.radio), a: rango(O.alfa),
       });
   const w = Math.max(2, Math.round(V.W*V.dpr/Math.max(1, O.div)));
   const h = Math.max(2, Math.round(V.H*V.dpr/Math.max(1, O.div)));

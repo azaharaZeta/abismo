@@ -12,16 +12,30 @@ if (!A || !A.pruebas) return;            // motor viejo: no estorbar
 const P = A.pruebas;
 
 /* ── lo que se puede tocar en caliente ──────────────────────────────
-   Escalares, y pares de escalares: una fila puede mover varias rutas a
-   la vez con `ruta` como lista y un `factores` a juego (ver `rutasDe`),
-   que es como se gobierna un `[min,max]` con un deslizador. Los rangos
-   de los eventos se siguen editando como JSON más abajo.
+   UNA FILA NO TRAE NINGÚN VALOR DE LA ESCENA, sólo la ruta hasta él y el
+   recorrido del deslizador. La distinción es la que sostiene el panel:
+   el valor y su porqué son de la pieza y viven en escena.js; hasta dónde
+   llega un deslizador es del andamio y vive aquí. Un número de la escena
+   tecleado en esta lista deja de reproducirla en cuanto alguien toca el
+   otro, y nada lo avisa.
+
+   Con `escala`, la ruta apunta a un ARRAY de la escena y el deslizador es
+   un MULTIPLICADOR sobre lo que traía: a 1 la reproduce exacta y al
+   moverlo conserva el reparto entre los extremos —es como se gobierna un
+   `[min,max]` con un solo mando—. Los factores se leen de la escena al
+   armar el panel (ver `arranque`). Los rangos de los eventos se siguen
+   editando como JSON más abajo.
 
    Y sólo los que se pueden JUZGAR MIRANDO. Aquí no entra un parámetro
    que haya que medir —`cardumen.vista` se comprueba contando alineación,
    no arrastrando—, ni un multiplicador de otro que ya tiene mando
    —`brilloOjo` cuelga de `brillo`—, ni un detalle de dos píxeles como la
    pupila del rape. Para todo eso está el JSON del evento, y escena.js.
+
+   `paso` TIENE QUE DIVIDIR al valor de la escena contando desde `min`: un
+   `range` redondea el valor inicial al múltiplo más cercano, así que si
+   no divide, el deslizador arranca en un sitio y la escena está en otro.
+   No hay que acordarse —lo comprueba `revisa()` y sale en el panel.
 
    `aplica` dice qué hace falta después de cambiarlo:
      null    · surte efecto solo, el motor lo lee cada frame
@@ -41,33 +55,30 @@ const MANDOS = [
      vuelven a depender sólo de las motas que faltan, y no basta */
   {nombre:'sombra en agua', ruta:'agua.sombra.fuerza', min:0, max:1, paso:0.05, aplica:null},
   /* y lo que emite el leviatán: a 0 sólo se le ve por el hueco */
-  {nombre:'leviatán · luz', ruta:'eventos.@leviatan.brillo', min:0, max:0.8, paso:0.02, aplica:null},
+  {nombre:'leviatán · luz', ruta:'eventos.@leviatan.brillo', min:0, max:0.8, paso:0.05, aplica:null},
   /* el tamaño de TODO: la unidad de escena sale de aquí */
   {nombre:'escala',         ruta:'escala',            min:10,  max:60,   paso:1,    aplica:'nueva'},
 
-  /* LOS BICHOS. `cada` es área por mota, así que BAJARLO es más plancton. */
-  {nombre:'plancton · área/mota', ruta:'bichos.@plancton.total.cada',
-   min:500, max:3000, paso:50, aplica:'nueva'},
+  /* LOS BICHOS. La nieve marina se cuenta en motas y no por área de
+     pantalla: el cuadro enseña el mismo trozo de mar en cualquier
+     aparato, así que SUBIRLO es más plancton, y son ésas en todas. */
+  {nombre:'plancton · cuántas', ruta:'bichos.@plancton.total',
+   min:0, max:2000, paso:25, aplica:'nueva'},
   /* ── EL BANCO: CUÁNTOS Y DE QUÉ TAMAÑO ──────────────────────────
-     Los dos gobiernan un PAR de la escena con un solo deslizador (ver
-     `rutasDe`), y cada uno por su motivo.
-
      CUÁNTOS escribe el `total` del banco, que es un número suelto: el
      conteo no pasa por el área, así que el mando dice «tantos peces» y
      vale igual en un móvil que en una pantalla grande. Puede quedarse a
      uno del pedido, que el total se reparte por planos con `reparto` y
      cada plano redondea por su cuenta.
 
-     TAMAÑO es un MULTIPLICADOR sobre `largo`, no un largo: los factores
-     son los dos extremos de la escena, así que a 1 la reproduce exacta y
-     al moverlo el banco conserva su reparto de peces grandes y chicos.
-     Puesto como largo absoluto habría que elegir uno de los dos extremos
-     y el otro se despegaría. */
+     TAMAÑO gobierna el PAR `largo` con `escala` (ver la cabecera): es un
+     multiplicador y no un largo, así que al moverlo el banco conserva su
+     reparto de peces grandes y chicos. Puesto como largo absoluto habría
+     que elegir uno de los dos extremos y el otro se despegaría. */
   {nombre:'peces · cuántos', ruta:'bichos.@pezlinterna.total',
    min:0, max:90, paso:1, aplica:'nueva'},
-  {nombre:'peces · tamaño ×', ruta:['bichos.@pezlinterna.largo.0',
-                                    'bichos.@pezlinterna.largo.1'],
-   factores:[1.15, 1.92], min:0.2, max:4, paso:0.05, aplica:'nueva'},
+  {nombre:'peces · tamaño ×', ruta:'bichos.@pezlinterna.largo', escala:true,
+   min:0.2, max:4, paso:0.05, aplica:'nueva'},
   {nombre:'banco · desorden',  ruta:'bichos.@pezlinterna.desorden',
    min:0, max:0.6, paso:0.02, aplica:'nueva'},
   {nombre:'rape · cuerpo',     ruta:'bichos.@rape.cuerpo',    min:0, max:2,   paso:0.02, aplica:null},
@@ -90,21 +101,49 @@ const poner = (r, v) => {
   if (o) o[ult] = v;
 };
 
-/* ── UN DESLIZADOR, VARIAS RUTAS ────────────────────────────────────
-   Una fila puede llevar `ruta` como lista y un `factores` a juego: el
-   valor del deslizador se reparte por todas multiplicado por el suyo. Es
-   lo que deja gobernar un PAR de la escena —un `[min,max]`, los dos
-   extremos de un largo— con un solo mando, sin que el panel tenga que
-   saber editar arrays.
+/* ── UN DESLIZADOR, UN ESCALAR O UN ARRAY ───────────────────────────
+   Con `escala`, la ruta apunta a un array de la escena y el deslizador es
+   un multiplicador sobre él: los FACTORES son lo que la escena traía, se
+   leen una vez al armar el panel y no se teclean en `MANDOS`. El número
+   que se enseña sale del primer elemento dividido por el suyo.
 
-   El número que se enseña sale de la PRIMERA ruta dividida por su factor,
-   así que conviene poner delante la que manda. Se redondea al escribir
-   porque 1,15·1,4 son 1,6099999999999999 y eso acaba en la escena. */
-const rutasDe  = m => Array.isArray(m.ruta) ? m.ruta : [m.ruta];
-const factorDe = (m, i) => (m.factores ? m.factores[i] : 1);
-const valorDe  = m => leer(rutasDe(m)[0]) / factorDe(m, 0);
-const ponValor = (m, v) => rutasDe(m).forEach(
-  (r, i) => poner(r, Math.round(v*factorDe(m, i)*1e4)/1e4));
+   Se redondea al escribir porque 1,15·1,4 son 1,6099999999999999 y eso
+   acaba en la escena. Un factor 0 no se puede dividir —sería un extremo
+   que el mando no puede mover—, así que se guarda como 1 y ese elemento
+   se queda quieto. */
+function arranque(m){
+  m.base = leer(m.ruta);
+  if (m.escala) m.base = Array.isArray(m.base) ? m.base.slice() : null;
+  return m;
+}
+const r4 = v => Math.round(v*1e4)/1e4;
+const valorDe = m => m.escala ? leer(m.ruta + '.0') / (m.base[0] || 1)
+                              : leer(m.ruta);
+const ponValor = (m, v) => {
+  if (!m.escala){ poner(m.ruta, v); return; }
+  m.base.forEach((b, i) => poner(m.ruta + '.' + i, r4(v*b)));
+};
+
+/* ── LO QUE IMPIDE QUE UNA FILA MUERA EN SILENCIO ───────────────────
+   Una ruta es una cadena y la escena es libre: basta que alguien cambie
+   un convenio —el conteo del plancton pasó de área por mota a un total
+   absoluto— para que la fila apunte a la nada. Descartándola sin más, el
+   panel enseña un mando menos y nadie se entera; por eso se pinta ROTA y
+   con su ruta a la vista. Las otras dos son de bulto pero se repiten:
+   un `paso` que no divide al valor deja el deslizador en un sitio y la
+   escena en otro, y un valor fuera de [min,max] lo clava en el canto. */
+function revisa(m){
+  /* antes de `valorDe`: sin base, dividir por `m.base[0]` revienta */
+  if (m.escala && !m.base) return 'la ruta no es un array en la escena';
+  const v = valorDe(m);
+  if (typeof v !== 'number' || !isFinite(v)) return 'la escena no lo tiene';
+  if (v < m.min || v > m.max) return 'vale ' + r4(v) + ', fuera de [' + m.min + ', ' + m.max + ']';
+  /* en milésimas de paso: (0.55−0)/0.05 da 10.999999999999998 */
+  const n = (v - m.min)/m.paso;
+  if (Math.abs(n - Math.round(n)) > 1e-6)
+    return 'paso ' + m.paso + ' no divide a ' + r4(v);
+  return null;
+}
 
 /* ── estilo ─────────────────────────────────────────────────────────
    Todo con el prefijo pr- para no chocar con la pieza. */
@@ -129,6 +168,8 @@ const CSS = `
   border-radius:4px;padding:3px 7px;cursor:pointer}
 #pr button:hover{background:#15323f;border-color:#2b6b80}
 #pr button.ev{flex:1;text-align:left}
+#pr button[disabled]{opacity:.45;cursor:not-allowed}
+#pr button[disabled]:hover{background:#0e2430;border-color:#1d4756}
 #pr button.x{color:#d98a8a;border-color:#4a2028;padding:3px 6px}
 #pr .anc{display:flex;gap:4px;margin:4px 0}
 #pr .anc button{flex:1;text-align:center}
@@ -136,6 +177,11 @@ const CSS = `
   border:1px solid #17394a;border-radius:4px;font:inherit;padding:4px;
   resize:vertical}
 #pr .vivo{color:#7fd6a0}
+/* un mando que no resuelve, o que arranca descolocado: rojo y con la
+   ruta escrita. Descartarlo en silencio es lo que dejó al panel con una
+   fila menos durante meses. */
+#pr .roto{color:#d98a8a}
+#pr .fila.roto label{color:#d98a8a}
 /* la X: sticky y no absolute porque el panel scrollea y con absolute el
    botón se iría con el contenido. Flota para no gastar una fila entera
    encima del primer título. Sin comillas inversas aquí: esto va dentro
@@ -223,29 +269,37 @@ titulo('eventos');
 let areaJSON = null, etiqJSON = null, elegido = null;
 {
   const nombres = Object.keys(A.EVENTOS);
-  /* los parámetros de la escena si los tiene, y si no los de prueba del
-     propio evento: así se puede lanzar uno que la escena no usa */
+  /* Los de la escena, y no hay otro sitio de donde sacarlos: un evento no
+     lleva valores propios. Uno que la escena no configure no se puede
+     lanzar —para probarlo se le añade con `cada: null` y queda dormido. */
   const paramsDe = n => {
     const conf = (P.escena.eventos || []).find(c => c.evento === n);
-    if (conf){
-      const p = Object.assign({}, conf.params || conf);
-      delete p.evento; delete p.params;
-      /* fuera las paletas ya resueltas: son decenas de tripletas de RGB
-         que tapan los parámetros de verdad, y al relanzar se conservan
-         igual porque dispara() FUSIONA lo que se escriba aquí encima de
-         los que ya tenía el evento. El espectro que las genera sí se ve. */
-      for (const k in p) if (k.indexOf('paleta') === 0) delete p[k];
-      return p;
-    }
-    return Object.assign({}, A.EVENTOS[n].prueba || {});
+    if (!conf) return {};
+    const p = Object.assign({}, conf.params || conf);
+    delete p.evento; delete p.params;
+    /* fuera las paletas ya resueltas: son decenas de tripletas de RGB
+       que tapan los parámetros de verdad, y al relanzar se conservan
+       igual porque dispara() FUSIONA lo que se escriba aquí encima de
+       los que ya tenía el evento. El espectro que las genera sí se ve. */
+    for (const k in p) if (k.indexOf('paleta') === 0) delete p[k];
+    return p;
   };
 
   for (const n of nombres){
     const fila = h('div', {className:'fila'});
-    const usado = (P.escena.eventos || []).some(c => c.evento === n);
-    fila.appendChild(h('button', {className:'ev',
-      textContent: (usado ? '▶ ' : '▷ ') + n,
-      title: usado ? 'configurado en la escena' : 'no está en la escena: usa sus valores de prueba',
+    const conf = (P.escena.eventos || []).find(c => c.evento === n);
+    /* tres estados, y el del medio es el que hace falta para probar sin
+       instalar: en la escena y despierto · en la escena y DORMIDO
+       (`cada: null`, no sale solo) · registrado pero sin entrada, que no
+       se puede lanzar porque sus parámetros viven en la escena. */
+    const dormido = conf && (conf.params || conf).cada === null;
+    fila.appendChild(h('button', {className: 'ev' + (conf ? '' : ' roto'),
+      textContent: (conf ? (dormido ? '◌ ' : '▶ ') : '▷ ') + n,
+      disabled: !conf,
+      title: !conf ? 'no está en ABISMO.eventos: no hay parámetros que darle.'
+                   + ' Añádelo con `cada: null` para poder lanzarlo sin que salga solo'
+           : dormido ? 'dormido en la escena: sólo sale si lo lanzas'
+                     : 'configurado en la escena',
       onclick: () => {
         let extra = null;
         if (elegido === n && areaJSON.value.trim()){
@@ -283,11 +337,22 @@ caja.appendChild(listaVivos);
 titulo('escena');
 const refrescos = [];
 for (const m of MANDOS){
+  arranque(m);
+  const mal = revisa(m);
+  if (mal){
+    /* la fila rota se PINTA, con su ruta y el motivo: es lo único que
+       distingue «este mando no existe» de «este mando no hace nada» */
+    const fila = h('div', {className:'fila roto'});
+    fila.appendChild(h('label', {textContent: '⚠ ' + (m.nombre || m.ruta),
+                                 title: m.ruta + '\n' + mal}));
+    caja.appendChild(fila);
+    caja.appendChild(h('p', {className:'nota roto', textContent: m.ruta + ' · ' + mal}));
+    console.warn('pruebas: mando «' + (m.nombre || m.ruta) + '» → ' + m.ruta + ': ' + mal);
+    continue;
+  }
   const v0 = valorDe(m);
-  if (typeof v0 !== 'number' || !isFinite(v0)) continue;   // la escena no lo usa
   const fila = h('div', {className:'fila'});
-  const rutas = rutasDe(m).join('\n');
-  fila.appendChild(h('label', {textContent: m.nombre || rutas, title: rutas}));
+  fila.appendChild(h('label', {textContent: m.nombre || m.ruta, title: m.ruta}));
   const val = h('span', {className:'val', textContent:String(v0)});
   fila.appendChild(val);
   caja.appendChild(fila);

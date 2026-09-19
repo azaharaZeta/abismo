@@ -179,7 +179,7 @@ especie('pezlinterna', {
       /* como emisor es débil y NO es un señuelo: los demás peces linterna no
          deben perseguirse entre ellos */
       rLuz: Lg*p.alcanceLuz, luzI: p.emision, senuelo: false,
-      rCuerpo: Lg*opt(p.alcanceCuerpo, 0.7),
+      rCuerpo: Lg*p.alcanceCuerpo,
       ang, angObj: Math.random()*TAU,
       /* A QUÉ LADO MIRA, de −1 a 1. Arranca ya puesto: de nacer a cero, los
          primeros fotogramas se le ven voltear. Ver el espejo en `dibuja`. */
@@ -216,7 +216,7 @@ especie('pezlinterna', {
       /* el pánico de este fotograma y hacia dónde huye: los pone el campo
          `asusta` y los consume el rumbo, después del cardumen */
       panico: 0, huye: 0,
-      tiron: 0, proxNerv: rnd(0, rango(p.cadaNervio || 1)),
+      tiron: 0, proxNerv: rnd(0, rango(p.cadaNervio)),
       /* tragado: el rape que lo tiene, cuánto lleva dentro y cuánto queda de
          él. mengua 1 es entero, 0 es ya no está. */
       tragado: null, trago: 0, mengua: 1,
@@ -232,7 +232,7 @@ especie('pezlinterna', {
        cada frame porque el rape se está lanzando al mismo tiempo. Nunca
        dura más que el bocado.                                       */
     if (z.tragado){
-      const f = z.tragado, T = p.trago || 0.45;
+      const f = z.tragado, T = p.trago;
       z.trago += dt;
       const u = clamp(z.trago/T, 0, 1);
       const k = 4 + 14*u;
@@ -279,7 +279,7 @@ especie('pezlinterna', {
     const sus = M.campo('asusta', z.x, z.y, L.i);
     z.panico = sus ? sus.peso : 0;
     if (z.panico > 0.04){
-      z.susto = Math.max(z.susto, z.panico * opt(p.panico, 1.4));
+      z.susto = Math.max(z.susto, z.panico * p.panico);
       z.huye  = Math.atan2(z.y - sus.y, z.x - sus.x);
       z.prox  = Math.max(z.prox, 1.6);
     } else z.panico = 0;
@@ -292,7 +292,7 @@ especie('pezlinterna', {
        Ni el pez sabe qué lo ha teñido ni el evento sabe que hay peces. */
     const tn = M.campo('tinta', z.x, z.y, L.i);
     if (tn && tn.peso > z.tinte) z.tinte = tn.peso;
-    else if (z.tinte > 0) z.tinte = Math.max(0, z.tinte - dt*opt(p.tinteVuelve, 0.4));
+    else if (z.tinte > 0) z.tinte = Math.max(0, z.tinte - dt*p.tinteVuelve);
 
     /* ¿hay una esca a la vista? Sólo señuelos: un pez linterna no persigue a
        otro pez linterna. */
@@ -350,15 +350,15 @@ especie('pezlinterna', {
     if (p.nervio){
       z.proxNerv -= dt;
       if (z.proxNerv <= 0){
-        z.proxNerv = rango(p.cadaNervio || 1);
+        z.proxNerv = rango(p.cadaNervio);
         z.tiron = rango(p.nervio)*M.U;
-        z.angObj += rnd(-1,1)*(p.desvio || 0);
+        z.angObj += rnd(-1,1)*(opt(p.desvio, 0));
       }
       /* `nervioVuelve` es lo que le queda al tirón cada segundo, y es el
          mando de que el dardo se lea como un DARDO y no como un hipo: a
          0,03 se corta en un tercio de segundo y el pez da una sacudida; a
          0,22 se va en dos tercios y el pez dardea y PLANEA. */
-      z.tiron *= Math.pow(opt(p.nervioVuelve, 0.03), dt);
+      z.tiron *= Math.pow(p.nervioVuelve, dt);
     }
 
     const dd = giroCorto(z.angObj, z.ang);
@@ -369,7 +369,7 @@ especie('pezlinterna', {
        que hace que cambiar de sentido se vea como un pez que se escora y
        pasa de perfil, y no como un espejo instantáneo. Ver `dibuja`. */
     const lado = Math.cos(z.ang) < 0 ? -1 : 1;
-    z.gx = hacia(z.gx, lado, opt(p.volteo, 7), dt);
+    z.gx = hacia(z.gx, lado, p.volteo, dt);
 
     z.susto = Math.max(0, z.susto - dt);
     const objVel = M.U * (z.susto ? p.velSusto
@@ -449,7 +449,7 @@ especie('pezlinterna', {
        aquí y sólo para pintar. */
     const rl = 1 + z.tinte*opt(p.tinteBrillo, 0);
     const cCore = z.tinte > 0.004
-      ? mezcla(z.c.core, z.c.mid, z.tinte*opt(p.tinteSat, 0.88)) : z.c.core;
+      ? mezcla(z.c.core, z.c.mid, z.tinte*p.tinteSat) : z.c.core;
     const cMid = z.c.mid, cGlow = z.c.glow;
     const br = (p.base + z.ilum) * p.brillo * apaga * rl;
     /* LO QUE EMITE ÉL, que no es lo mismo que lo que le llega. `br` es la
@@ -529,7 +529,7 @@ especie('pezlinterna', {
         g.fillStyle = rgba(cCore, Math.min(1, bl*propia));
         g.fill();
       }
-      g.strokeStyle = rgba(cCore, Math.min(1, opt(p.canto, 0.34)*br*sh));
+      g.strokeStyle = rgba(cCore, Math.min(1, p.canto*br*sh));
       g.lineWidth = Math.max(0.4, Lg*0.022);
       g.stroke();
       /* el ojo, desproporcionado como el de un mictófido de verdad */

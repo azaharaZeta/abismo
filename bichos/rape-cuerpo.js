@@ -50,7 +50,7 @@ function aMundo(f, gx, lx, ly){
 /* El centro del cuerpo. Comparte el array de aMundo: consúmelo ya. */
 const centro = (f, gx) => aMundo(f, gx, f.Lg*0.45, 0);
 /* hasta dónde llega la charnela: cuánto del cuerpo ES boca */
-const bocaLargo = p => opt(p.bocaLargo, 0.36);
+const bocaLargo = p => p.bocaLargo;
 
 /* punto de una quijada, en coordenadas del pez. También compartido. */
 const _q = [0,0], _q2 = [0,0];
@@ -360,7 +360,7 @@ function ojo(g, f, gx, col, nuc, br, sh, p){
      giro, se deja la x sin escalar y se le pone SÓLO EL SIGNO de gx. Sin
      ese signo la mirada se INVIERTE al ponerse del otro lado. */
   const a = gx*f.ang, ca = Math.cos(a), sa = Math.sin(a);
-  const k = r*opt(p.pupila, 0.40);
+  const k = r*p.pupila;
   const mx = gx < 0 ? -1 : 1;
   const px = (dx*ca - dy*sa)*mx, py = dx*sa + dy*ca;
 
@@ -406,13 +406,13 @@ function ojo(g, f, gx, col, nuc, br, sh, p){
 function quijadas(f, p){
   const Lg = f.Lg;
   const jx = Lg*bocaLargo(p), jy = Lg*0.10;
-  const hondo = Lg*opt(p.bocaHondo, 0.19);
+  const hondo = Lg*p.bocaHondo;
   const bocaY = u => u*u*jy + (1-u)*u*hondo;
   /* Abre de golpe y cierra más despacio: la potencia bajo el seno adelanta
      el máximo casi al principio. Y nunca cierra del todo
      —`entreabierta`—: una rendija con dientes a los dos lados se lee como
      una trampa ya abierta. */
-  const ab = (p.entreabierta || 0)
+  const ab = (opt(p.entreabierta, 0))
            + Math.sin(Math.pow(Math.min(1, 1-f.ataque), 0.55)*Math.PI) * p.abertura
            /* y el trabajo de masticar, que es lo mismo pero pequeño y repetido: lo
               calcula actualiza() y lo deja puesto */
@@ -424,7 +424,7 @@ function quijadas(f, p){
      de arriba y el resto lo baja la de abajo, así que la abertura total no
      cambia. Girando las dos por igual, a pleno bocado la de arriba le pasa
      POR ENCIMA AL OJO y el ojo se queda flotando dentro de la boca. */
-  const arriba = opt(p.quijadaArriba, 0.30);
+  const arriba = p.quijadaArriba;
   const giro = sg => sg > 0 ? 2*ab*arriba : -2*ab*(1 - arriba);
   return { jx, jy, ab, giro,
     /* el punto `u` de una quijada, 0 en el morro y 1 en la charnela, ya
@@ -553,7 +553,7 @@ const _pta = [];              // puntas de las ramas: x,y intercalados
 function barbilla(g, f, gx, p, t, ebr){
   const n = f.barbas;
   if (!n) return;
-  const br = ebr * opt(p.barbaBrillo, 0.45);
+  const br = ebr * p.barbaBrillo;
   if (br < 0.004) return;
   const Lg = f.Lg, u0 = 0.32;
   const bx = Lg*u0, by = (flex(u0,f,t) + panza(u0)*0.92)*Lg;
@@ -638,7 +638,7 @@ function senuelo(g, f, gx, p, ebr){
   /* EL PUNTO BLANCO: su tamaño decide si la esca se lee como color o como
      una bombilla. El blanco puro hace que un punto diminuto parezca
      intenso, pero si se come el radio entero se lleva el tono por delante. */
-  const nu = re*opt(p.nucleo, 0.62);
+  const nu = re*p.nucleo;
   if (nu > 0.1){
     g.fillStyle = 'rgba(255,255,255,'+Math.min(1, 0.95*ebr).toFixed(3)+')';
     g.beginPath(); g.arc(f.x, f.y, nu, 0, TAU); g.fill();

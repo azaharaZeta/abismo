@@ -32,14 +32,6 @@ const _lvQ = [0,0];
 evento('leviatan', {
   exclusivo: true,
   cada: [150, 330], primero: [45, 120],
-  prueba: { largo: [25, 29.8], grosor: [1.68, 2.11], onda: [3.02, 3.61],
-            ondas: [1.6, 2.4], velOnda: [0.45, 0.75], embestida: 0.55,
-            vel: [0.5, 0.9], banda: [0.12, 0.88],
-            rumbo: [-0.22, 0.22], cadaRumbo: [9, 20], velRumbo: 0.25,
-            hondura: [0.94, 1.0], filo: 2.2, penumbra: 1.3, segmentos: 22,
-            espinas: 10, cresta: 0.55,
-            brillo: 0.32, fotoforos: 11, brilloOjo: 2.0,
-            brilloLomo: 0.35, brilloEspinas: 1.4, plano: 0 },
   arranca(M, p){
     const dir = Math.random() < 0.5 ? 1 : -1;
     /* EL RUMBO. `base` es el lado por el que cruza y `ang` el rumbo real,
@@ -47,10 +39,10 @@ evento('leviatan', {
        cuerpo se orienta con él —no sólo el avance—, así que el bicho cruza
        de verdad en diagonal en vez de deslizarse de lado. */
     const base = dir > 0 ? 0 : Math.PI;
-    const ang = base + rango(p.rumbo || 0);
+    const ang = base + rango(opt(p.rumbo, 0));
     return {
       dir, base, ang, angObj: ang,
-      angProx: rango(p.cadaRumbo || [10, 20]),
+      angProx: rango(p.cadaRumbo),
       largo:  M.U * rango(p.largo),
       /* `grosor` es el SEMIgrosor del cuerpo y `onda` la amplitud de la
          ondulación: entre los dos salen el tercio de alto que ocupa */
@@ -65,7 +57,7 @@ evento('leviatan', {
       /* la franja por la que nada: la declara la escena y la usan los DOS
          sitios que la necesitan —el sorteo de aquí y el tope de más
          abajo—, así que no se pueden desalinear. */
-      y:      rango(p.banda || [0.12, 0.88]) * M.H,
+      y:      rango(p.banda) * M.H,
       vel:    rango(p.vel) * M.U,
       hondura: rango(p.hondura),
       fase:   Math.random()*TAU,
@@ -84,10 +76,10 @@ evento('leviatan', {
        diagonal sostenida se saldría del cuadro antes de cruzar. */
     e.angProx -= dt;
     if (e.angProx <= 0){
-      e.angObj  = e.base + rango(p.rumbo || 0);
-      e.angProx = rango(p.cadaRumbo || [10, 20]);
+      e.angObj  = e.base + rango(opt(p.rumbo, 0));
+      e.angProx = rango(p.cadaRumbo);
     }
-    e.ang += (e.angObj - e.ang) * Math.min(1, opt(p.velRumbo, 0.25)*dt);
+    e.ang += (e.angObj - e.ang) * Math.min(1, p.velRumbo*dt);
     const ca = Math.cos(e.ang), sa = Math.sin(e.ang);
     /* y empuja: el avance late con el coletazo en vez de ser constante */
     const coletazo = Math.pow(Math.max(0, Math.sin(e.fase)), 2);
@@ -96,7 +88,7 @@ evento('leviatan', {
     /* la vertical, contenida a la misma franja: el cuerpo ondula ±`onda`
        alrededor de `y`, así que si `y` se va al canto media bestia se sale
        del cuadro */
-    const bd = p.banda || [0.12, 0.88];
+    const bd = p.banda;
     e.y = clamp(e.y + sa*v*dt, M.H*bd[0], M.H*bd[1]);
     /* se va cuando ha salido la COLA, que va a un largo por detrás del
        morro EN EL SENTIDO DEL RUMBO */
@@ -105,7 +97,7 @@ evento('leviatan', {
 
     const n = Math.max(6, p.segmentos|0);
     const plano = opt(p.plano, 0);
-    const filo = p.filo || 1;
+    const filo = p.filo;
     /* `penumbra` agranda la elipse: su máximo cae en el espinazo, así que
        sin agrandarla la silueta de verdad queda donde el apagado ya se
        desvanece. */

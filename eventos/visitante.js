@@ -30,10 +30,6 @@ const _vsP = [0,0], _vsN = [0,0], _ant = [0,0,0,0];
 evento('visitante', {
   exclusivo: false,
   cada: [45, 110], primero: [15, 40],
-  prueba: { cruce: [22, 34], cuentas: [18, 40], largo: [10.4, 19.1],
-            onda: [0.88, 2.24], grosor: [0.40, 0.78], brillo: 0.30,
-            merma: [0.18, 0.70], panza: [0, 0.42], variedad: 0.75, plano: 0,
-            patas: 0.9, antenas: 1.5, cola: 1.6 },
   arranca(M, p){
     const v = opt(p.variedad, 0);
     return {
@@ -48,8 +44,8 @@ evento('visitante', {
          abajo a 6, que con menos no hay cadena. */
       n:     Math.max(6, rangoE(p.cuentas)|0),
       base:  M.U*rango(p.grosor),
-      merma: rango(p.merma || 0.5),
-      panza: rango(p.panza || 0),
+      merma: rango(p.merma),
+      panza: rango(opt(p.panza, 0)),
       kPatas: apendice(v), kAntenas: apendice(v), kCola: apendice(v),
       c: M.color(p.paleta),
     };

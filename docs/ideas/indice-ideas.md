@@ -28,7 +28,9 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 ## Ideas de usuario (pendientes de procesar)
 > Solo un humano edita esta sección. Texto breve; el detalle se desarrolla al crear la ficha.
 - a veces los peces se quedan picando el señuelo, pero el rape no les caza. imagino que no tiene hambre, pero queda feo, pensar en algo mejor.
-
+- vamos a centrar la aplicación en mobile first, compatible también con escritorio. pero todas las optimizaciones de estilo gráfico, tamaños, etc, irán pensadas sobre todo para movil, y no serán diferentes para escritorio.
+- en mobile los peces pequeños apenas se ven. ajusta los distintos tamaños actuales de peces para que los peces más pequeños no lo sean tanto.
+- ajusta por defecto el valor de luz de fondo a 3. 
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos que dejaron las ideas procesadas el 2026-09-17 y el 2026-09-18.
 

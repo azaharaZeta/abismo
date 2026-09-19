@@ -48,6 +48,21 @@ export const ABISMO = {
       radio: [0.40, 0.80],        // en fracción de la diagonal
       vel: 0.035,                 // el recorrido, muy lento
       tonos: [[6,22,30], [4,12,32], [10,26,24], [14,10,30]],
+      /* ── EL RECORRIDO DE CADA MANCHA ─────────────────────────────
+         Nace en `centro` y describe dos senos lentos y desfasados, de
+         amplitud `vaiven` y frecuencia `ritmo`. Todo en FRACCIÓN DE
+         PANTALLA, que es lo que las deja sobrevivir a un redimensionado
+         sin volver a sortearse: re-sortearlas haría que la escena
+         cambiara de color al esconderse la barra de URL del móvil.
+
+         Los `ritmo` van desiguales y sin razón entera entre ellos: con
+         los cuatro a la par las manchas vuelven a la misma postura cada
+         tantos segundos y el fondo late. `alfa` es lo opaca que sale
+         cada una, para que no pesen las cuatro igual. */
+      centroX: [0.15, 0.85], centroY: [0.12, 0.88],
+      vaivenX: [0.16, 0.40], vaivenY: [0.10, 0.32],
+      ritmoX:  [0.55, 1.35], ritmoY:  [0.45, 1.20],
+      alfa:    [0.62, 1.00],
     },
   },
 
@@ -97,6 +112,28 @@ export const ABISMO = {
     brote:   0.5,                 // segundos
     paso:    0.9,                 // separación mínima entre ondas al arrastrar
     tope:    20,                  // ondas vivas a la vez como máximo
+
+    /* ── Y CADA ONDA, LA SUYA ───────────────────────────────────────
+       Los de arriba son la medida nominal; `varia` es cuánto se aparta de
+       ella cada onda, como factor. Todo a 1 y arrastrando el dedo sale una
+       hilera de anillos calcados, que se lee como un efecto y no como
+       agua. Es lo mismo que hace `ondulacion.centro/vaiven/ritmo` con las
+       manchas del agua: sin dispersión, el mecanismo se ve. */
+    varia: { alcance: [0.80, 1.22], vida:  [0.82, 1.22],
+             frente:  [0.84, 1.20], radio: [0.85, 1.20],
+             brote:   [0.80, 1.25], fuerza:[0.80, 1.18] },
+    /* LA FORMA DE LA ONDA, los dos exponentes. `crece` es cuánto FRENA al
+       abrirse —a 1 el anillo avanza a velocidad constante y parece un
+       barrido, no una onda—; `decae`, cuánto tarda en apagarse. */
+    crece: [1.70, 2.20],
+    decae: [1.45, 1.95],
+    /* 1/s de la rampa de ENTRADA, y va alta a propósito: el anillo abre en
+       unas siete centésimas, que es lo que hace que el toque se lea como
+       instantáneo aunque la onda luego tarde `vida` en cruzar. */
+    rampa: 14,
+    /* el grosor del frente que EMPUJA, en `frente`: algo más estrecho que
+       el que enciende, o el banco se aparta antes de que se le note luz */
+    banda: 0.9,
   },
 
   /* ── TRES PLANOS: fondo, medio, frente ────────────────────────────
@@ -137,6 +174,43 @@ export const ABISMO = {
   escala: 18,
   maxPx: 4.6e6,                   // tope de píxeles de lienzo
 
+  /* ── LA CALIDAD ───────────────────────────────────────────────────
+     Lo que la pieza está dispuesta a gastar y lo que recorta cuando la
+     máquina no llega. El coste es RELLENO: varias pasadas a pantalla
+     completa por fotograma, así que lo que manda no es el dpr sino los
+     píxeles totales del lienzo (`maxPx`, arriba).
+
+     `vigila()` lleva una media móvil del tiempo de fotograma y llama a
+     `degradar()` UNA SOLA VEZ Y SIN VUELTA ATRÁS: subir y bajar la
+     calidad según el reloj oscila y se ve peor que ir lento.
+
+       `dprMax`    tope de densidad. Por encima de 2 no se distingue y
+                   cuadruplica el relleno.
+       `dprMin`    suelo al recortar por `maxPx`: por debajo se ve el
+                   píxel y deja de haber agua.
+       `calienta`  fotogramas que no cuentan. Los primeros son lentos por
+                   el JIT y el primer pintado, y contarlos degrada una
+                   máquina que iba bien.
+       `pausa`     ms por encima de los cuales el fotograma no es lentitud
+                   sino que el navegador se paró; tampoco cuenta.
+       `memoria`   cuánto pesa el último fotograma en la media.
+       `techo`     ms de media a partir de los cuales se va lento. 20 son
+                   50 fps: por debajo de eso el velo se ve a tirones.
+       `paciencia` fotogramas lentos seguidos antes de degradar. A 90 hace
+                   falta un segundo y medio MALO de verdad, no un pico.
+
+     Y lo que se recorta, todo a la vez: `poblacion` es el factor sobre
+     las especies con `escalaCalidad`, `ondas` el suyo sobre el tope del
+     dedo, y `niveles` a cuántos se queda la pirámide del velo. EL VELO NO
+     SE QUITA —es lo que hace que esto sea agua—, y el grano se apaga
+     entero. */
+  calidad: {
+    dprMax: 2, dprMin: 0.7,
+    calienta: 60, pausa: 200,
+    memoria: 0.05, techo: 20, paciencia: 90,
+    poblacion: 0.55, ondas: 0.5, niveles: 2,
+  },
+
   /* Cuánto espera un evento exclusivo que le toca turno y se lo
      encuentra ocupado. Sin relevo se le sigue descontando el reloj, se
      queda en negativo y arranca en el mismo fotograma en que muere el que
@@ -145,12 +219,22 @@ export const ABISMO = {
 
   /* ── EVENTOS ──────────────────────────────────────────────────────
      Cada entrada: {evento, plano?, ...parámetros}. Un `porContacto: 0..1`
-     deja que el dedo lo dispare. */
+     deja que el dedo lo dispare, y un `cada: null` lo deja DORMIDO —está
+     configurado y no sale nunca solo, que es como se prueba uno desde el
+     panel sin instalarlo en la pieza.
+
+     `banda` lo llevan casi todos y quiere decir lo mismo en todos: en qué
+     franja de pantalla puede NACER, en fracción y por el eje que le toque
+     según cómo se mueva —el leviatán y la carroña cruzan, así que es
+     dónde cae su eje; el contagio nace en un punto, así que son los dos—.
+     Es un margen y no una pared: sólo evita que algo salga con el cuerpo
+     entero fuera del cuadro. Cada cosa tiene el suyo porque cada una mide
+     lo suyo, y el margen va con el tamaño. */
   eventos: [
     /* la cadena de encendido: un soplo que va prendiendo la nieve marina */
     { evento: 'contagio', vel: [3, 7], salto: 6.5,
       alcance: [0.55, 1.1], cada: [55, 145], primero: [18, 55],
-      porContacto: 0.3 },
+      banda: [0.12, 0.88], porContacto: 0.3 },
 
     /* ── EL LEVIATÁN ────────────────────────────────────────────────
        Imposiblemente grande, al fondo del todo, y lo que se ve de él es
@@ -259,7 +343,7 @@ export const ABISMO = {
        `ganancia` altas son «hay que ponerse cerca, pero entonces se ve
        bien»; `base` es lo que se intuye sin nada, y va mínimo. */
     { evento: 'carrona', plano: 1,
-      cada: [130, 280], primero: [35, 95],
+      cada: [130, 280], primero: [35, 95], banda: [0.14, 0.86],
       vel: [0.55, 0.95], largo: [5.2, 9.0],
       giro: [-0.10, 0.10], deriva: 0.25,
       /* ── SIEMPRE HUESO ───────────────────────────────────────────
@@ -352,7 +436,7 @@ export const ABISMO = {
          Medido sobre seis horas de reloj de escena, [360,720] deja al
          cuerpo en el 15,2 % de los fotogramas y a todos los exclusivos en
          el 43 %. */
-      cada: [360, 720], primero: [110, 250],
+      cada: [360, 720], primero: [110, 250], banda: [0.16, 0.84],
       alto: [5.46, 7.8], vel: [0.30, 0.55],
       giro: [-0.055, 0.055], deriva: 0.22,
       /* `cuantos` es cuántos caen en una tirada y `retraso` los segundos
@@ -484,7 +568,7 @@ export const ABISMO = {
        sueltos cambiando. Con estos, la onda tarda unos ocho segundos en
        cruzar el cuadro. */
     { evento: 'floracion', vel: [1.6, 3.0], salto: 7.0,
-      alcance: [0.6, 1.1], filo: 1.4,
+      alcance: [0.6, 1.1], filo: 1.4, banda: [0.12, 0.88],
       cada: [90, 210], primero: [25, 70] },
 
     /* ── LA GEMACIÓN ────────────────────────────────────────────────
@@ -574,7 +658,7 @@ export const ABISMO = {
                   sat: [0.52, 0.90], luz: [0.62, 0.80],
                   satGlow: [0.45, 0.75], luzGlow: [0.14, 0.24],
                   luzCore: [0.84, 0.90] },
-      radio: [0.55, 1.35],
+      radio: [0.55, 1.35], banda: [0.04, 0.96],
       /* El largo de los tentáculos por plano: al fondo la nube se recoge
          además de encogerse, o la medusa lejana arrastra una melena tan
          larga como la de cerca. Vive aquí y no en `ABISMO.planos` porque
@@ -765,6 +849,7 @@ export const ABISMO = {
          de la casa empuja al revés, así que va bajo. Las escas quedan por
          el perímetro apuntando al centro y el centro del cuadro se vacía. */
       querencia: 0.55, aro: 0.84, miraAlCentro: true,
+      banda: [0.08, 0.92], bandaY: [0.10, 0.90],
       borde: 0.30,
       /* ACECHO: crucero mínimo y ratos largos clavado entre embestidas. Un
          rape que patrulla es un pez que pasa; uno quieto veinte segundos

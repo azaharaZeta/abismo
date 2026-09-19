@@ -1,5 +1,5 @@
 import { ABISMO } from '../escena.js';
-import { rnd } from './util.js';
+import { rango } from './util.js';
 import { V } from './estado.js';
 
 /* ══════════════════════════════════════════════════════════════════
@@ -18,7 +18,8 @@ const ultimos = new Map();
 
 const ondaR = k => k.rmax * (1 - Math.pow(1 - Math.min(1, k.t/k.vida), k.cre));
 const ondaA = k => { const u = Math.min(1, k.t/k.vida);
-                     return Math.pow(1-u, k.apa) * Math.min(1, u*14) * k.amp; };
+                     return Math.pow(1-u, k.apa)
+                          * Math.min(1, u*ABISMO.dedo.rampa) * k.amp; };
 /* Lo que le QUEDA a una onda: sólo la caída, sin la rampa de entrada de
    `ondaA`. Decrece con la edad, así que sirve para desalojar. */
 const ondaResto = k => Math.pow(1 - Math.min(1, k.t/k.vida), k.apa) * k.amp;
@@ -31,7 +32,8 @@ function impulso(x, y){
      entrada —dos décimas en abrir—, así que una onda recién nacida puntúa
      casi 0 y se desaloja a sí misma. Con eso, arrastrando el dedo el
      rastro se congela donde EMPEZÓ el gesto. */
-  if (contactos.length >= V.topeOndas){
+  const tope = Math.max(1, Math.round(ABISMO.dedo.tope * V.recorteOndas));
+  if (contactos.length >= tope){
     let peor = 0, va = Infinity;
     for (let i=0;i<contactos.length;i++){
       const v = ondaResto(contactos[i]);
@@ -39,18 +41,20 @@ function impulso(x, y){
     }
     contactos.splice(peor, 1);
   }
-  const D = ABISMO.dedo;
+  const D = ABISMO.dedo, va = D.varia;
+  /* el ORDEN de los sorteos es el que hay: cambiarlo no cambia lo que se
+     ve, pero sí la pecera que sale de una semilla dada. */
   contactos.push({
     x, y, t: 0,
-    rmax: V.U*D.alcance * rnd(0.80, 1.22),
-    vida: D.vida        * rnd(0.82, 1.22),
-    lam:  V.U*D.frente  * rnd(0.84, 1.20),
+    rmax: V.U*D.alcance * rango(va.alcance),
+    vida: D.vida        * rango(va.vida),
+    lam:  V.U*D.frente  * rango(va.frente),
     /* el fogonazo de debajo del dedo: hasta dónde llega y cuánto dura */
-    r0:   V.U*D.radio   * rnd(0.85, 1.20),
-    brote: D.brote      * rnd(0.80, 1.25),
-    cre:  rnd(1.70, 2.20),            // cómo crece: cuánto frena
-    apa:  rnd(1.45, 1.95),            // cómo se apaga
-    amp:  rnd(0.80, 1.18),
+    r0:   V.U*D.radio   * rango(va.radio),
+    brote: D.brote      * rango(va.brote),
+    cre:  rango(D.crece),             // cómo crece: cuánto frena
+    apa:  rango(D.decae),             // cómo se apaga
+    amp:  rango(va.fuerza),
   });
   alContacto(x, y);
 }
@@ -98,7 +102,7 @@ function empuje(x, y, banda){
   let ox=0, oy=0, w=0;
   for (let i=0;i<contactos.length;i++){
     const k = contactos[i], rr = ondaR(k);
-    const b = banda > 0 ? banda : k.lam*0.9;
+    const b = banda > 0 ? banda : k.lam*ABISMO.dedo.banda;
     const dx = x-k.x, dy = y-k.y, d2 = dx*dx+dy*dy;
     const hi = rr+b, lo = rr-b;
     if (d2 > hi*hi || (lo > 0 && d2 < lo*lo)) continue;

@@ -12,14 +12,13 @@ const {rnd, rango, opt} = M;
 evento('contagio', {
   exclusivo: false,
   cada: [50, 140], primero: [12, 45],
-  prueba: { vel: [3.5, 7], salto: 4.5, alcance: [0.6, 1.1] },
   arranca(M, p, x, y){
     return {
-      x: opt(x, rnd(0.12, 0.88)*M.W),
-      y: opt(y, rnd(0.12, 0.88)*M.H),
+      x: opt(x, rango(p.banda)*M.W),
+      y: opt(y, rango(p.banda)*M.H),
       r: 0,
       vel:  rango(p.vel) * M.U,
-      rmax: Math.hypot(M.W, M.H) * rango(p.alcance || [0.45, 1.05]),
+      rmax: Math.hypot(M.W, M.H) * rango(p.alcance),
       /* un color para toda la onda, o que cada mota conserve el suyo */
       c: p.suyo ? null : M.color(p.paleta),
     };
@@ -29,7 +28,7 @@ evento('contagio', {
     if (e.r - M.U*p.salto > e.rmax) return false;
     M.campos.push({ tipo:'enciende', x:e.x, y:e.y,
                     r: e.r, ri: Math.max(0.0001, e.r - M.U*p.salto),
-                    fuerza: 1, filo: p.filo || 1, c: e.c });
+                    fuerza: 1, filo: opt(p.filo, 1), c: e.c });
     return true;
   },
 });

@@ -11,10 +11,10 @@ import { cableaTacto, envejeceOndas, olvidaOndas,
          avisaContactos } from './dedo.js';
 import { M } from './api.js';
 
-/* Los cuatro de calidad arrancan desde ABISMO y sólo los baja
-   degradar(): recortar sin tocar la configuración, que es la que dice
-   qué se pedía. Los demás son el reloj del bucle y el del redimensionado. */
-let conDither = ABISMO.dither !== false;
+/* La escena dice qué se PIDE y `V` guarda lo que se ha RECORTADO, que es
+   lo que deja leer la configuración viva: `ABISMO.dither` a mano surte
+   efecto aunque ya se haya degradado. Los de aquí son el reloj del bucle
+   y el del redimensionado. */
 let calentando=0, lento=0, ema=16.7, ultimo=0;
 let anchoPrev=0, altoPrev=0, tempRedim=null, corriendo=false;
 /* los grupos son el reloj de cada evento; evVivos, los que corren ahora */
@@ -57,6 +57,16 @@ function puebla(){
         if (!ok) continue;
       }
       const p = paramsDe(conf);
+      /* `reparto`, `por` y `tent` llevan UNA ENTRADA POR PLANO, y esa
+         cuenta no está escrita en ningún sitio: es `ABISMO.planos.length`.
+         Con un plano de más, `p.reparto[3]` es undefined, el conteo sale
+         NaN y `for (i=0; i<NaN; i++)` no corre: el plano nuevo se queda
+         vacío sin un solo error. */
+      for (const k of ['reparto','por','tent'])
+        if (Array.isArray(p[k]) && p[k].length !== PLANOS.length)
+          avisa('planos:'+conf.especie+':'+k,
+                conf.especie + '.' + k + ' tiene ' + p[k].length + ' entradas y hay '
+                + PLANOS.length + ' planos: los que sobren se quedan vacíos');
       const n = def.conteo ? def.conteo(li, p) : 0;
       const q = Math.round(n * (def.escalaCalidad ? V.calidad : 1));
       const gr = { def, p, items: [] };
@@ -82,8 +92,13 @@ function preparaEventos(){
       continue;
     }
     const p = paramsDe(conf);
+    /* `cada: null` es un evento DORMIDO: está en la escena, con sus
+       parámetros, y no sale nunca por su cuenta. Es lo que deja probar
+       uno desde el panel sin que se instale en la pieza, y sin que haya
+       una segunda copia de sus parámetros en ninguna parte. */
     evGrupos.push({ def, p, vivo: null,
-                    prox: rango(p.primero || def.primero || [20,60]) });
+                    prox: p.cada === null ? Infinity
+                        : rango(p.primero || def.primero || [20,60]) });
   }
 }
 
@@ -95,13 +110,12 @@ function lanza(gr, x, y){
   return e;
 }
 
-/* Vuelve a poner el reloj de un grupo. Los grupos que se inventa el
-   panel para lanzar un evento que la escena NO configura van marcados
-   `suelto`: probarlo una vez no puede dejarlo instalado para siempre. */
+/* Vuelve a poner el reloj de un grupo. Un dormido (`cada: null`) vuelve a
+   dormirse: haberlo lanzado a mano una vez no puede instalarlo. */
 function reprograma(gr){
   gr.vivo = null;
-  gr.prox = gr.suelto ? Infinity
-                      : rango(gr.p.cada || gr.def.cada || [90,240]);
+  gr.prox = gr.p.cada === null ? Infinity
+                               : rango(gr.p.cada || gr.def.cada || [90,240]);
 }
 
 function pasoEventos(dt){
@@ -149,20 +163,26 @@ function pasoEventos(dt){
    Nada de esto lo usa la pieza: es para el panel de `pruebas.js`. Está
    aquí porque `evGrupos`, `evVivos` y `ABISMO` son privados.        */
 
-/* Dispara un evento a mano. Si la escena no lo tiene configurado se le
-   monta un grupo al vuelo con los valores de `def.prueba`. Si ya está
-   en marcha se reinicia. `extra` pisa parámetros sueltos. */
+/* Dispara un evento a mano. Si ya está en marcha se reinicia; `extra`
+   pisa parámetros sueltos.
+
+   SUS PARÁMETROS SALEN DE LA ESCENA Y DE NINGÚN OTRO SITIO. Un evento
+   tenía además un `def.prueba` con valores propios para poder lanzarlo
+   sin que la escena lo configurase, y eran 102 claves que la pieza
+   cargaba sólo para alimentar al panel: nadie las ejercitaba, así que
+   envejecían solas —23 ya no coincidían con la escena—. Para probar uno
+   sin instalarlo se le pone `cada: null` en la escena y queda dormido. */
 function dispara(nombre, extra){
   const def = EVENTOS[nombre];
   if (!def) return false;
-  let gr = evGrupos.find(g => g.def === def);
+  const gr = evGrupos.find(g => g.def === def);
   if (!gr){
-    gr = { def, p: fusiona(def.prueba || {}, extra || {}),
-           vivo: null, prox: Infinity, suelto: true };
-    evGrupos.push(gr);
-  } else if (extra){
-    gr.p = fusiona(gr.p, extra);
+    avisa('suelto:'+nombre, 'evento «' + nombre + '» sin parámetros: no está '
+        + 'en ABISMO.eventos. Añádelo con `cada: null` para poder lanzarlo '
+        + 'sin que salga solo.');
+    return false;
   }
+  if (extra) gr.p = fusiona(gr.p, extra);
   /* un `espectroX` que llega en `extra` tiene que tirar su `paletaX`:
      resuelveEspectros() respeta la paleta que ya esté puesta —es como se
      anula un espectro sin borrarlo—, así que sin esto el color editado
@@ -172,9 +192,9 @@ function dispara(nombre, extra){
     const destino = paletaDe(k);
     if (destino && extra[destino] === undefined) delete gr.p[destino];
   }
-  /* y sus espectros, que si no se queda sin `paleta`: los de la escena se
-     resuelven al arrancar, pero los de un `def.prueba` no pasan por ahí y
-     acaban en `M.color(undefined)`. */
+  /* y sus espectros: los de la escena ya se resolvieron al arrancar, pero
+     un `espectroX` escrito en el panel no ha pasado por ahí y se quedaría
+     en `M.color(undefined)`. */
   resuelveEspectros(gr.p);
   para(nombre);
   /* un exclusivo a mano echa al que hubiera. Se saca de la lista aquí y no
@@ -217,22 +237,24 @@ function contactoEventos(x, y){
    Lo que importa no es el dpr sino los píxeles totales del lienzo.
    ══════════════════════════════════════════════════════════════════ */
 function calcDpr(){
-  let d = Math.min(window.devicePixelRatio || 1, 2);
+  const C = ABISMO.calidad;
+  let d = Math.min(window.devicePixelRatio || 1, C.dprMax);
   const px = V.W*V.H*d*d;
-  if (px > ABISMO.maxPx) d = Math.max(0.7, d*Math.sqrt(ABISMO.maxPx/px));
+  if (px > ABISMO.maxPx) d = Math.max(C.dprMin, d*Math.sqrt(ABISMO.maxPx/px));
   return d;
 }
 
-/* Un solo escalón, y no se vuelve atrás: subir y bajar la calidad según
-   el tiempo de fotograma oscila y se ve peor que ir lento. Se recorta la
-   población viva en vez de repoblar, que daría un salto visible. El velo
-   se queda —es lo que hace que esto sea agua—: se le recortan niveles. */
+/* Un solo escalón, y no se vuelve atrás (ver `ABISMO.calidad`). Se
+   recorta la población VIVA en vez de repoblar, que daría un salto
+   visible. Aquí no se decide cuánto: sólo se aplica lo que pide la
+   escena. */
 function degradar(){
+  const C = ABISMO.calidad;
   V.degradado = true;
-  V.calidad = 0.55;
-  conDither = false;
-  V.topeOndas = Math.max(1, Math.round(V.topeOndas*0.5));
-  if (V.topeNiveles > 2){ V.topeNiveles = 2; buildDispersion(); }
+  V.calidad = C.poblacion;
+  V.sinDither = true;
+  V.recorteOndas = C.ondas;
+  if (V.topeNiveles > C.niveles){ V.topeNiveles = C.niveles; buildDispersion(); }
   for (const L of PLANOS)
     for (const gr of L.grupos)
       if (gr.def.escalaCalidad)
@@ -315,11 +337,14 @@ function reinicia(){
    son lentos por el JIT y el primer pintado, y uno de más de 200 ms es
    una pausa del navegador: ni unos ni otros entran. */
 function vigila(ms){
-  if (calentando < 60){ calentando++; return; }
-  if (V.degradado || ms >= 200) return;
-  ema += (ms - ema)*0.05;
-  lento = ema > 20 ? lento+1 : Math.max(0, lento-2);
-  if (lento > 90) degradar();
+  const C = ABISMO.calidad;
+  if (calentando < C.calienta){ calentando++; return; }
+  if (V.degradado || ms >= C.pausa) return;
+  ema += (ms - ema)*C.memoria;
+  /* sube de uno en uno y baja de dos en dos: hace falta que la mayoría de
+     los fotogramas sean lentos, no la mitad */
+  lento = ema > C.techo ? lento+1 : Math.max(0, lento-2);
+  if (lento > C.paciencia) degradar();
 }
 
 /* Cada plano en su propio lienzo y en aditivo: primero la población y
@@ -499,7 +524,7 @@ function componePlanos(){
   /* el velo va DENTRO del agua: después de la luz y antes del grano */
   pintaDispersion();
 
-  if (conDither){
+  if (ABISMO.dither !== false && !V.sinDither){
     /* la baldosa donde toque este fotograma: el patrón se ancla al origen
        del contexto, así que mover el origen mueve el grano. En enteros y
        dentro de una baldosa —de fracción, el patrón se interpola. */

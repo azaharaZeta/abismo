@@ -13,8 +13,13 @@ const V = {
   U: 1,                             // la unidad de escena
   t: 0,                             // el reloj de la pieza, en segundos
   KY: 0, KX: 0, AMP: 0,             // la corriente, ya resuelta
-  calidad: 1, degradado: false,     // sólo los baja degradar()
-  topeOndas: ABISMO.dedo.tope, topeNiveles: 99,
+  /* LO RECORTADO, y sólo lo escribe degradar(). No son copias de la
+     escena: son factores sobre ella, que es lo que deja seguir leyendo la
+     configuración viva. Copiando el valor aquí —`topeOndas` traía
+     `ABISMO.dedo.tope`— la escena quedaba congelada en el import y un
+     mando sobre ella no hacía nada, sin decirlo. */
+  calidad: 1, degradado: false,
+  recorteOndas: 1, sinDither: false, topeNiveles: 99,
 };
 /* `campos` y `MOD` se rehacen enteros cada fotograma, así que un evento
    que termina no deja rastro que limpiar. */

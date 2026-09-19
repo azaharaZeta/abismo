@@ -1,5 +1,4 @@
 import { M, evento } from '../motor.js';
-const {opt} = M;
 
 /* ══════════════════════════════════════════════════════════════════
    LA GEMACIÓN
@@ -53,13 +52,12 @@ const {opt} = M;
 evento('gemacion', {
   exclusivo: false,
   cada: [150, 340], primero: [40, 110],
-  prueba: { espera: 6 },
   arranca(){
     return { cupo: { quedan: 1, mejorR: 0, lista: false }, fot: 0 };
   },
   actualiza(e, M, p, dt){
     if (e.cupo.quedan <= 0) return false;      // alguien la ha cogido
-    if (e.t > opt(p.espera, 6)) return false;  // o no había quien
+    if (e.t > p.espera) return false;           // o no había quien
     /* del segundo fotograma en adelante ya se puede coger: en el primero
        sólo se apuntan. Se cuentan fotogramas y no tiempo porque `e.t` ya
        viene sumado cuando llega aquí. */

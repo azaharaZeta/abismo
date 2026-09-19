@@ -39,11 +39,6 @@ evento('glitch', {
      dibujo mientras pasa un leviatán es mejor que peor */
   exclusivo: false,
   cada: [200, 460], primero: [60, 170],
-  prueba: { dura: [14, 24], saltos: [22, 40], salto: [0.22, 0.50],
-            focos: [1, 2], radio: [5.85, 10.1],
-            bandas: [8, 14], paso: [0.108, 0.235],
-            sep: 0.61, estira: 0.85, avance: 0.14, giro: [0.20, 0.70],
-            parte: 1, filo: 3 },
   arranca(M, p){
     const n = rangoE(p.focos);
     const focos = [];
@@ -76,7 +71,7 @@ evento('glitch', {
 
     /* ¿toca dar un paso? Aquí NO se sortea el foco: se avanza. */
     if (!e.roto && e.quedan > 0 && e.t >= e.prox){
-      const av = opt(p.avance, 0.15);
+      const av = p.avance;
       for (const f of e.focos){
         /* camina al azar en incrementos cortos y con suelo: a 0 el foco se
            apaga del todo y el paso siguiente se lee como que ha vuelto a

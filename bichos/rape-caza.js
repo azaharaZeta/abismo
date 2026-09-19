@@ -22,7 +22,7 @@ function querencia(f, M, p, dt){
   if (!p.querencia) return;
   const cx = M.W*0.5, cy = M.H*0.5;
   const ex = (f.bx - cx)/cx, ey = (f.by - cy)/cy;   // -1..1 por eje
-  const falta = opt(p.aro, 0.80) - Math.max(Math.abs(ex), Math.abs(ey));
+  const falta = p.aro - Math.max(Math.abs(ex), Math.abs(ey));
   if (falta <= 0) return;
   const d = Math.hypot(ex, ey);
   /* justo en el centro no hay «hacia fuera» que valga: se le da un lado y
@@ -124,7 +124,7 @@ function caza(f, M, L, p, dt){
       z.tragado = f; z.trago = 0;
       f.tragando = z;
       f.digiere = rango(p.trasComer);     // se apagará al acabar
-      f.masticaPend = rango(p.mastica || 0);
+      f.masticaPend = rango(opt(p.mastica, 0));
       f.reposo  = rango(p.reposo);
     } else {
       /* falló, y la presa sale disparada HACIA FUERA: el rumbo se le da desde
@@ -171,7 +171,7 @@ function tapa(f, M, L, p){
   /* EL CANTO VA DURO: la materia tiene canto, y el desvanecido largo es
      para los eventos. El reglaje está en escena.js. */
   const Lg = f.Lg, rot = -f.gx*f.ang;   // el mismo giro que enPez()
-  const filo = opt(p.tapaFilo, 28);
+  const filo = p.tapaFilo;
   for (const T of TAPAS){
     const c = aMundo(f, f.gx, Lg*T[0], 0);
     M.campos.push({ tipo:'tapa', plano: L.i, x: c[0], y: c[1],
@@ -231,7 +231,7 @@ function mirada(f, M, L, p, dt){
   if (presa)              { tx = presa.x; ty = presa.y; }
   else if (f.ilum > 0.02) { tx = f.luzX;  ty = f.luzY;  }
   else                    { tx = f.x;     ty = f.y;     }
-  const k = opt(p.velMira, 2.4);
+  const k = p.velMira;
   f.miraX = hacia(f.miraX, tx, k, dt);
   f.miraY = hacia(f.miraY, ty, k, dt);
 }

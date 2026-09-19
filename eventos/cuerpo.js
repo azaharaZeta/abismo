@@ -209,7 +209,7 @@ function cuerpoFlexion(b, ly, t){
 function cuerpoNuevo(M, p, x, y, espera){
   const h = M.U * rango(p.alto);
   const b = {
-    x: opt(x, rnd(0.16, 0.84)*M.W),
+    x: opt(x, rango(p.banda)*M.W),
     /* entra por arriba y desde fuera, por su altura entera: el cuerpo
        cuelga del punto (x,y), así que si arranca en el canto asoman los
        pies antes que la cabeza */
@@ -217,21 +217,21 @@ function cuerpoNuevo(M, p, x, y, espera){
     h, espera,
     vel:   rango(p.vel) * M.U,
     ang:   rnd(-0.25, 0.25),
-    vGiro: rango(p.giro || 0),
+    vGiro: rango(opt(p.giro, 0)),
     fase:  Math.random()*TAU,
     hondura: rango(p.hondura),
     deriva: Math.random()*TAU,
     /* LA POSTURA: no otra anatomía, los mismos huesos con los ángulos
        abiertos de otra manera. `abre` multiplica el del HOMBRO y la CADERA,
        `dobla` el del CODO y la RODILLA. */
-    abre:  rango(p.abre || 1),
-    dobla: rango(p.dobla || 1),
+    abre:  rango(p.abre),
+    dobla: rango(p.dobla),
     /* `arqueo` con signo sorteado: uno baja recogido hacia delante y el
        siguiente arqueado hacia atrás. */
-    arqueo: rango(p.arqueo || 0) * (Math.random() < 0.5 ? 1 : -1),
-    onda:   rango(p.onda || 0),
-    k:      TAU * rango(p.ondas || 0.5),
-    vOnda:  rango(p.velOnda || 0.2),
+    arqueo: rango(opt(p.arqueo, 0)) * (Math.random() < 0.5 ? 1 : -1),
+    onda:   rango(opt(p.onda, 0)),
+    k:      TAU * rango(p.ondas),
+    vOnda:  rango(p.velOnda),
     /* UNA FASE Y UNA VELOCIDAD POR ESLABÓN. Ocho números por cuerpo y
        sorteados una vez: es lo que impide que los cuatro miembros suban y
        bajen a la par, que es lo que más delataba el maniquí. */
@@ -261,32 +261,22 @@ function cuerpoNuevo(M, p, x, y, espera){
 evento('cuerpo', {
   exclusivo: true,
   cada: [320, 660], primero: [80, 200],
-  prueba: { alto: [5.85, 8.2], vel: [0.30, 0.55], giro: [-0.055, 0.055],
-            deriva: 0.22, vaiven: 0.30, hondura: [0.92, 1.0],
-            cuantos: [1, 3], retraso: [10, 30],
-            abre: [0.70, 1.22], dobla: [0.3, 1.8],
-            arqueo: [0.04, 0.13], onda: [0.02, 0.055],
-            ondas: [0.35, 0.8], velOnda: [0.10, 0.26],
-            filo: 1.8, penumbra: 1.25, plano: 1,
-            borde: 2.2, bordeAlcance: 4.2, bordeCaida: 2.0, bordeTecho: 0.09,
-            bordeGrosor: 0.05, bordeTono: [182, 196, 204],
-            bordeTinte: 0.22, bordeTapado: 0.25 },
   arranca(M, p){
     /* el primero entra ya; los demás esperan lo suyo. El contacto no le
        pasa un sitio a ninguno: un cuerpo que sale del dedo se lee como
        que el dedo lo ha hecho, y este evento va de encontrárselo. */
-    const n = Math.max(1, rangoE(p.cuantos || 1)|0);
+    const n = Math.max(1, rangoE(p.cuantos)|0);
     const cuerpos = [];
     let espera = 0;
     for (let i=0;i<n;i++){
       cuerpos.push(cuerpoNuevo(M, p, undefined, undefined, espera));
-      espera += rango(p.retraso || 0);
+      espera += rango(opt(p.retraso, 0));
     }
     return { cuerpos };
   },
   actualiza(e, M, p, dt){
     const plano = opt(p.plano, 1);
-    const filo = opt(p.filo, 1.8);
+    const filo = p.filo;
     /* `penumbra` agranda cada elipse por encima del cuerpo, igual que en el
        leviatán: el máximo de un campo cae en su centro, así que sin esto la
        silueta de verdad cae donde el apagado ya se está desvaneciendo y no
@@ -454,11 +444,11 @@ function pintaBordeCuerpo(b, M, p, g, plano){
   if (!(gan > 0)) return;
   const luces = M.luces(plano);
   if (!luces.length) return;
-  const alc = opt(p.bordeAlcance, 1), caida = opt(p.bordeCaida, 2);
+  const alc = opt(p.bordeAlcance, 1), caida = p.bordeCaida;
   const techo = opt(p.bordeTecho, 1);
-  const T = p.bordeTono || [180, 196, 206], tinte = opt(p.bordeTinte, 0);
-  const grosor = Math.max(0.5, M.U*opt(p.bordeGrosor, 0.05));
-  const tapado = opt(p.bordeTapado, 0.25);
+  const T = p.bordeTono, tinte = opt(p.bordeTinte, 0);
+  const grosor = Math.max(0.5, M.U*p.bordeGrosor);
+  const tapado = p.bordeTapado;
   g.lineCap = 'round';
   g.lineWidth = grosor;
 

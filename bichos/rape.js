@@ -34,13 +34,13 @@ especie('rape', {
        al canto, y ésos son justo los minutos que alguien está mirando. */
     let bx, by;
     if (p.querencia){
-      const aro = opt(p.aro, 0.80);
+      const aro = p.aro;
       const lado = (Math.random()*4)|0, t = rnd(-aro, aro);
       const ex = lado === 0 ? -aro : lado === 1 ? aro : t;
       const ey = lado === 2 ? -aro : lado === 3 ? aro : t;
       bx = (1 + ex)*0.5*M.W; by = (1 + ey)*0.5*M.H;
     } else {
-      bx = rnd(0.08,0.92)*M.W; by = rnd(0.10,0.90)*M.H;
+      bx = rango(p.banda)*M.W; by = rango(p.bandaY)*M.H;
     }
     /* de cara al centro: dir=1 mira a −x */
     const dir = p.miraAlCentro ? (bx > M.W*0.5 ? 1 : -1)
@@ -67,9 +67,9 @@ especie('rape', {
       /* el detalle que varía de uno a otro. Van a 0 si la escena no los pide,
          y entonces no se dibuja ninguno: la especie sigue sirviendo para un
          rape pequeño y esquemático al fondo. */
-      barbas:    p.barba ? rangoE(p.barbas || [3, 5]) : 0,
-      miomeros:  rangoE(p.miomeros || 0),
-      radios:    rangoE(p.radios || 0),
+      barbas:    p.barba ? rangoE(p.barbas) : 0,
+      miomeros:  rangoE(opt(p.miomeros, 0)),
+      radios:    rangoE(opt(p.radios, 0)),
       brillo: rnd(0.45, 0.8), objBrillo: 0.6, proxBrillo: rnd(0.5, 4),
       /* acecho: quieto mucho rato, embestida corta de vez en cuando. Por
          rango() y no indexando p.acecho[1]: el convenio del motor es «número
@@ -88,7 +88,7 @@ especie('rape', {
          el bocado. */
       mastica: 0, masticaTotal: 1, masticaPend: 0, masticaAb: 0,
       alFrente: false,
-      reposo: rnd(0, rango(p.reposo || 1)),
+      reposo: rnd(0, rango(p.reposo)),
       bocaX: bx, bocaY: by, tragando: null,
       sway: Math.random()*TAU,
       ilum: 0, luzX: bx, luzY: by,
@@ -98,7 +98,7 @@ especie('rape', {
       /* el bombeo de las branquias: fase y ritmo propios, o los diez rapes de
          una pecera grande respirarían al unísono */
       respFase: Math.random()*TAU,
-      respVel:  rango(p.ritmoRespira || [1.7, 2.7]),
+      respVel:  rango(p.ritmoRespira),
       respAb: 0,
       /* cuánto está congelado ahora mismo: 0 nada, 1 clavado */
       congela: 0,
@@ -153,7 +153,7 @@ especie('rape', {
     /* la dentellada: más tiempo cerrada que abierta, que es como se mastica;
        un seno pelado se lee como jadeo */
     const champ = mast
-      ? Math.pow(0.5 + 0.5*Math.sin(t*opt(p.masticaRitmo, 6.5) + f.fase), 1.6) : 0;
+      ? Math.pow(0.5 + 0.5*Math.sin(t*p.masticaRitmo + f.fase), 1.6) : 0;
     f.masticaAb = mast * opt(p.masticaAbre, 0) * champ;
 
     /* ── RESPIRA ──────────────────────────────────────────────────
