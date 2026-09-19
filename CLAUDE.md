@@ -231,6 +231,13 @@ El coste es relleno: varias pasadas a pantalla completa por fotograma.
 oscila y se ve peor que ir lento): recorta población viva de las especies
 con `escalaCalidad`, apaga el dither y baja niveles del velo. El velo nunca se quita: es lo que hace que esto sea agua.
 
+**Y SE VE EN EL PANEL, en `salud`**, porque entrar sola y no avisar es lo
+mismo que no estar: la pieza se queda a la mitad y desde fuera la única
+forma de enterarse era contar bichos —catorce peces que en un móvil salían
+siete—. La línea da el tiempo de fotograma, los fps y la cuenta atrás
+(`lento`/`paciencia`), y en rojo lo que se ha recortado. **Un número medido
+en un móvil no vale nada sin mirarla antes.**
+
 Cuándo degradar y cuánto se recorta salen de **`ABISMO.calidad`**, con
 `maxPx` al lado: el motor aplica, no decide. Y lo recortado vive en `V`
 como FACTORES sobre la escena (`V.calidad`, `V.recorteOndas`,

@@ -201,6 +201,10 @@ const CSS = `
   cursor:pointer}
 #pr-cerrar:hover{background:rgba(4,10,16,.93);border:none;color:#d98a8a}
 #pr .nota{color:#3f6473;margin:5px 0 0;line-height:1.5}
+/* y una nota ROTA sigue siendo roja. La regla de nota va DESPUÉS de la de
+   roto y con la misma especificidad, así que ganaba el último y el motivo
+   de un mando roto salía en gris: la fila en rojo y su porqué apagado. */
+#pr .nota.roto{color:#d98a8a}
 /* el tirador es casi invisible hasta que te acercas: meter un botón a la
    vista en una escena que va de oscuridad la rompe */
 #pr-tirador{position:fixed;left:0;top:50%;z-index:51;transform:translateY(-50%);
@@ -337,6 +341,28 @@ let areaJSON = null, etiqJSON = null, elegido = null;
   caja.appendChild(areaJSON);
 }
 
+/* SALUD DEL FOTOGRAMA
+   Lo primero de todo porque es lo que explica por qué la pieza no es la
+   que se dejó escrita: `degradar()` entra sola, no vuelve y recorta
+   población, dither y velo. Sin esto, la única forma de notarlo era
+   contar bichos —catorce peces que en un móvil salían siete. */
+titulo('salud');
+const salud = h('p', {className:'nota'});
+caja.appendChild(salud);
+function pintaSalud(){
+  const s = P.salud;
+  /* el panel no depende del motor: con uno viejo esta línea no sale y ya */
+  if (!s){ salud.remove(); pintaSalud = () => {}; return; }
+  const fps = s.ms > 0 ? Math.round(1000/s.ms) : 0;
+  salud.className = 'nota' + (s.degradado ? ' roto' : '');
+  salud.textContent = s.ms + ' ms · ' + fps + ' fps · ' + (s.degradado
+    ? '⚠ DEGRADADO: población ×' + s.poblacion + ', sin dither, velo a '
+      + s.niveles + ' niveles'
+    : 'techo ' + s.techo + ' ms · ' + (s.lento > 0
+        ? 'DEGRADANDO ' + s.lento + '/' + s.paciencia
+        : 'entero'));
+}
+
 /* EN MARCHA */
 titulo('en marcha');
 const listaVivos = h('div', {});
@@ -383,6 +409,7 @@ caja.appendChild(h('p', {className:'nota',
 
 /* ── refresco de lo que cambia solo ─────────────────────────────── */
 function pinta(){
+  pintaSalud();
   const vivos = P.vivos;
   listaVivos.textContent = '';
   if (!vivos.length){

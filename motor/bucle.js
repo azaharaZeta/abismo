@@ -339,8 +339,12 @@ function reinicia(){
 function vigila(ms){
   const C = ABISMO.calidad;
   if (calentando < C.calienta){ calentando++; return; }
-  if (V.degradado || ms >= C.pausa) return;
+  if (ms >= C.pausa) return;
   ema += (ms - ema)*C.memoria;
+  /* la media se sigue llevando DESPUÉS de degradar: es lo único que dice
+     si sirvió de algo, y el panel la enseña. Lo que no vuelve es la
+     decisión. */
+  if (V.degradado) return;
   /* sube de uno en uno y baja de dos en dos: hace falta que la mayoría de
      los fotogramas sean lentos, no la mitad */
   lento = ema > C.techo ? lento+1 : Math.max(0, lento-2);
@@ -631,6 +635,21 @@ window.Acuario = { arranca, reinicia, especie, evento, ESPECIES, EVENTOS, M,
     get vivos(){ return evVivos.map(e => ({nombre: e.def.nombre,
                                           t: +e.t.toFixed(1),
                                           exclusivo: !!e.def.exclusivo})); },
+    /* ── LA SALUD DEL FOTOGRAMA ──────────────────────────────────
+       `degradar()` va en un solo sentido y no avisaba a nadie: la pieza
+       se queda a la mitad —población de las especies con `escalaCalidad`,
+       dither y niveles del velo— y desde fuera la única forma de
+       enterarse era CONTAR BICHOS. Pasó: catorce peces y en un móvil
+       salían siete.
+
+       `lento` contra `paciencia` es la cuenta atrás, y es lo que hace
+       falta para ver una máquina al filo antes de que caiga. `ema` y
+       `lento` son privados de este módulo a propósito; esto es la única
+       ventana. */
+    get salud(){ const C = ABISMO.calidad;
+      return {degradado: V.degradado, ms: Math.round(ema*10)/10,
+              techo: C.techo, lento, paciencia: C.paciencia,
+              poblacion: V.calidad, niveles: V.topeNiveles}; },
     /* recoge los cambios de configuración. Con `nueva` sortea otra
        población; sin ella sólo recalcula (corriente, escala, planos). */
     aplica(nueva){ setup(!!nueva); },
