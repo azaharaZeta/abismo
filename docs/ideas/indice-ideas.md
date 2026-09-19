@@ -27,24 +27,32 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 
 ## Ideas de usuario (pendientes de procesar)
 > Solo un humano edita esta sección. Texto breve; el detalle se desarrolla al crear la ficha.
+- Claude dijo: "- El rape mira hacia FUERA el 25-40 % del tiempo, que es lo contrario de lo que promete `miraAlCentro`: `f.dir` sólo se replantea cada `giro: [14, 38]` s y además exige estar casi parado, así que cruzar la vertical del centro le cuesta hasta medio minuto de espaldas.". respuesta de usuaria: yo no noto nada mal, el rape tiende a quedarse al acecho, bien enfocado hacia dentro de la pecera, es justo lo que quiero. revisa otra vez y dime qué opinas.
+
+- Claude dijo: "- Unidades del pez linterna: `alcanceLuz`, `alcanceCuerpo` y `revelado` van en LARGOS y escalan solos con el bicho, pero `atraccion`, `roce` y `vista` van en U y no. Ya está medido lo que cuesta: `vista` 4,2 U son 1,8 largos para el pez de delante y 3,2 para el de en medio, o sea que el mismo banco tiene dos alcances según el plano. Decidir un convenio. " . Respuesta de usuaria: sí, decide un convenio adecuado y simplifica esa lógica.
+
+- Claude dijo: "- Onda de proa: un campo `empuja` que el leviatán y el cuerpo pongan al pasar, para que el plancton se aparte y no sólo se apague. OJO: choca con que el plancton ya no se aparta del dedo —habría que decidir si un cuerpo enorme es otra cosa que un dedo—, y la mota se quedó sin velocidad, así que habría que devolvérsela. " . Respuesta de usuaria: simplifíca el código, que está demasiado complejo. deja que el leviatan y el placton se ignoren
+
+- Claude dijo: "- `contagio` conserva `porContacto: 0.3`, o sea que tocar todavía puede lanzarlo: ahora se pisa con la onda de plancton del propio dedo. " . Respuesta de usuaria: que no se pisen, son cosas distintas. el dedo activa el placton que tiene cerca, el evento lanza un contagio en el placton.
+
+- Claude dijo: "- Un `manifest.json` con `orientation: portrait` y `display: standalone` dejaría la pieza instalable en la pantalla de inicio. " . Respuesta de usuaria:  vale.
+
+- Claude dijo: "- `contagio` y `floracion` son el mismo anillo que se abre con otro tipo de campo: comparten unas quince líneas escritas dos veces. Decidir si eso es duplicación o son dos eventos que se parecen. " . Respuesta de usuaria: son dos eventos distintos, permíteles vivir a los dos.
+
+- Claude dijo: "- `M.cardumen()` está documentado como una de las dos formas que tiene un evento de leer la escena y no lo usa nadie; su forma sin argumento además reparte un array nuevo. Decidir si se queda como punto de extensión o se va. " . Respuesta de usuaria: ya no hay cardumen, no? se quitó, si recuerdo bien. ahora simplemente los peces intentan seguir a algún pez si lo ven y pueden. pero confirmalo, que me puedo equivocar. si no hay cardumen ya codificado, borralo.
+
+
 - evento visitante: el visitante a veces es demasiado grande y demasiado brillante, ajustalo a la baja.
 - cuando paso el dedo, los peces apenas reaccionan. deberían salir nadando fuera de mi dedo.
 - evento cuerpos: los cuerpos son demasiado grandes, hacerlos algo más pequeños, y meterles un random de tamaño ligero. y caen dmasiado lentos, ponerlos que caigan un pelín (solo un poco) más rápido.
 - como de viable es hacer que, salvo las medusas y los peces, todos los demás bichos y objetos tapen el placton? estudiarlo bien porque podría tener impacto o ser engorroso d hacer.
 - evento: leviatan: el brillo en las aletas no está siguiendo el contorno de las aletas, parece una catenaria colgada entre los picos.
-- el placton tiende a concentrarse lejos del techo. valorar cambiar la lógica actual, y simplemente permitir que el placton fluya en un espacio toroidal, así evitamos que se apegote en los bordes, sin necesidad de alterarle el rumbo. solo aplicaría al placton.
+- el placton tiende a concentrarse lejos del techo. intentar fixearlo, o si da problemas o es demaiado engorroso, valorar que el placton simplemente navegue la pecera como un escenario toroidal.
+
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos de las ideas procesadas el 2026-09-17, el 2026-09-18 y el 2026-09-19.
 
-- El rape mira hacia FUERA el 25-40 % del tiempo, que es lo contrario de lo que promete `miraAlCentro`: `f.dir` sólo se replantea cada `giro: [14, 38]` s y además exige estar casi parado, así que cruzar la vertical del centro le cuesta hasta medio minuto de espaldas.
-- El banco va suelto: cada pez tiene 1,1 vecinos dentro de `vista` y pasa el 29 % del tiempo sin ver a ninguno. Los mandos son `vista` (4,2 U) y `total` (14). Decidir si eso es un banco deshilachado o es lo que impide que parezca un enjambre.
-- Unidades del pez linterna: `alcanceLuz`, `alcanceCuerpo` y `revelado` van en LARGOS y escalan solos con el bicho, pero `atraccion`, `roce` y `vista` van en U y no. Ya está medido lo que cuesta: `vista` 4,2 U son 1,8 largos para el pez de delante y 3,2 para el de en medio, o sea que el mismo banco tiene dos alcances según el plano. Decidir un convenio.
-- Evento `E-06 La estampida`: ya sólo le falta el registro, el campo `asusta` está hecho.
-- Evento `E-02 El apagón`: sigue siendo el de más efecto por línea de código.
-- Onda de proa: un campo `empuja` que el leviatán y el cuerpo pongan al pasar, para que el plancton se aparte y no sólo se apague. OJO: choca con que el plancton ya no se aparta del dedo —habría que decidir si un cuerpo enorme es otra cosa que un dedo—, y la mota se quedó sin velocidad, así que habría que devolvérsela.
-- `contagio` conserva `porContacto: 0.3`, o sea que tocar todavía puede lanzarlo: ahora se pisa con la onda de plancton del propio dedo.
-- Un `manifest.json` con `orientation: portrait` y `display: standalone` dejaría la pieza instalable en la pantalla de inicio.
-- El leviatán vive en el plano del fondo —un tercio de resolución y 58 % de alfa—: si aun con la luz subida se ve poco, el único mando que queda es el plano, y eso le quita el «enorme y lejos», que es su tema.
-- `M.cardumen()` está documentado como una de las dos formas que tiene un evento de leer la escena y no lo usa nadie; su forma sin argumento además reparte un array nuevo. Decidir si se queda como punto de extensión o se va.
-- `contagio` y `floracion` son el mismo anillo que se abre con otro tipo de campo: comparten unas quince líneas escritas dos veces. Decidir si eso es duplicación o son dos eventos que se parecen.
-- La cola del rape va a reloj fijo (`velCola`) y no al avance, como ya hace el banco: a su crucero son unos 24 coletazos por largo de cuerpo. Puede estar bien —cimbrea sin ir a ninguna parte—, pero está sin decidir.
+
+
+
+

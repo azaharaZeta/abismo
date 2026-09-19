@@ -1,8 +1,9 @@
 # Idea: Eventos aleatorios
 
-**Estado: EN CURSO** — arquitectura hecha; 7 implementaciones vivas de 19 eventos.
-El catálogo restante sigue vivo aquí; este fichero registra el estado de cada uno.
-**Empezada:** 2026-09-15 · **primera tanda:** 2026-09-15 · **última revisión:** 2026-09-17
+**Estado: EN CURSO** — arquitectura hecha. La pieza tiene hoy ocho eventos, cinco de
+ellos de este catálogo; el resto del catálogo sigue vivo aquí y este fichero registra
+el estado de cada uno.
+**Empezada:** 2026-09-15 · **primera tanda:** 2026-09-15 · **última revisión:** 2026-09-20
 
 > **2026-09-17 (mañana).** El usuario quitó `mira`, `marea` y `vacio` de la escena del
 > abismo, pidió más detalle en el `visitante` y encargó un leviatán (E-16, abajo). Los
@@ -19,18 +20,11 @@ El catálogo restante sigue vivo aquí; este fichero registra el estado de cada 
 > **2026-09-17 (segunda tarde).** El usuario pidió cuatro eventos más: «meter carroña»
 > (que era E-04, pendiente), «meter un cuerpo humano descendiendo» (E-17, nuevo), el
 > banco formando un pez gigante (E-18, nuevo) y un «glitch» (E-19, nuevo). **Los cuatro
-> están hechos y en la escena del abismo.** Estrenan tres cosas en el motor, y las tres
+> se hicieron**; el pez gigante se retiró después (ver la nota del 20). Estrenan tres
+> cosas en el motor, y las tres
 > estaban pedidas por el catálogo: `M.luces(plano)` —para un evento que se ve sólo cuando
 > lo alumbran—, el dato libre `d` en un campo, y `M.cardumen(plano)`, para un evento que
 > se forme donde el banco ya estaba.
->
-> El superpez empezó siendo una CACERÍA —el banco se comía una medusa— y el usuario la
-> retiró, y después pidió que no entrara el banco entero y que pudieran salir dos
-> siluetas de formas distintas: «no quiero que cacen ninguna medusa. simplemente que se conformen con forma de
-> pez y naden un poco antes de dispersarse». Con ella se fueron el campo `devora`, el
-> estado de «me están comiendo» de la medusa y la cuarta lista por plano que se había
-> añadido para elegir presa (`L.devorables`): existían sólo para eso, y dejar la máquina
-> muerta va contra las reglas de la casa.
 >
 > El `glitch` se hizo **tres veces**: la primera como error de pantalla (franjas negras y
 > líneas corridas), rechazada —«no lo quiero como un error de pantalla, sino como errores
@@ -41,6 +35,14 @@ El catálogo restante sigue vivo aquí; este fichero registra el estado de cada 
 > tiempo»—; y la cuarta con la avería avanzando a pasos cortos durante veinte segundos.
 > Estrena la cuarta cosa del motor y la más rara: el campo **`tajo`**, que no lo lee
 > ninguna especie sino el motor, justo antes de pintarla, para pintarla mal.
+
+> **2026-09-20.** «no quiero ni el superpez ni la estampida, quita del todo esos
+> eventos». **E-18 y E-06 salen del catálogo.** El superpez ya estaba fuera del código
+> desde el 18 —con él se fueron `bichos/forma.js`, el campo `forma`, el campo `devora`,
+> el estado de «me están comiendo» de la medusa y la cuarta lista por plano
+> (`L.devorables`)—; lo que quedaba era esta ficha dándolo por vivo. La estampida nunca
+> llegó a escribirse. El resumen, en `archivo/historico.md`; el texto de los dos, en
+> git.
 
 **Enunciado original (del índice):** «General: Eventos aleatorios: Crear varios,
 distintos, parametrizables y usables o no en cada pecera.»
@@ -105,8 +107,8 @@ mecanismo** es lo que hace que esto no sea quince implementaciones distintas.
 | **D** | Disparo sobre la población | Recorrer los bichos vivos una vez y tocarles el estado | bajo |
 | **E** | Reutilizar el dedo | Llamar a `impulso()` desde el planificador | ninguno |
 
-**C es la llave maestra.** Un solo mecanismo da el monstruo por ausencia, la estela
-de la manta y la estampida. Si solo se implementa una cosa nueva, que sea ésta.
+**C es la llave maestra.** Un solo mecanismo da el monstruo por ausencia y la estela
+de la manta. Si solo se implementa una cosa nueva, que sea ésta.
 
 ---
 
@@ -230,14 +232,6 @@ Integración de una línea: basta que entren en `L.luces` con `senuelo: true` y 
 código de atracción que ya existe hace todo el trabajo.
 
 *Parámetros:* `cuantas` · `vida` · `escalonado` · `parpadeo` · `dispersion`.
-
-### E-06 · La estampida  ·  mec. C
-Algo fuera de cuadro. **Todos** los bichos salen disparados en la misma dirección a
-la vez, el plancton da un fogonazo y se apaga, las escas mueren. Nunca se ve la causa.
-Dura tres segundos y deja la pecera medio vacía un rato largo.
-
-*Parámetros:* `desde` (borde o ángulo) · `fuerza` · `dura` · `secuela` (cuánto tardan
-en volver a encenderse).
 
 ### E-07 · El descenso  ·  mec. B  ·  **borrado** (2026-09-17)
 Descripción original:
@@ -555,184 +549,6 @@ está viendo— y con `cada` de cinco a diez minutos no pasa a ser decorado.
 *Parámetros:* `alto` (fracción del alto del cuadro) · `vel` · `giro` · `deriva` ·
 `vaiven` · `hondura` · `filo` · `penumbra` · `plano`.
 
-### E-18 · El superpez  ·  mec. nuevo  ·  **hecho** (2026-09-17, en cuatro pasadas)
-
-> **RETIRADO el 2026-09-18**, a petición del usuario, y sustituido por la
-> `floracion`. Con él se fueron `bichos/forma.js`, el campo `forma` y la rama de
-> formación del banco. Lo de abajo es el registro de lo que fue.
-Parte del banco, sin dejar de nadar cada uno a lo suyo, se encuentra un rato con forma de
-pez enorme —o se parte en dos y hace dos—, avanza, describe una curva y se deshace. **No caza nada, no va a ningún sitio y
-no le pasa nada a nadie: es una coincidencia que dura veinte segundos.** No dibuja ni un
-píxel: lo único que hace es mandar un rato, y flojo, sobre una población que ya estaba.
-
-Es mimetismo, y existe: un banco de peces pequeños adopta la silueta de un depredador
-grande para no ser comido. Y funciona por lo mismo que el leviatán: lo grande no se
-dibuja, se insinúa con lo que hay.
-
-#### Tres pasadas, y el encargo cambió dos veces
-1. **Una cacería.** El banco se formaba alrededor del foco más grande del plano —una
-   medusa—, la engullía con un campo `devora` y estallaba con un `asusta`. Funcionaba, y
-   costó lo suyo (ver más abajo los cuatro fallos que hubo que medir).
-2. **Rechazada la rigidez:** «está demasiado rígido: los peces se mueven como robots a
-   una posición relativa fija, y luego al deshacerse el pez también es bastante
-   forzado». Medido, tenía razón con números: el error medio de cada pez respecto a su
-   casilla era **0,002 del largo del cuerpo**. Eso no es un banco imitando a un pez, es
-   una plantilla.
-3. **Retirada la caza:** «no quiero que cacen ninguna medusa. simplemente que se
-   conformen con forma de pez y naden un poco antes de dispersarse. pero tienen que ser
-   transicciones casuales, que se noten casi como una coincidencia».
-4. **No van todos, y pueden ser dos:** «que no sea necesario que vayan todos los peces,
-   sino una cantidad aleatoria en un rango adecuado. y que puedan formar uno o dos super
-   peces, más o menos redondos, random por cada pez». Lo que hay.
-
-#### Lo que se fue con la caza
-Se borraron el campo `devora`, el `parte` de la medusa —su estado de estar siendo
-comida, su reaparición y el `devorado` de la escena—, el `asusta` final y **la cuarta
-lista por plano del motor**, `L.devorables`, con su bandera `devorable` y su
-`M.devorables()`. Existían sólo para elegir a quién comerse; dejar la máquina muerta va
-contra las reglas de la casa.
-
-En su lugar quedó **`M.cardumen(plano)`**, que el evento necesita para lo contrario: no
-para buscar a alguien, sino para saber **dónde estaba ya el banco**.
-
-#### Cómo se consigue que parezca casualidad
-Tres decisiones, y las tres son de **no hacer** algo:
-
-1. **Se forma donde ya estaban y hacia donde ya iban.** El centro sale del centro de masa
-   del banco y el rumbo, de la media de sus rumbos (como vectores: promediar radianes se
-   rompe al cruzar el ±π). Nadie se desplaza a una cita; la silueta aparece encima de
-   ellos. Con el centro sorteado, lo primero que se veía era a sesenta peces cruzando la
-   pantalla a una reunión.
-2. **Nadie se cuadra.** `formaPega` bajó de **4,0 a 1,3** —a 4 la silueta cuajaba en un
-   segundo y era un pelotón— y los peces **no dejan de nadar**: la amortiguación de su
-   nado propio bajó del 85 % al 55 %, así que siguen empujando a lo suyo y el tirón sólo
-   los sesga. Lo que cuaja la forma no es la fuerza, es el **tiempo**: `entra` de ocho a
-   catorce segundos, tres veces lo que tenía.
-3. **No se dispersa, se deshace.** Al soltar no se empuja nada. El campo baja, cada pez se
-   descuelga en su umbral y las reglas del banco vuelven solas.
-
-Y un detalle que importa más de lo que parece: **de lejos cada pez mira a su sitio y de
-cerca se alinea con el contorno**, mezclado según lo que le falte (`formaCerca`). Mirando
-al contorno desde lejos nada de lado y se ve teledirigido; mirando a su sitio también de
-cerca, al llegar se queda sin destino y gira sobre sí mismo.
-
-#### Cuántos entran, cuántas siluetas y lo redonda que sale cada una
-Tres cosas más, de la cuarta pasada, y las tres empujan en la misma dirección que el
-resto: que no se note la mano.
-
-**No van todos.** `reparto` es la fracción del banco que entra, sorteada por travesía
-(0,55-0,90), y cada pez trae de nacimiento un `apunta` que se compara con ella. Los que no
-entran no se enteran de nada y **siguen nadando a lo suyo, también por encima de la
-silueta**. Eso no es un defecto: es la otra mitad de lo que hace que la forma parezca una
-casualidad. Medido: 38-59 peces de 68.
-
-**Una silueta o dos.** Dos sólo si hay peces para las dos (`minimo` por cabeza), y el
-banco se parte por donde se partiría solo: por el **signo de la perpendicular a su propio
-rumbo medio**, o sea por el costado. Cada mitad saca entonces su centro y su rumbo, así
-que ninguna de las dos se coloca a mano. Si el corte sale desigual no hay dos: una silueta
-de cuatro peces no es una silueta.
-
-Y el largo se reparte **por la raíz del número** (÷1,41 con dos): dos siluetas se hacen con
-la mitad de peces cada una, así que midiendo lo mismo saldrían al doble de separación entre
-peces y el canto dejaría de cerrar. Lo que hay que mantener es la densidad por perímetro.
-
-Cada pez lee **el campo que más le pesa**, o sea el de la silueta a la que está más cerca:
-el reparto es espacial y nadie lleva apuntado a qué bando va. Y como las dos nacen sobre
-el centro de su propia mitad, casi todos empiezan ya del lado que les toca.
-
-**Más o menos redondas.** `redondez` (0,70-1,55) lo sortea CADA silueta y multiplica al
-semiancho: a 0,70 un pez fusiforme y a 1,55 uno de cuerpo alto, casi un disco. La horquilla
-de la cola crece con ella —una cola de pez plano es ancha— y el morro, la cintura y el
-perfil se quedan donde estaban, así que lo que cambia es la proporción y no el dibujo. Con
-dos en pantalla a la vez, que no se parezcan es lo que dice que son dos bichos y no un
-efecto duplicado.
-
-**Un fallo que sólo salió midiendo:** con veinte arranques seguidos **nunca** salían dos
-siluetas. La causa era el conteo: `arranca` miraba `M.cardumen(plano)`, o sea los 29 peces
-del plano de delante, cuando en realidad se le apuntan los 68 —el campo se pone en un plano
-pero la guarda de profundidad sólo excluye a quien pregunta desde más cerca, así que lo leen
-también los de atrás—. Con 29 candidatos y un cupo del 0,69 quedaban 20, por debajo del
-`minimo`×2 que exigen dos siluetas. `M.cardumen()` sin argumento devuelve ahora los tres
-planos juntos, y con eso salen **11 de 24 arranques con dos siluetas**.
-
-#### Y que el banco no vaya como un remache
-Variación **por pez**, sorteada al nacer y suya para siempre —el mismo patrón que ya
-usaba `desorden` para el banco libre—:
-
-| | qué abre | efecto |
-|---|---|---|
-| `kPega` | ±80 % de la gana con la que tira a su sitio | unos llegan en un tercio del tiempo que otros |
-| `errL` | error de puesto a lo LARGO del cuerpo | adelantados y retrasados |
-| `errT` | y a lo ancho, a la mitad | el transversal desdibuja el canto mucho más |
-| `errA` | ±0,35 rad de desvío del morro | una fila de peces paralelos delata la plantilla |
-| `suelta` | 0 a 0,77 de campo | ni se forman ni se deshacen todos a la vez |
-
-El error **vaga**, no está congelado: cada pez recorre despacio una elipse alrededor de su
-casilla, longitudinal y transversal en contrafase. Congelado, la silueta sale con sus
-defectos clavados y vuelve a parecer dibujada, sólo que peor dibujada.
-
-Y el **nervio no se calla, se baja** (`formaCalma` 0,70, o sea que queda un 30 % de tirón
-y de desvío). Estuvo apagado del todo por encima de 0,3 de campo —es un tirón de hasta
-55 px/s y encima tuerce el rumbo— y el precio fue justo la rigidez.
-
-`suelta` tuvo que llegar **alto**: con un tope de 0,35 la silueta aguantaba con los 68
-hasta el último segundo de la rampa y luego caía de golpe. Y `sale` subió a 4-7 s, porque
-descolgarse pez a pez necesita rampa.
-
-#### Medido
-Con el bucle del motor a 1 Hz —el panel del navegador oculto lo estrangula— la medición se
-hizo **corriendo la simulación a mano**: `arranca()` del evento y luego, paso a paso a
-1/60 s, su `actualiza` y el de los 68 peces. Una travesía entera (`entra` 9 · `nada` 10 ·
-`sale` 5):
-
-| t (s) | 0 | 2,5 | 5 | 7,5 | 10 | 15 | 20 | 22,5 |
-|---|---|---|---|---|---|---|---|---|
-| fuerza del campo | 0 | 0,19 | 0,59 | 0,93 | 1 | 1 | 0,89 | 0,21 |
-| peces en formación | 0 | 19 | 51 | 68 | 68 | 68 | 68 | 20 |
-| error mediana (largos) | — | 0,294 | 0,104 | 0,039 | 0,036 | 0,041 | 0,042 | 0,096 |
-| error p90 | — | 0,551 | 0,253 | 0,101 | 0,090 | 0,077 | 0,086 | 0,129 |
-
-O sea: la forma cuaja en unos ocho segundos y se queda en una **meseta de 0,036-0,042 del
-largo** —unos veinte píxeles de una silueta de 489— con el p90 en 0,08. Veinte veces más
-suelta que la primera versión, y sin dejar de ser la silueta. Y la travesía **avanza
-200 px y gira 89°**: una curva abierta, no un arco de compás.
-
-Una advertencia de método: en la simulación a mano `M.t` no avanza, así que el vagar del
-error queda congelado y la meseta medida es el error **estructural**. En marcha, además,
-respira.
-
-Con DOS siluetas y cupo 0,71 —50 peces de 68— la travesía entera da 13 → 44 → 50 en
-formación durante `entra` y una meseta de error de **0,043-0,062**, algo más suelta que con
-una sola. (Un punto de la serie salió en 0,127: son peces que cruzan entre los dos campos y
-se miden contra la silueta equivocada durante un instante, no una degradación real.)
-
-Y una comprobación visual del contorno, dibujando en una rejilla de texto los puestos
-teóricos y dónde acaban los peces: a los cuatro segundos son un grumo en el centro y a los
-dieciséis trazan el canto, cada uno un poco por dentro o por fuera. (Aviso para la próxima
-vez: al pintar la rejilla hay que poner los peces ENCIMA del contorno. Pintando el
-contorno último, los peces que sí estaban en su sitio quedaban tapados y parecía que la
-formación no cuajaba.)
-
-#### Los cuatro fallos de la primera versión, que siguen valiendo
-1. **El rumbo y el morro.** La silueta está escrita con el morro en el local −0,5 y el eje
-   +x del bicho es su rumbo: faltaba un signo, y el pez nadaba de espaldas.
-2. **Rumbo solo no cuaja la forma.** Un pez que vira a 3 rad/s y nada a 0,66 U/s *orbita*
-   su puesto en vez de llegar. Hace falta un tirón de posición.
-3. **Los del canto van A LO LARGO del canto**, por la tangente. Con todos paralelos al
-   rumbo, un contorno hecho de rayitas de 40 px se lee como una fila de guiones.
-4. **El campo tiene que ser ancho y PLANO.** Con `alcance` 0,95 se apuntaban 21 peces de
-   68; y agrandar el radio no basta con `filo` bajo, porque el peso del campo *es* la
-   fuerza del tirón. Con `alcance` 2,2 y `filo` 6 se apuntan los 68.
-
-El largo no se pide, se **mide**: `escQueCabe` prueba escalas de mayor a menor y coge la
-primera en la que 21 de 24 puntos del contorno caen dentro del cuadro.
-
-*Parámetros:* `largo` / `largoMin` · `superpeces` / `reparto` / `redondez` · `minimo`
-(peces por silueta) · `entra` / `nada` / `sale` · `vel` · `giroMax` / `giroPaso` ·
-`alcance` / `filo`. En el banco:
-`formaPega`, `formaCerca`, `formaBrillo` y los tres del desorden —`formaError`,
-`formaDesorden`, `formaCalma`.
-
 ### E-19 · El glitch  ·  mec. nuevo  ·  **hecho** (2026-09-17, en cuatro pasadas)
 Se rompe el **dibujo de una medusa**, no la pantalla. Uno o dos focos aparecen en sitios
 cualesquiera y a las medusas que caen dentro se les pinta el cuerpo cortado en **bandas
@@ -843,11 +659,11 @@ setecientas llamadas que se ahorran.
 ## Reparto sugerido por pecera
 
 - **Abismo (hoy):** E-09 `contagio`, el `visitante`, E-16 `leviatan`, E-04 `carrona`,
-  E-17 `cuerpo`, E-18 `superpez` y E-19 `glitch`. Son los siete eventos que existen
-  hoy, y los siete están en la escena: el resto de la tabla está por escribir o
-  borrado. Cuatro son exclusivos —`leviatan`, `cuerpo`, `superpez` y `marea` ya no
-  existe—, así que conviene vigilar que no se pisen.
-- **Abismo (propuesto):** sumarle E-02 y E-06 · y E-08 de fondo.
+  E-17 `cuerpo` y E-19 `glitch`, más `floracion` y `gemacion`, que no salieron de este
+  catálogo. Son los ocho eventos que existen hoy y los ocho están en la escena: el
+  resto de la tabla está por escribir o borrado. Dos son exclusivos —`leviatan` y
+  `cuerpo`—, así que conviene vigilar que no se pisen.
+- **Abismo (propuesto):** sumarle E-02 · y E-08 de fondo.
 - **Medusas:** E-09, E-13, E-14 · y E-10 si se quiere algo grande.
 - **Una pecera alegre futura:** E-09, E-10, E-11, E-12, E-15.
 - **En ninguna por defecto:** todas. `eventos: []` y la pecera se queda como está hoy.
@@ -861,8 +677,8 @@ En este orden, porque cada paso paga el siguiente y el primero no necesita motor
    disparo sobre la población.
 3. **E-07 + E-15 El descenso y el amanecer** — mec. B. Dos eventos de registros
    opuestos por una implementación.
-4. **E-01 El vacío** — mec. C. La joya, y al abrir los campos deja hechas la estela
-   de E-10 y la estampida de E-06.
+4. **E-01 El vacío** — mec. C. La joya, y al abrir los campos deja hecha la estela
+   de E-10.
 
 ## ESTADO POR EVENTO
 
@@ -873,7 +689,6 @@ En este orden, porque cada paso paga el siguiente y el primero no necesita motor
 | E-03 | El que mira | A | **borrado** el 2026-09-17 |
 | E-04 | La caída | A | **hecho** · `carrona`, en `abismo`, plano 1 |
 | E-05 | El engaño | A | pendiente |
-| E-06 | La estampida | C | pendiente |
 | E-07 | El descenso | B | **borrado** el 2026-09-17 con `marea` |
 | E-08 | Nevada | B | pendiente |
 | E-09 | El contagio | D | **hecho** · en las dos piezas, y con el dedo |
@@ -885,13 +700,13 @@ En este orden, porque cada paso paga el siguiente y el primero no necesita motor
 | E-15 | El amanecer | B | **borrado** el 2026-09-17 con `marea`; nunca tuvo pecera |
 | E-16 | El leviatán | C | **hecho** · en `abismo`, plano 0 |
 | E-17 | El cuerpo | C | **hecho** · `cuerpo`, en `abismo`, plano 1 |
-| E-18 | El superpez | nuevo | **hecho** · `superpez`, en `abismo`, plano 2 |
 | E-19 | El glitch | nuevo | **hecho** · `glitch`, en `abismo`, sin plano |
 
-Quedan **siete implementaciones vivas** —`contagio`, `visitante`, `leviatan`,
-`carrona`, `cuerpo`, `superpez` y `glitch`—, y las siete están en la escena del abismo.
+Quedan **ocho implementaciones vivas** —`contagio`, `visitante`, `leviatan`, `carrona`,
+`cuerpo`, `glitch`, `floracion` y `gemacion`—, y las ocho están en la escena del abismo.
 Llegó a haber seis eventos hechos con cinco implementaciones; cuatro se borraron el
-2026-09-17 a petición del usuario y ese mismo día se añadieron cuatro nuevos.
+2026-09-17 a petición del usuario y ese mismo día se añadieron cuatro nuevos, de los
+que el superpez se retiró después.
 
 ## Arquitectura, tal como quedó
 
@@ -979,27 +794,27 @@ es lo que dice que el mecanismo funcionaba, y el mecanismo sigue en el motor.)
 
 ## Siguiente acción
 
-Elegir de la tabla los siguientes. `E-06 La estampida` y `E-10 La manta` ya casi están
-hechos: el mecanismo C está abierto y `E-16` acaba de estrenar campos con guarda de
-plano, o sea que a la manta sólo le falta el tipo `empuja` —que `vacio` ya usa— y a la
-estampida un `asusta`. `E-14 Lluvia` es prácticamente gratis (mecanismo E).
+Elegir de la tabla los siguientes. `E-02 El apagón` sigue siendo el de más efecto por
+línea de código. Pero la pecera ya NO está escasa de eventos: son ocho, dos de ellos
+exclusivos. El siguiente problema es el contrario —que no se pisen— y para eso están
+`exclusivo` y los `cada`.
 
-`E-02 El apagón` sigue siendo el de más efecto por línea de código. Pero la pecera ya
-NO está escasa de eventos: con la carroña, el cuerpo, el superpez y el glitch dentro, el
-abismo tiene siete, cuatro de ellos exclusivos. El siguiente problema es el contrario
-—que no se pisen— y para eso están `exclusivo` y los `cada`.
+Y OJO CON LOS «YA CASI ESTÁ» DE ESTA SECCIÓN, que es lo que enseñó la revisión del
+2026-09-20: decían que a `E-10 La manta` sólo le faltaba un `empuja` y a `E-14 Lluvia`
+nada (mecanismo E). Comprobado en el código de hoy, ninguna de las dos: el tipo de
+campo `empuja` no existe —se fue con el `vacio` y el plancton tampoco lo lee ya, que
+se quedó sin velocidad— e `impulso()` no se exporta de `motor/dedo.js`, así que el
+mecanismo E está cerrado. Antes de dar por barato un evento de aquí, mirar el motor.
 
-Cabos sueltos que dejan los cuatro nuevos:
+Cabos sueltos:
 
 - **La carroña no entra en `L.presas`**, que era la mitad del diseño de E-04: los rapes
   tendrían que dejar de emboscar y converger. Las listas por plano se rehacen de los
   grupos de especies, así que un objeto de evento no puede apuntarse. O la carroña pasa
   a ser especie, o el motor admite que un evento se apunte.
-- **`E-06 La estampida` ya sólo necesita el registro**: el campo `asusta` está hecho y
-  con dos consumidores (el rape al morder y el superpez al estallar).
 - **`E-10 La manta`** sigue a un `empuja` de distancia, y ese tipo de campo se fue con
-  el `vacio`: hay que volver a escribirlo, aunque el plancton todavía lo lee.
-- El **superpez** no siempre encuentra presa: exige un `devorable` dentro de la banda
-  central del cuadro y en el plano de delante suele haber UNA sola medusa, así que a
-  veces el evento se muere en el primer fotograma. Es aceptable —un superpez sin nada
-  que comerse es una coreografía— pero lo hace más raro de lo que dice su `cada`.
+  el `vacio`: hay que volver a escribirlo, y además devolverle velocidad a la mota.
+- **`asusta` se ha quedado con un solo productor**, el rape al morder, y un solo
+  lector, el pez linterna. Ni la medusa, ni el copépodo, ni el plancton miran ese
+  campo, y el rape no lee ninguno. Es lo que hay que saber antes de prometer un
+  evento que mueva a «todos los bichos» a la vez.

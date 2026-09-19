@@ -290,3 +290,28 @@ documentación.
   hizo falta tocarlo. `vista` son 4,2 U, que para el pez del plano de
   delante son 1,8 largos de cuerpo. Ya es cerca —de hecho es la razón de que
   cada pez vea a 1,2 vecinos de media y esté solo un cuarto del tiempo.
+
+## 2026-09-20 · fuera el superpez y la estampida
+
+- **«no quiero ni el superpez ni la estampida, quita del todo esos eventos»** ·
+  **DESCARTADOS los dos**, y salen del catálogo de `idea-eventos-aleatorios.md`.
+  El superpez ya no estaba en el código desde el 18 (ver la entrada de arriba);
+  lo que quedaba era la ficha dándolo por vivo en cuatro sitios y contando siete
+  eventos donde hay ocho. La estampida (E-06 · «algo fuera de cuadro, todos los
+  bichos salen disparados a la vez, el plancton da un fogonazo y se apaga, las
+  escas mueren») **nunca llegó a escribirse**.
+
+  **El dato que costó y que la ficha tenía mal:** decía que a la estampida «ya
+  sólo le falta el registro, el campo `asusta` está hecho y con dos consumidores».
+  Hoy `asusta` tiene **un** productor —el rape al morder— y **un** lector —el pez
+  linterna—: el segundo consumidor era el superpez. Ni la medusa, ni el copépodo,
+  ni el plancton leen campo alguno de susto, y el rape no lee NINGÚN campo, así
+  que «las escas mueren» no tenía mecanismo. La versión barata sí era barata —un
+  `asusta` enorme con el centro fuera de cuadro da una dirección de huida casi
+  común, como hace la gemación con `r: hypot(W,H)*1,2`—, pero sólo habría movido
+  al banco. «Todos los bichos» era código nuevo en cuatro especies.
+
+  **Y de paso, dos «ya casi está» de esa ficha que tampoco lo eran:** `E-10 La
+  manta` necesita el tipo de campo `empuja`, que no existe (se fue con el `vacio`
+  y la mota se quedó sin velocidad), y `E-14 Lluvia` no es gratis porque
+  `impulso()` no se exporta de `motor/dedo.js`: el mecanismo E está cerrado.
