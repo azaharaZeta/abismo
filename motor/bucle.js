@@ -516,6 +516,26 @@ function pasoPlanos(dt){
 /* Los planos sumados sobre el agua, y el remate: el velo y el grano. El
    grano va a resolución nativa —de ahí el transform a identidad— o el
    ruido se interpola y deja de romper el bandeado. */
+/* ── EL REPARTO DEL FOTOGRAMA ───────────────────────────────────────
+   Una media móvil por etapa, sólo para el panel. Cuesta seis
+   `performance.now()` por fotograma —microsegundos contra decenas de
+   milisegundos— y a cambio se deja de adivinar: «el coste es relleno» no
+   dice si el relleno es el agua, los planos o el velo, y en el móvil de
+   otro es lo único que se puede llegar a saber.
+
+   OJO AL LEERLO: un `drawImage` se ENCOLA, no se ejecuta, así que lo que
+   se mide es el tiempo de CPU de pedirlo. El parón real aparece en la
+   primera etapa que necesite el resultado —normalmente `suma`, que es
+   quien lee los tres lienzos de plano—. Sirve para ver quién se lleva el
+   fotograma, no para sumar exactamente 100. */
+const etapas = {eventos:0, agua:0, planos:0, suma:0, velo:0, grano:0};
+let tEtapa = 0;
+function marca(k){
+  const t = performance.now();
+  etapas[k] += (t - tEtapa - etapas[k]) * ABISMO.calidad.memoria;
+  tEtapa = t;
+}
+
 function componePlanos(){
   V.ctx.globalCompositeOperation = 'lighter';
   for (const L of PLANOS){
@@ -524,9 +544,11 @@ function componePlanos(){
   }
   V.ctx.globalAlpha = 1;
   V.ctx.globalCompositeOperation = 'source-over';
+  marca('suma');
 
   /* el velo va DENTRO del agua: después de la luz y antes del grano */
   pintaDispersion();
+  marca('velo');
 
   if (ABISMO.dither !== false && !V.sinDither){
     /* la baldosa donde toque este fotograma: el patrón se ancla al origen
@@ -539,6 +561,7 @@ function componePlanos(){
     V.ctx.fillRect(-ox, -oy, V.cv.width, V.cv.height);
     V.ctx.globalCompositeOperation = 'source-over';
   }
+  marca('grano');
 }
 
 function frame(ahora){
@@ -565,10 +588,11 @@ function frame(ahora){
      que se le pide al plano del fondo */
   V.ctx.imageSmoothingEnabled = true;
 
-  pasoEventos(dt);
-  pintaAgua();
-  pasoPlanos(dt);
-  componePlanos();
+  tEtapa = performance.now();
+  pasoEventos(dt);  marca('eventos');
+  pintaAgua();      marca('agua');
+  pasoPlanos(dt);   marca('planos');
+  componePlanos();  // se marca por dentro: suma, velo y grano
 }
 
 function alRedimensionar(){
@@ -654,7 +678,8 @@ window.Acuario = { arranca, reinicia, especie, evento, ESPECIES, EVENTOS, M,
                  término que manda y no se deducen de la pantalla: `dpr`
                  sale de `calcDpr`, que ya recorta contra `maxPx`. */
               dpr: Math.round(V.dpr*100)/100,
-              px: Math.round(V.W*V.dpr*V.H*V.dpr/1e4)/100}; },
+              px: Math.round(V.W*V.dpr*V.H*V.dpr/1e4)/100,
+              etapas}; },
     /* recoge los cambios de configuración. Con `nueva` sortea otra
        población; sin ella sólo recalcula (corriente, escala, planos). */
     aplica(nueva){ setup(!!nueva); },

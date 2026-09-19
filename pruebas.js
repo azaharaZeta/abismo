@@ -365,6 +365,8 @@ let areaJSON = null, etiqJSON = null, elegido = null;
 titulo('salud');
 const salud = h('p', {className:'nota'});
 caja.appendChild(salud);
+const reparto = h('p', {className:'nota'});
+caja.appendChild(reparto);
 function pintaSalud(){
   const s = P.salud;
   /* el panel no depende del motor: con uno viejo esta línea no sale y ya */
@@ -379,6 +381,13 @@ function pintaSalud(){
     : 'techo ' + s.techo + ' ms · ' + (s.lento > 0
         ? 'DEGRADANDO ' + s.lento + '/' + s.paciencia
         : 'entero'));
+  /* y a dónde se va el fotograma. Ordenado de mayor a menor porque lo que
+     se busca es quién se lo lleva, no el orden de la tubería. */
+  const e = s.etapas;
+  reparto.textContent = e
+    ? Object.keys(e).sort((a,b) => e[b]-e[a])
+        .map(k => k + ' ' + (Math.round(e[k]*10)/10)).join(' · ') + ' ms'
+    : '';
 }
 
 /* EN MARCHA */
