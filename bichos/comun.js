@@ -81,8 +81,8 @@ function paso(M, L, dt, x, y, vx, vy){
   /* M.ritmo lo mueve un evento de modulación: es «todo se ralentiza» sin
      que ninguna especie sepa que hay un evento */
   const t = M.t, d = L.drift * M.ritmo;
-  _av[0] = x + (vx + M.flujoX(y, t)) * dt * d;
-  _av[1] = y + (vy + M.flujoY(_av[0], t)) * dt * d;
+  _av[0] = x + (vx + M.flujoX(x, y, t)) * dt * d;
+  _av[1] = y + (vy + M.flujoY(x, y, t)) * dt * d;
   return _av;
 }
 /* el caso de siempre: el bicho vive en x,y */

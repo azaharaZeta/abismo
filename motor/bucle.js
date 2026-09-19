@@ -249,8 +249,10 @@ function setup(repoblar){
   V.U = Math.sqrt(V.W*V.H)/ABISMO.escala;
 
   const C = ABISMO.corriente;
-  V.KY  = Math.PI/V.H * C.ondaY;
-  V.KX  = Math.PI/V.W * C.ondaX;
+  /* medias ondas que caben en el cuadro; enteras, o el seno no se anula
+     contra el cristal (ver `flujoX` en estado.js) */
+  V.KY  = Math.PI/V.H * Math.max(1, Math.round(C.ondaY));
+  V.KX  = Math.PI/V.W * Math.max(1, Math.round(C.ondaX));
   V.AMP = V.U*C.amplitud;
 
   /* la configuración se vuelca encima del plano vivo, así que tocar

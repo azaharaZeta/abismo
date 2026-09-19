@@ -96,8 +96,17 @@ export const ABISMO = {
     caida: 0.72,                  // lo que pierde cada nivel al ensanchar
   },
 
-  /* dos senos en función de la posición; aquí abajo, lenta y corta */
-  corriente: { amplitud: 0.16, ondaY: 0.7, ondaX: 0.7, vel: 0.05 },
+  /* ── LA CORRIENTE ─────────────────────────────────────────────────
+     Remolinos que se deshacen y se rehacen, no un arrastre. `ondaX` y
+     `ondaY` son CUÁNTOS caben a lo ancho y a lo alto, y TIENEN QUE SER
+     ENTEROS: de ahí depende que el agua se deslice a lo largo del cristal
+     en vez de empujar contra él, que es lo único que impide que la nieve
+     marina se apelotone en una esquina. El porqué, en `flujoX` de
+     motor/estado.js. El motor los redondea, pero escríbelos enteros.
+
+     `amplitud` es la punta de velocidad en U/s y `vel` cada cuánto se
+     transforman —a 0,05 la vuelta entera son dos minutos. */
+  corriente: { amplitud: 0.16, ondaY: 2, ondaX: 1, vel: 0.05 },
 
   /* Tendencia a no salirse del encuadre, no una pared: el empuje aparece
      a `margen` del canto y crece al acercarse. El cristal duro es aparte,

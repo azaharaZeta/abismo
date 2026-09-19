@@ -229,7 +229,7 @@ const MEDUSA = {
       /* PATRULLA: entre qué dos alturas va y viene. Los extremos se sortean
          POR SEPARADO, que con centro más amplitud el reparto vertical sale
          peor. Manda la CORRIENTE y no su flotabilidad: `flujoY` da hasta
-         1,8 px/s y ella se mueve a 0,16. */
+         6,7 px/s en caja de móvil y ella se mueve a 0,16. */
       zTop: rango(pat), zBot: 1 - rango(pat),
       vigor: p.vigor[0] + (p.vigor[1]-p.vigor[0])*Math.pow(Math.random(), 0.45),
       vx:0, vy:0,
@@ -282,7 +282,7 @@ const MEDUSA = {
     const dC = (j.contract - pulso(f0)) / Math.max(dt, 1e-4);
 
     j.tilt = j.tiltAmp*Math.sin(t*j.tiltRate + j.tiltFase)
-           + clamp(M.flujoX(j.y,t)*0.010, -0.09, 0.09);
+           + clamp(M.flujoX(j.x,j.y,t)*0.010, -0.09, 0.09);
 
     if (dC > 0){
       /* el empuje va por el eje del cuerpo: inclinada, avanza en diagonal, y

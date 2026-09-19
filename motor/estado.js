@@ -45,7 +45,52 @@ const frente = [];
    y setup(): recalcular sin repoblar no tira población. */
 const PLANOS = [];
 
-const flujoX = (y,t) => Math.sin(y*V.KY + t*ABISMO.corriente.vel) * V.AMP;
-const flujoY = (x,t) => Math.cos(x*V.KX - t*ABISMO.corriente.vel*0.8) * V.AMP*0.5;
+/* ── LA CORRIENTE ───────────────────────────────────────────────────
+   Sale de una FUNCIÓN DE CORRIENTE ψ y no de dos senos sueltos, y el
+   motivo es la caja: **en una pecera cerrada, un campo con componente
+   NORMAL a la pared apila bichos contra el cristal y no los devuelve**.
+   `envuelve()` mete al que sale y le invierte la velocidad, pero la mota
+   de plancton no tiene velocidad a propósito, así que para ella la pared
+   es un `clamp` puro: el primero que llega se para y los demás se apilan
+   detrás. Cada visita comprime el reparto y al invertirse la corriente
+   salen todos juntos, comprimidos. Es un trinquete. MEDIDO con los dos
+   senos de antes: en diez minutos la nieve marina pasaba de cubrir el
+   cuadro entero a dejar un tercio vacío, y la dispersión caía un 28 % sin
+   recuperarse.
+
+   Con ψ = sin(kx·x)·sin(ky·y) y las k múltiplos exactos de π/W y π/H, ψ
+   vale 0 en las cuatro paredes: el cristal ES una línea de corriente, o
+   sea que el agua se desliza A LO LARGO de él y nunca contra él. Y al
+   salir de un rotacional —vx = ∂ψ/∂y, vy = −∂ψ/∂x— no tiene divergencia,
+   así que tampoco se acumula nada por dentro.
+
+   POR ESO `ondaX` Y `ondaY` TIENEN QUE SER ENTEROS: son cuántas medias
+   ondas caben en el cuadro, o sea cuántos remolinos hay. Un 0,7 deja el
+   seno sin anularse contra el cristal y vuelve el apilamiento.
+
+   DOS MODOS EN CUADRATURA para que el agua no se pare: con uno solo el
+   dibujo entero se anula dos veces por vuelta y el cuadro se queda
+   congelado antes de invertirse. Con el segundo a `sin` de lo que el
+   primero lleva a `cos`, siempre hay uno a pleno y lo que se ve es que
+   los remolinos se deshacen y se rehacen.
+
+   El segundo modo pesa `W2` y el conjunto va dividido por `NORM`, que es
+   lo que hace que `amplitud` siga queriendo decir LA PUNTA de velocidad
+   horizontal: sin ella los dos modos se suman y la desbordan un 41 %. */
+const W2 = 0.5, NORM = 1/Math.hypot(1, W2);
+const flujoX = (x,y,t) => {
+  const w = t*ABISMO.corriente.vel, c = Math.cos(w), s = Math.sin(w);
+  return V.AMP*NORM * Math.cos(y*V.KY)
+       * (Math.sin(x*V.KX)*c + W2*Math.sin(2*x*V.KX)*s);
+};
+/* Y EL FACTOR KX/KY NO ES UN ADORNO: es lo que hace incompresible al par.
+   De ahí sale que el mismo remolino dé más vertical en una caja alta, y
+   que aquí no haya un `0.5` a mano como antes —el reparto entre vx y vy
+   lo decide la forma del cuadro, no un gusto. */
+const flujoY = (x,y,t) => {
+  const w = t*ABISMO.corriente.vel, c = Math.cos(w), s = Math.sin(w);
+  return -V.AMP*NORM * (V.KX/V.KY) * Math.sin(y*V.KY)
+       * (Math.cos(x*V.KX)*c + 2*W2*Math.cos(2*x*V.KX)*s);
+};
 export { V, campos, camposDe, vaciaCampos, indexaCampos,
          MOD, reiniciaMod, frente, PLANOS, flujoX, flujoY };

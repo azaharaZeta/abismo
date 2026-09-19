@@ -27,8 +27,11 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 
 ## Ideas de usuario (pendientes de procesar)
 > Solo un humano edita esta sección. Texto breve; el detalle se desarrolla al crear la ficha.
-
-_(ninguna)_
+- evento visitante: el visitante a veces es demasiado grande y demasiado brillante, ajustalo a la baja.
+- cuando paso el dedo, los peces apenas reaccionan. deberían salir nadando fuera de mi dedo.
+- evento cuerpos: los cuerpos son demasiado grandes, hacerlos algo más pequeños, y meterles un random de tamaño ligero. y caen dmasiado lentos, ponerlos que caigan un pelín (solo un poco) más rápido.
+- como de viable es hacer que, salvo las medusas y los peces, todos los demás bichos y objetos tapen el placton? estudiarlo bien porque podría tener impacto o ser engorroso d hacer.
+- evento: leviatan: el brillo en las aletas no está siguiendo el contorno de las aletas, parece una catenaria colgada entre los picos.
 
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos de las ideas procesadas el 2026-09-17, el 2026-09-18 y el 2026-09-19.
