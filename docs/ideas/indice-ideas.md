@@ -11,12 +11,17 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
       - Se **QUITA de este índice** 
       - Si es una idea sencilla y rápida de ejecutar, queda implementada, y ya no necesita estar documentada como idea.
       - Si es una idea compleja que requiere análisis: Crea su fichero propio `idea-<nombre-idea>.md` en **esta misma carpeta** (`docs/ideas/`). El análisis, el estado y el histórico van en ESE fichero, nunca aquí.
-4. **Cuando una idea se TERMINA (implementada) o se DESCARTA**: se actualiza su fichero con el estado final y se **MUEVE a `archivo/`** (subcarpeta de esta misma ruta).
+4. **Cuando una idea se TERMINA (implementada) o se DESCARTA**: se resume en **una entrada corta en
+   [`archivo/historico.md`](archivo/historico.md)** —qué se pidió, qué se decidió, y sólo el dato que costó
+   averiguar y no esté ya en el código— y **se BORRA su fichero**. La ficha entera se queda en git, que es
+   donde vive el detalle; el archivo es para no repetir trabajo, no para guardarlo todo.
+   Un resultado NEGATIVO («se probó X y no funciona») es lo más valioso que puede dejar una idea: ése no se
+   resume, se escribe entero.
 5. **Al archivar, los temas pendientes que deja la idea** (su "siguiente acción"):
    - si son **simples / sin analizar** → se añaden como idea(s) BREVE(s) en este índice (para procesar luego);
    - si ya están **analizados / son complejos** → van directamente a su propio fichero `<idea>.md` (NO al índice).
-6. **Corolario:** una idea que YA tiene fichero (en esta carpeta o en `archivo/`) **NO aparece en este índice**.
-   Si la ves listada aquí y ya tiene fichero, es un error de mantenimiento → quítala.
+6. **Corolario:** una idea que YA tiene fichero en esta carpeta, o una entrada en el histórico, **NO aparece
+   en este índice**. Si la ves listada aquí y ya está en marcha o cerrada, es un error de mantenimiento → quítala.
 
 ---
 

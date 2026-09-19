@@ -40,8 +40,7 @@ import { porReparto, pintaHalo, reparte, giroCorto, mezclaAng,
        separación no mira el cono.
 
    Ninguno cambia la FORMA del banco —la elongación se queda en 1,9—: lo
-   que arreglan es la sincronía. Las tandas, en
-   docs/ideas/archivo/idea-cardumen-desorden.md.
+   que arreglan es la sincronía.
 
    `mira` es si a este pez le toca mirar este fotograma. Cuando no le
    toca, la separación se aplica igual —esquivar no es una decisión que se
