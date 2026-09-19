@@ -23,10 +23,20 @@ export const ABISMO = {
 
   agua: {
     /* LA LUZ DE FONDO, multiplicador sobre la tira de abajo: a 0 el agua
-       es negra del todo y los bichos quedan flotando en el vacío, a 2 el
-       techo se aclara y el abismo deja de tener hondura. Lo multiplica
-       además `M.mod.agua`, que es lo que mueve un evento. */
-    brillo: 1,
+       es negra del todo y los bichos quedan flotando en el vacío. Lo
+       multiplica además `M.mod.agua`, que es lo que mueve un evento.
+
+       Por encima de 1 la tira se vuelve a pasar entera (ver `sumaVeces`), y
+       lo que hace no es aclarar el cuadro sino ABRIR EL DEGRADADO: como el
+       techo parte de [4,13,21] y el suelo de [0,0,1], multiplicar reparte
+       casi todo arriba. MEDIDO en pantalla de 1 a 3 —mediana de 40 muestras
+       por franja, para que no la sesguen los bichos—, el techo pasa de
+       [6,16,25] a [12,38,64] y el suelo se queda donde estaba, de [4,4,6] a
+       [4,5,9]. O sea que la hondura CRECE.
+
+       Lo que se paga es contraste en la mitad de arriba: un bicho tenue del
+       plano del fondo tiene ahí menos negro contra el que recortarse. */
+    brillo: 3,
     pos: [0.000, 0.070, 0.220, 0.480, 0.760, 1.000],
     /* Casi negro de arriba abajo; el poco azul del techo evita que la
        pantalla sea un rectángulo plano. Perfil ajustado a mano. */
@@ -943,9 +953,27 @@ export const ABISMO = {
       /* cargado hacia delante: el banco que se tiene que leer como banco
          es el de cerca; el del fondo son motas */
       reparto: [0.24, 0.34, 0.42],
-      /* `roce` (en el cardumen) va en U y no en largos, así que al crecer
-         el bicho hay que subirlo CON ÉL o el banco se solapa. */
-      largo: [1.15, 1.92],
+      /* EL SUELO LO PONE EL MÓVIL, que es la pantalla contra la que se
+         ajusta esto. El extremo chico y el plano del fondo se multiplican
+         —`scale` 0,40—, así que el pez más pequeño salía a 13 px de largo
+         en una caja de 359x750 y no se leía como pez: era una raya. A 1,55
+         son 18, que es donde vuelve a tener forma. El extremo grande no se
+         toca: lo que se pedía era que los chicos no lo fueran tanto.
+
+         El precio es variedad de tamaño —la razón entre el más grande del
+         frente y el más chico del fondo baja de 5,5 a 4,1—, y es lo que hay:
+         por debajo de 13 px no hay pez que valga.
+
+         Y `roce` NO SUBE CON ÉL, aunque la regla de al lado lo pida.
+         MEDIDO, seis semillas de 100 s en caja de móvil: agrandar el pez
+         sube el apiñamiento en largos de cuerpo —vecinos a menos de 1,2
+         largos, de 0,43 a 0,54—, pero subir `roce` a 3,4 no lo baja (0,56,
+         dentro del ruido) y afloja la alineación. El motivo es que `roce` y
+         `atraccion` van los dos en U: lo que aprieta al banco es que varios
+         peces convergen en la misma esca, y ahí manda la atracción, no el
+         roce. O sea que el apiñamiento EN U no ha cambiado; sólo se ve más
+         junto porque el bicho es mayor. */
+      largo: [1.55, 1.92],
       /* El círculo entero de tono, porque fotóforos verdes, ámbar y
          rosados los hay de verdad, y bastantes tramos porque el banco
          tiene que leerse moteado de color. `luzGlow` abajo: el bicho tiene

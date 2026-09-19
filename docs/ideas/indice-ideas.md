@@ -27,13 +27,14 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 
 ## Ideas de usuario (pendientes de procesar)
 > Solo un humano edita esta sección. Texto breve; el detalle se desarrolla al crear la ficha.
-- a veces los peces se quedan picando el señuelo, pero el rape no les caza. imagino que no tiene hambre, pero queda feo, pensar en algo mejor.
-- vamos a centrar la aplicación en mobile first, compatible también con escritorio. pero todas las optimizaciones de estilo gráfico, tamaños, etc, irán pensadas sobre todo para movil, y no serán diferentes para escritorio.
-- en mobile los peces pequeños apenas se ven. ajusta los distintos tamaños actuales de peces para que los peces más pequeños no lo sean tanto.
-- ajusta por defecto el valor de luz de fondo a 3. 
-## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
-> Cabos sueltos que dejaron las ideas procesadas el 2026-09-17 y el 2026-09-18.
 
+_(vacío)_
+
+## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
+> Cabos sueltos de las ideas procesadas el 2026-09-17, el 2026-09-18 y el 2026-09-19.
+
+- Unidades del pez linterna: `alcanceLuz`, `alcanceCuerpo` y `revelado` van en LARGOS y escalan solos con el bicho, pero `atraccion`, `roce` y `vista` van en U y no. Al cambiar el tamaño del banco unos se mueven y otros no. Decidir un convenio.
+- `plano` es la única clave que conserva un valor por defecto copiado de la escena (4 sitios), y el suyo no coincide con el que usa el motor al dibujar (`PLANOS.length-1`). Unificarlo.
 - Evento `E-06 La estampida`: ya sólo le falta el registro, el campo `asusta` está hecho.
 - Evento `E-02 El apagón`: sigue siendo el de más efecto por línea de código.
 - Onda de proa: un campo `empuja` que el leviatán y el cuerpo pongan al pasar, para que el plancton se aparte y no sólo se apague. OJO: choca con que el plancton ya no se aparta del dedo —habría que decidir si un cuerpo enorme es otra cosa que un dedo—, y la mota se quedó sin velocidad, así que habría que devolvérsela.
@@ -41,4 +42,4 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 - Un `manifest.json` con `orientation: portrait` y `display: standalone` dejaría la pieza instalable en la pantalla de inicio.
 - El leviatán vive en el plano del fondo —un tercio de resolución y 58 % de alfa—: si aun con la luz subida se ve poco, el único mando que queda es el plano, y eso le quita el «enorme y lejos», que es su tema.
 - La cola del rape va a reloj fijo (`velCola`) y no al avance, como ya hace el banco: a su crucero son unos 24 coletazos por largo de cuerpo. Puede estar bien —cimbrea sin ir a ninguna parte—, pero está sin decidir.
-- Los peces giran 92 °/s de media, o sea que casi nunca sostienen un rumbo. Se baja con `vira`, pero es el número que sostiene el cardumen —un pez que no vira no sigue al grupo— y mi medida de alineación (un parámetro global con ±0,16 de ruido a 38 peces) no distingue si lo rompe: haría falta medir la alineación por vecindario antes de tocarlo.
+- Los peces giran 92 °/s de media, o sea que casi nunca sostienen un rumbo. Se baja con `vira`, pero es el número que sostiene el cardumen —un pez que no vira no sigue al grupo— y la alineación global no distingue si lo rompe: con los 14 peces de hoy son ±0,04 entre semillas, del orden de lo que se busca. Haría falta medirla por vecindario antes de tocarlo.

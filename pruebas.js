@@ -43,7 +43,7 @@ const P = A.pruebas;
      'nueva' · hace falta población nueva                             */
 const MANDOS = [
   /* EL AGUA. Los dos del velo están explicados en ABISMO.dispersion. */
-  {nombre:'luz de fondo',   ruta:'agua.brillo',       min:0,   max:3,    paso:0.05, aplica:null},
+  {nombre:'luz de fondo',   ruta:'agua.brillo',       min:0,   max:5,    paso:0.05, aplica:null},
   {nombre:'velo · fuerza',  ruta:'dispersion.fuerza', min:0,   max:2,    paso:0.05, aplica:null},
   {nombre:'velo · caída',   ruta:'dispersion.caida',  min:0.2, max:0.95, paso:0.02, aplica:null},
   {nombre:'corriente',      ruta:'corriente.amplitud',min:0,   max:0.8,  paso:0.02, aplica:'calc'},
