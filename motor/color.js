@@ -4,7 +4,7 @@
    de paleta: el halo y el punto de luz. De aquí para abajo nadie
    distingue un color escrito a mano de uno generado.
    ══════════════════════════════════════════════════════════════════ */
-import { rgba, rango, fusiona, sumaPesos, eligeColor } from './util.js';
+import { rgba, rango, sumaPesos, eligeColor } from './util.js';
 import { paramsDe } from './registro.js';
 
 /* ── ESPECTRO → PALETA ──────────────────────────────────────────────
@@ -33,7 +33,9 @@ const ESPECTRO = {
 };
 
 function generaPaleta(esp){
-  const e = fusiona(ESPECTRO, esp);
+  /* Object.assign y no fusiona(): un espectro son escalares y pares, sin
+     un solo subobjeto, así que la fusión recursiva nunca recursa aquí. */
+  const e = Object.assign({}, ESPECTRO, esp);
   const n = Math.max(2, Math.round(e.tramos));
   const pal = [];
   for (let i=0;i<n;i++){

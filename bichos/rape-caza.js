@@ -43,7 +43,21 @@ function querencia(f, M, p, dt){
    Y después NO VUELVE A TIRAR EN UN RATO: eso es `reposo`. Con un banco
    entero entrando y saliendo del alcance, el rape muerde cada dos o tres
    segundos y el fogonazo pasa de acontecimiento a intermitente. Tras
-   acertar tarda más que tras fallar: está tragando.                 */
+   acertar tarda más que tras fallar: está tragando.
+
+   ── LOS RELOJES SON NUEVE Y LAS FASES CUATRO ───────────────────────
+   Acecho → bocado → mastica → digestión, y **`ataque` y `mastica` NO SE
+   SOLAPAN NUNCA**: de eso depende que el orden de aquí abajo valga. De los
+   otros cinco relojes, ninguno es una fase:
+
+     `reposo`             el enfriamiento, y corre EN PARALELO a todo:
+                          arranca al morder.
+     `fogonazo`/`espanta` envolventes que CRUZAN las fases a propósito —la
+                          ráfaga tiene que cubrir bocado y masticación con
+                          una sola curva, y el susto durar más que la luz o
+                          el pánico no se llega a ver.
+     `masticaTotal`       la escala de `mastica`, para su envolvente.
+     `masticaPend`        lo ganado al acertar, esperando turno. Ver abajo. */
 /* la esca se apaga después de tragar, o sea después de masticar */
 function apagaTrasComer(f){
   f.objBrillo = rnd(0.08, 0.22);
@@ -68,6 +82,14 @@ function caza(f, M, L, p, dt){
     if (f.ataque === 0){
       /* si ha cazado algo, en vez de apagarse se pone a masticarlo; si ha
          fallado no hay nada que masticar y se apaga como antes */
+      /* Y AQUÍ ES DONDE SE GASTA `masticaPend`, que no es un rodeo:
+         `f.mastica > 0` significa «está masticando AHORA MISMO» para SEIS
+         lectores del dibujo —la envolvente `mast`, el trabajo de la
+         quijada, la respiración, `congela`, `alFrente` y lo recogido que
+         va el ilicio, dos de ellos combinados con `f.ataque` por
+         `Math.max`—. Poniéndolo al morder, el rape masticaría durante el
+         bocado: la quijada trabajando y el ilicio sin estirarse al final.
+         Hacen falta dos ranuras: lo que VA a masticar y lo que masticA. */
       if (f.digiere > 0){
         if (f.masticaPend > 0){
           f.mastica = f.masticaTotal = f.masticaPend;

@@ -31,6 +31,24 @@ const {opt} = M;
 
    Muere en cuanto alguien lo coge, o a los `espera` segundos si no hay
    quien. El resto de la maniobra lo lleva ella, en bichos/medusa.js.
+
+   ── Y LAS TRES PARTES HACEN FALTA ──────────────────────────────────
+   Parece mucha maquinaria para «que geme una». Cada pieza resuelve algo
+   distinto y ninguna cubre a las otras:
+
+     el TIPO de campo  es lo que dice «sólo una medusa», porque `gema` no
+                       lo lee nadie más. No vale leer `M.luces()` y elegir
+                       el foco mayor: medido, el de mayor `rLuz` es LA ESCA
+                       DEL RAPE (247 contra 161 de la mejor medusa), y seis
+                       peces linterna pasan por delante de la del plano de
+                       en medio. Las luces no dicen de qué especie son, y
+                       está bien que no lo digan.
+     el CUPO           es lo que dice «una y sólo una», y por construcción.
+                       Por geometría no se puede garantizar.
+     la SUBASTA        es lo que dice «la más cercana». Sin ella se la
+                       queda la primera que pregunta, y `pasoPlanos`
+                       recorre del fondo al frente: la más pequeña y
+                       borrosa de la pecera (medido: 0,43 U contra 1,16).
    ══════════════════════════════════════════════════════════════════ */
 evento('gemacion', {
   exclusivo: false,

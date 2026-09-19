@@ -417,8 +417,14 @@ especie('pezlinterna', {
       z.prox = rango(p.rumbo);
     }
 
-    /* cuanto más cerca del cebo, más se le ve: la propia trampa lo va sacando
-       de la oscuridad */
+    /* Cuanto más cerca del cebo, más se le ve: la propia trampa lo va
+       sacando de la oscuridad.
+
+       Y NO PASA POR `M.luzEn` a propósito, aunque se le parezca: aquello
+       suma TODOS los focos que alcanzan a un punto, y esto es la caída
+       sobre UNO solo, el señuelo más cercano que ya eligió el bucle de
+       arriba. Meterlo allí pediría dos opciones más —filtra por bandera,
+       quédate con el más próximo— que no comparte con nadie. */
     const ob = cebo
       ? clamp(1.25/(1 + (Math.sqrt(md2)/(M.U*p.revelado))**2), 0, 1) : 0;
     z.ilum = hacia(z.ilum, ob, 7, dt);
