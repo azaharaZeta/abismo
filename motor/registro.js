@@ -87,11 +87,15 @@ const paramsDe = conf => conf.params || conf;
                 fotograma.
      · MODULACIÓN → M.mod.agua / .ritmo, que el motor aplica al pintar.
 
-   Para LEER la escena un evento no recibe `L`: tiene M.luces(plano) y
-   M.cardumen(plano) —ésta, sin argumento, da los tres planos juntos—.
-   Con la primera puede existir un evento que no emita nada y se vea sólo
-   cuando algo lo alumbra, como la carroña; con la segunda, uno que se
-   forme donde el banco ya estaba, sin preguntar de qué especie es. */
+   Para LEER la escena un evento no recibe `L`: tiene M.luces(plano), y con
+   ella puede existir un evento que no emita nada y se vea sólo cuando algo
+   lo alumbra, como la carroña.
+
+   HUBO TAMBIÉN UN `M.cardumen(plano)`, para un evento que se formara donde
+   el banco ya estaba. Lo pedía el superpez y se fue con él: un punto de
+   extensión que no ejercita nadie es una promesa que el día que se cumpla
+   ya no será verdad. El banco sigue donde estaba —`L.cardumen`, por
+   plano—, así que devolverlo es media docena de líneas. */
 const EVENTOS = {};
 function evento(nombre, def){ def.nombre = nombre; EVENTOS[nombre] = def; }
 export { ESPECIES, EVENTOS, especie, evento, paramsDe };

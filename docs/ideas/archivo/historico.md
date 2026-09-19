@@ -315,3 +315,71 @@ documentación.
   manta` necesita el tipo de campo `empuja`, que no existe (se fue con el `vacio`
   y la mota se quedó sin velocidad), y `E-14 Lluvia` no es gratis porque
   `impulso()` no se exporta de `motor/dedo.js`: el mecanismo E está cerrado.
+
+## 2026-09-20 · primera tanda del backlog
+
+- **¿Sigue habiendo cardumen?** · «ya no hay cardumen, no? se quitó, si recuerdo
+  bien». **Sí lo hay, y es justo lo que se recordaba mal:** `cardumen()` en
+  `bichos/pezlinterna.js` con sus tres reglas, la bandera `cardumen` de la especie,
+  la lista `L.cardumen` por plano y el bloque `cardumen: {vista, roce, propio,
+  aparta, alinea, junta, ciego, reacciona, comodo}` de la escena. Lo que no usaba
+  nadie era **`M.cardumen()`**, el método con el que un EVENTO leía dónde estaba el
+  banco: su único cliente fue el superpez. Borrado sólo eso.
+- **El dedo y el contagio, separados** · «que no se pisen, son cosas distintas».
+  Fuera `porContacto: 0.3` de la entrada del contagio. **Deja sin clientes la
+  máquina de contacto** —`avisaContactos`/`contactoEventos` y los argumentos `x, y`
+  de `arranca`—, que sigue en el motor a la espera de decisión.
+- **`contagio` y `floracion`** · «son dos eventos distintos, permíteles vivir a los
+  dos». No se factorizan.
+- **El visitante, a la baja** · `largo` 25 → 18 U, `grosor` 0,80 → 0,62, `brillo`
+  0,26 → 0,18. **El dato que no era evidente:** el visitante MÁS PEQUEÑO era el más
+  brillante —pico 133 de 255, igual que el más grande— porque con el cuerpo corto
+  las cuentas se juntan y sus halos se suman hasta saturar. O sea que encoger no
+  apaga: había que bajar `brillo` en todo el rango, no sólo el tamaño del extremo
+  grande. Medido sobre negro, sin bichos ni velo ni grano, con el peor de siete
+  fotogramas por travesía. Queda: pico 66 el pequeño y 89 el grande.
+  Y el tamaño se juzga contra el MÓVIL DE PIE, que es la caja estrecha: a 25 U el
+  bicho medía el 204 % de su ancho.
+
+## 2026-09-20 · el dedo, segunda tanda
+
+- **«que se aparten rapidito de mi paso, pero no se vayan lejos»** · la queja tenía
+  dos mitades —«les da pereza arrancar» y «luego se van lejos»— y **las dos salían
+  del mismo sitio**: `empuje()` en `motor/dedo.js` no miraba la edad de la onda.
+
+  **El resultado negativo que ahorra la próxima tarde:** el primer intento fue
+  afinar los tres números del pez (`lag`, `apartaVuelve`, `apartaDedo`) y **no
+  movían la aguja** —bajar `apartaVuelve` de 0,70 a 0,08, nueve veces más corto,
+  cambiaba la deriva de 7,69 U a 6,25—. El motivo: `seAparta` sólo entra en su rama
+  de decaimiento cuando el objetivo cae por debajo de la velocidad actual, y con un
+  barrido hay veinte ondas vivas cuyo peso se satura a 1, así que el objetivo no
+  bajaba nunca y esa rama no llegaba a correr. **Con el empujón sin acotar, los
+  mandos del pez son decorativos.**
+
+  Lo que lo arregló, en dos pasos: (1) el peso del empuje lleva ahora una
+  envolvente, y (2) es la SUYA y no la de la luz —`ondaE`, con `dedo.empuja` como
+  qué parte de la vida de la onda sigue moviendo cosas—. Hacen falta dos
+  envolventes porque el frente VIAJA: la luz tiene que cruzar el cuadro, que es el
+  gesto; el empujón no, o se aparta todo lo que el anillo pille de camino. Y
+  `ondaR` frena al final (`crece` 1,7-2,2), así que sin envolvente un frente viejo
+  se quedaba aparcado empujando a pleno con la luz ya apagada: el pez se iba solo,
+  movido por un anillo invisible.
+
+  Medido con un toque junto a un pez y con un barrido, leyendo `z.dx, z.dy` —que es
+  sólo el ladeo del contacto, así que no hace falta restar dos tiradas—:
+
+  | | punta al toque | se aparta | punta al barrido | deriva (mediana) |
+  |---|---|---|---|---|
+  | antes | 1,15 U/s | 2,15 U | 3,57 U/s | 7,69 U |
+  | ahora | 2,32 U/s | 1,60 U | 2,92 U/s | 0,51 U |
+
+  Y **la medusa lleva compensación**: `empuja` es global y le quitaba un tercio de
+  ladeo sin que nadie lo pidiera. Su `apartaDedo` sube de 2,2 a 3,3 y la curva
+  vuelve a ser la de antes decimal a decimal (3,64 U contra 3,65).
+
+- **La máquina de contacto se queda** · «déjalo, por si acaso». `avisaContactos`,
+  `contactoEventos` y los `x, y` de `arranca` siguen en el motor sin cliente, a
+  propósito.
+- **Onda de proa** · retirada por la usuaria. El leviatán y el plancton siguen como
+  estaban: el leviatán lo APAGA, que es su mecanismo entero, y no lo empuja.
+

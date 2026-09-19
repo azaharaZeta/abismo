@@ -31,19 +31,8 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 
 - Claude dijo: "- Unidades del pez linterna: `alcanceLuz`, `alcanceCuerpo` y `revelado` van en LARGOS y escalan solos con el bicho, pero `atraccion`, `roce` y `vista` van en U y no. Ya está medido lo que cuesta: `vista` 4,2 U son 1,8 largos para el pez de delante y 3,2 para el de en medio, o sea que el mismo banco tiene dos alcances según el plano. Decidir un convenio. " . Respuesta de usuaria: sí, decide un convenio adecuado y simplifica esa lógica.
 
-- Claude dijo: "- Onda de proa: un campo `empuja` que el leviatán y el cuerpo pongan al pasar, para que el plancton se aparte y no sólo se apague. OJO: choca con que el plancton ya no se aparta del dedo —habría que decidir si un cuerpo enorme es otra cosa que un dedo—, y la mota se quedó sin velocidad, así que habría que devolvérsela. " . Respuesta de usuaria: simplifíca el código, que está demasiado complejo. deja que el leviatan y el placton se ignoren
-
-- Claude dijo: "- `contagio` conserva `porContacto: 0.3`, o sea que tocar todavía puede lanzarlo: ahora se pisa con la onda de plancton del propio dedo. " . Respuesta de usuaria: que no se pisen, son cosas distintas. el dedo activa el placton que tiene cerca, el evento lanza un contagio en el placton.
-
 - Claude dijo: "- Un `manifest.json` con `orientation: portrait` y `display: standalone` dejaría la pieza instalable en la pantalla de inicio. " . Respuesta de usuaria:  vale.
 
-- Claude dijo: "- `contagio` y `floracion` son el mismo anillo que se abre con otro tipo de campo: comparten unas quince líneas escritas dos veces. Decidir si eso es duplicación o son dos eventos que se parecen. " . Respuesta de usuaria: son dos eventos distintos, permíteles vivir a los dos.
-
-- Claude dijo: "- `M.cardumen()` está documentado como una de las dos formas que tiene un evento de leer la escena y no lo usa nadie; su forma sin argumento además reparte un array nuevo. Decidir si se queda como punto de extensión o se va. " . Respuesta de usuaria: ya no hay cardumen, no? se quitó, si recuerdo bien. ahora simplemente los peces intentan seguir a algún pez si lo ven y pueden. pero confirmalo, que me puedo equivocar. si no hay cardumen ya codificado, borralo.
-
-
-- evento visitante: el visitante a veces es demasiado grande y demasiado brillante, ajustalo a la baja.
-- cuando paso el dedo, los peces apenas reaccionan. deberían salir nadando fuera de mi dedo.
 - evento cuerpos: los cuerpos son demasiado grandes, hacerlos algo más pequeños, y meterles un random de tamaño ligero. y caen dmasiado lentos, ponerlos que caigan un pelín (solo un poco) más rápido.
 - como de viable es hacer que, salvo las medusas y los peces, todos los demás bichos y objetos tapen el placton? estudiarlo bien porque podría tener impacto o ser engorroso d hacer.
 - evento: leviatan: el brillo en las aletas no está siguiendo el contorno de las aletas, parece una catenaria colgada entre los picos.

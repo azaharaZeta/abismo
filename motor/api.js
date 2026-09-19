@@ -76,26 +76,6 @@ const M = {
      eventos se pintan después de los bichos; en un `actualiza` es la del
      anterior, que a la velocidad a la que se mueve esto da igual. */
   luces(plano){ const L = PLANOS[plano|0]; return L ? L.luces : VACIO; },
-  /* y quién hace banco, por lo mismo: un evento que quiera pasarle algo
-     al banco necesita saber dónde está.
-
-     SIN `plano`, los tres juntos, y ésa es la forma de usarlo casi
-     siempre: el banco vive repartido en los tres y un campo del plano de
-     delante lo leen también los de atrás —la guarda sólo excluye a quien
-     pregunta desde más cerca—. Contando sólo el de delante se ve el 42 %
-     de los peces (`reparto`, en la escena).
-
-     Devuelve un array NUEVO en ese caso: pídelo al arrancar un evento, no
-     por fotograma. */
-  cardumen(plano){
-    if (plano === undefined){
-      const t = [];
-      for (const L of PLANOS) for (const o of L.cardumen) t.push(o);
-      return t;
-    }
-    const L = PLANOS[plano|0];
-    return L ? L.cardumen : VACIO;
-  },
   /* ── CUÁNTA LUZ LE LLEGA A UN PUNTO ──────────────────────────────
      La regla de la casa —nadie está iluminado por la escena, cada cuerpo
      existe hasta donde llega la luz que le dan— se resuelve AQUÍ y en un

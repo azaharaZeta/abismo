@@ -23,6 +23,20 @@ const ondaA = k => { const u = Math.min(1, k.t/k.vida);
 /* Lo que le QUEDA a una onda: sólo la caída, sin la rampa de entrada de
    `ondaA`. Decrece con la edad, así que sirve para desalojar. */
 const ondaResto = k => Math.pow(1 - Math.min(1, k.t/k.vida), k.apa) * k.amp;
+/* Y LO QUE EMPUJA, que no es lo mismo que lo que alumbra: misma forma y
+   misma rampa de entrada, pero apagada mucho antes. `empuja` es qué parte
+   de la vida de la onda sigue moviendo cosas.
+
+   Hacen falta dos envolventes y no una porque el frente VIAJA: la luz
+   tiene que cruzar el cuadro —es el gesto, y es lo que se ve—, y el
+   empujón no, o lo que se aparta no es lo que tienes debajo del dedo sino
+   todo lo que el anillo pille de camino. Con `empuja` corto el empujón
+   sólo existe mientras el frente está cerca de donde tocaste. */
+const ondaE = k => {
+  const u = Math.min(1, k.t/k.vida);
+  const e = Math.min(1, u/ABISMO.dedo.empuja);
+  return Math.pow(1-e, k.apa) * Math.min(1, u*ABISMO.dedo.rampa) * k.amp;
+};
 
 function impulso(x, y){
   /* Al desbordar se tira la onda menos viva, no la más vieja: en un
@@ -91,9 +105,26 @@ function luzDedo(x, y){
 
 /* Cuánto empuja el frente de las ondas a un punto: [ox, oy], la suma de
    las direcciones unitarias de cada una que lo alcanza, ponderada por lo
-   cerca que está del frente. NO viene normalizado —del módulo se encarga
-   quien lo lea—. `banda` es el grosor del frente; omitido, cada onda usa
-   el suyo. Array compartido: consúmelo en el acto.
+   cerca que está del frente Y POR LO VIVA QUE ESTÁ LA ONDA. NO viene
+   normalizado —del módulo se encarga quien lo lea—. `banda` es el grosor
+   del frente; omitido, cada onda usa el suyo. Array compartido: consúmelo
+   en el acto.
+
+   ── EMPUJA CON SU PROPIA ENVOLVENTE, `ondaE` ───────────────────────
+   El peso lleva `ondaE`: la envolvente de la luz, pero apagada en la
+   primera parte de la vida de la onda (`empuja`, en la escena). Sin
+   ninguna envolvente el empujón era pura geometría —lo cerca que estás
+   del frente— y eso lo rompía por los dos lados, que son las dos mitades
+   de la queja:
+
+     · `ondaR` FRENA al final (`crece` 1,7-2,2), así que un frente viejo se
+       queda aparcado cerca de `rmax`. Sin la envolvente seguía empujando a
+       pleno mientras su luz ya se había ido: el pez se iba solo, empujado
+       por un anillo invisible. MEDIDO, un barrido de 34 ondas: la deriva
+       lateral era de 7,7 U de mediana —más de media pantalla de móvil— y
+       no se apagaba hasta los 5 s.
+     · Y la rampa de entrada de `ondaA` sube en siete centésimas, así que
+       ahora el empujón llega CON la luz en vez de después.
 
    Lo leen los dos que se mueven con el gesto, el banco y la medusa. El
    plancton NO: la nieve marina está en suspensión y del contacto sólo
@@ -102,13 +133,15 @@ const _emp = [0,0];
 function empuje(x, y, banda){
   let ox=0, oy=0;
   for (let i=0;i<contactos.length;i++){
-    const k = contactos[i], rr = ondaR(k);
+    const k = contactos[i], vivo = ondaE(k);
+    if (vivo <= 0.002) continue;
+    const rr = ondaR(k);
     const b = banda > 0 ? banda : k.lam*ABISMO.dedo.banda;
     const dx = x-k.x, dy = y-k.y, d2 = dx*dx+dy*dy;
     const hi = rr+b, lo = rr-b;
     if (d2 > hi*hi || (lo > 0 && d2 < lo*lo)) continue;
     const dist = Math.sqrt(d2) || 1;
-    const peso = 1 - Math.abs(dist - rr)/b;
+    const peso = (1 - Math.abs(dist - rr)/b) * vivo;
     ox += dx/dist*peso; oy += dy/dist*peso;
   }
   _emp[0]=ox; _emp[1]=oy;

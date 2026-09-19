@@ -197,12 +197,12 @@ objeto lo coloca el motor, no el objeto) y es el único sitio donde se puede
 corromper un sprite sin que la especie sepa que existe. Lo usa el `glitch`,
 y sólo se le aplica a quien declare la bandera `rompible` —hoy, la medusa.
 
-Y para **leer** la escena, un evento no recibe `L`: tiene
-`M.luces(plano)` y `M.cardumen(plano)` —ésta, sin argumento, da los tres
-planos juntos, que es como se usa casi siempre—. Con la primera puede existir un
-evento que no emita nada y se vea sólo cuando algo lo alumbra —la regla de
-la casa aplicada a un evento, que es lo que hace la `carrona`—; con la
-segunda, uno que le pase algo al banco donde el banco está.
+Y para **leer** la escena, un evento no recibe `L`: tiene `M.luces(plano)`,
+y con ella puede existir un evento que no emita nada y se vea sólo cuando
+algo lo alumbra —la regla de la casa aplicada a un evento, que es lo que
+hace la `carrona`—. Hubo un `M.cardumen(plano)` hermano suyo y se fue con
+el superpez, que era quien lo pedía: el banco sigue en `L.cardumen`, así
+que si vuelve a hacer falta son seis líneas.
 
 ### Color
 

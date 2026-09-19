@@ -153,6 +153,15 @@ export const ABISMO = {
     /* el grosor del frente que EMPUJA, en `frente`: algo más estrecho que
        el que enciende, o el banco se aparta antes de que se le note luz */
     banda: 0.9,
+    /* ── Y CUÁNTO DURA EL EMPUJÓN ───────────────────────────────────
+       Qué parte de la vida de la onda sigue moviendo cosas. La LUZ dura
+       toda —es el gesto, y tiene que cruzar el cuadro—; el empujón no,
+       porque el frente viaja `alcance` U y lo que se pide es que se
+       aparten de tu paso, no que el anillo arrastre a todo el que pille
+       de camino. A 0,22 el empujón vive nueve décimas de los cuatro
+       segundos de la onda, o sea mientras el frente sigue cerca de donde
+       tocaste. */
+    empuja: 0.30,
   },
 
   /* ── TRES PLANOS: fondo, medio, frente ────────────────────────────
@@ -241,7 +250,12 @@ export const ABISMO = {
     /* la cadena de encendido: un soplo que va prendiendo la nieve marina */
     { evento: 'contagio', vel: [3, 7], salto: 6.5,
       alcance: [0.55, 1.1], cada: [55, 145], primero: [18, 55],
-      banda: [0.12, 0.88], porContacto: 0.3 },
+      /* SIN `porContacto`: el dedo y el contagio son cosas distintas y no
+         se pisan. Lo que hace el dedo es encender el plancton que tiene
+         cerca —su propia onda, en motor/dedo.js—; el contagio es una
+         cadena que cruza el agua por su cuenta. Tocar y que además saliera
+         un contagio mezclaba las dos. */
+      banda: [0.12, 0.88] },
 
     /* ── EL LEVIATÁN ────────────────────────────────────────────────
        Imposiblemente grande, al fondo del todo, y lo que se ve de él es
@@ -419,9 +433,25 @@ export const ABISMO = {
     { evento: 'visitante', plano: 0,
       cada: [50, 120], primero: [15, 42],
       cruce: [28, 46], cuentas: [18, 40],
-      largo: [13.9, 25.0], onda: [0.59, 1.95],
-      grosor: [0.42, 0.80], merma: [0.18, 0.70], panza: [0, 0.42],
-      variedad: 0.8, brillo: 0.26,
+      /* ── EL TAMAÑO, Y LA CAJA QUE MANDA ES EL MÓVIL DE PIE ──────
+         `largo` va en U y el cuadro enseña `escala` U de lado, así que un
+         largo se lee como fracción de pantalla distinta según la caja. A
+         25 U el bicho medía el 204 % del ancho de un móvil de pie —el
+         doble de la pantalla—, y de un cuerpo que no cabe entero dos veces
+         no se ve un animal, se ve una pared que pasa. A 18 queda en el
+         147 % ahí y en el 79 % de un portátil: sigue entrando y saliendo,
+         que es lo suyo, pero se le ve la forma. */
+      largo: [12.5, 18.0], onda: [0.59, 1.95],
+      grosor: [0.38, 0.62], merma: [0.18, 0.70], panza: [0, 0.42],
+      /* ── Y EL BRILLO, QUE NO VA CON EL TAMAÑO ───────────────────
+         MEDIDO sobre negro, sin bichos ni velo ni grano, tomando el peor
+         fotograma de siete por travesía: el visitante MÁS PEQUEÑO era el
+         que más pico daba —118 de 255 contra 99 el más grande—, porque
+         con el cuerpo corto las cuentas se solapan y sus halos se suman.
+         O sea que bajar el tamaño no baja el brillo: hay que bajar los
+         dos. A 0,18 el pico del grande cae de 99 a 79 y los píxeles por
+         encima de 60 se quedan en la mitad. */
+      variedad: 0.8, brillo: 0.18,
       patas: 0.95, antenas: 1.5, cola: 1.7 },
 
     /* ── EL CUERPO ──────────────────────────────────────────────────
@@ -707,13 +737,17 @@ export const ABISMO = {
            la pecera, así que su ladeo va y vuelve en unos cinco segundos
            en vez de en tres.
 
-         MEDIDO tocando a dos U de una medusa del plano de delante: el
-         frente le pasa por encima en medio segundo, así que no coge más
-         de la mitad del tope. Se ladea 0,5 U a los 0,6 s, 1,8 a los 1,2 y
-         3,7 a los dos segundos, o sea tres radios de campana. Las de
-         atrás se ladean menos: `drift` les recorta la velocidad igual que
-         se la recorta al pulso. */
-      apartaDedo: 2.2, aparta: [0.7, 1.2], lag: [7, 12],
+         MEDIDO tocando a 1,2 U de una medusa del plano de delante: punta
+         de 1,72 U/s a un tercio de segundo y 3,6 U de ladeo en total, o
+         sea dos campanas y media. Las de atrás se ladean menos: `drift`
+         les recorta la velocidad igual que se la recorta al pulso.
+
+         Y EL 3,3 ES COMPENSACIÓN, no un cambio de gusto: al acotar el
+         empujón con `dedo.empuja` —que es global— la medusa perdía un
+         tercio de ladeo sin que nadie lo hubiera pedido. A 3,3 la curva
+         vuelve a ser la de antes decimal a decimal (3,64 U contra 3,65).
+         Si algún día se toca `empuja`, este número va detrás. */
+      apartaDedo: 3.3, aparta: [0.7, 1.2], lag: [7, 12],
       apartaVuelve: 0.78,
       borde: 0.8,
     },
@@ -1120,9 +1154,9 @@ export const ABISMO = {
          solas no hace nada pero encima del otro llega a 0,42. Ninguno
          toca la FORMA: la elongación se queda en 1,84.
 
-         AL MEDIR: comprobar primero que `M.cardumen().length` es el que
-         toca. Con menos peces de los que pide la escena el banco sale más
-         denso y más redondo, y lleva a conclusiones falsas.
+         AL MEDIR: comprobar primero que los `L.cardumen` de los tres
+         planos suman los que pide la escena. Con menos peces el banco sale
+         más denso y más redondo, y lleva a conclusiones falsas.
 
          `comodo` es el mayor giro, en radianes y desde el rumbo que
          LLEVA, que un pez acepta por seguir al grupo: 2,4 son 137°, o
@@ -1220,32 +1254,37 @@ export const ABISMO = {
          mientras le pasa el frente. El mecanismo, en `seAparta` de
          comun.js; aquí van las medidas.
 
-           `apartaDedo`   la velocidad del desvío a plena onda, en U/s. El
-                          tope NO se alcanza —el frente cruza al pez en
-                          medio segundo y la rampa se queda a la mitad—,
-                          así que a 2,8 lo que de verdad hace son 1,4. Eso
-                          lo deja entre su crucero (0,66) y el dardo del
-                          nervio (1,7-2,5): se lee como un viraje suyo.
-           `lag`          con cuánta gana lo coge, en 1/s, y NO PUEDE IR
-                          BAJO: a 3 la rampa sólo llega al 13 % antes de
-                          que el frente se vaya y el desvío pasa
-                          desapercibido. A 7-12 coge la mitad del tope
-                          mientras el frente está encima. Es el mando de
+           `apartaDedo`   la velocidad del desvío a plena onda, en U/s.
+                          Queda entre su crucero (0,66) y su velocidad de
+                          pánico (3,4): un quiebro, no una huida.
+           `lag`          con cuánta gana lo coge, en 1/s. Es el mando de
                           lo SECO, no el de cuánto.
            `apartaVuelve` lo que le queda cada segundo cuando el frente se
-                          va. A 0,70 se queda en la mitad en 1,9 s, así
-                          que el hueco tarda tres o cuatro en cerrarse. Lo
-                          tranquilo sale de aquí y de `apartaDedo`, nunca
-                          de `lag`.
+                          va. A 0,18 se le ha ido en medio segundo.
            `aparta`       la gana de cada pez: el hueco se abre desigual y
                           no como una cortina.
 
-         Medido con el arnés de Node, restando la misma tirada tocando
-         fuera del cuadro —a los dos segundos manda ya la divergencia
-         caótica—: el pez más alcanzado se desvía 1,7 U a los 0,6 s y 2,5
-         a los 1,2; la media de los alcanzados, 0,6 y 1,1. */
-      apartaDedo: 2.8, aparta: [0.7, 1.3], lag: [7, 12],
-      apartaVuelve: 0.70,
+         ── LOS TRES SE AJUSTAN JUNTOS, Y CONTRA DOS GESTOS ──────────
+         MEDIDO leyendo `z.dx, z.dy` —que es SÓLO el ladeo del contacto,
+         el nado va por `ang` y `vel`—, con un toque junto a un pez y con
+         un barrido de punta a punta:
+
+                              toque              barrido
+                         punta   se aparta   punta   deriva (mediana)
+           antes         1,15      2,15 U    3,57      7,69 U
+           ahora         2,32      1,60 U    2,92      0,51 U
+
+         O sea: el doble de rápido al arrancar y una quinceava parte de
+         deriva. Antes tardaba en salir y luego se iba media pantalla de
+         móvil; ahora da el quiebro y se acabó.
+
+         Y NO SALE DE AQUÍ, sale de `dedo.empuja`: mientras el empujón
+         duraba toda la vida de la onda, estos tres números no movían la
+         aguja —bajar `apartaVuelve` de 0,70 a 0,08 no cambiaba nada,
+         porque el objetivo nunca bajaba y la rama que decae no llegaba a
+         correr—. Primero se acota el empujón, después se afina aquí. */
+      apartaDedo: 6.0, aparta: [0.7, 1.3], lag: [16, 26],
+      apartaVuelve: 0.18,
       borde: 1.0,
     },
 
