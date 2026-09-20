@@ -417,3 +417,37 @@ documentación.
   1,5 de escena—, así que para mirar un evento largo hay que subirle la `vel` por
   JSON, no esperar.
 
+## 2026-09-20 · cuarta tanda
+
+- **El plancton que se aleja del techo** · era verdad y la causa no era la que se
+  suponía: no se «concentraba», **oscilaba como un pistón**. Con una sola `caida`
+  para las 600 motas y todas naciendo con `sentido: 1`, la nieve marina rebotaba
+  contra el cristal EN BLOQUE. Medido en diez franjas horizontales sobre quince
+  minutos de escena: al minuto el techo al 0 % y el suelo al 19 %, a los seis
+  minutos al revés, a los quince otra vez abajo.
+
+  Arreglado con dos líneas y **sin necesidad del toroidal** que la usuaria ofrecía
+  como plan B: `caida` pasa a ser un rango por mota ([0,08 · 0,24], misma media de
+  0,16) y `sentido` se sortea al nacer. Hacen falta las dos: la velocidad sola deja
+  el arranque acompasado y el sentido solo deja dos bloques en vez de uno. Después:
+  ninguna franja se sale del 7-13 % en ningún momento, en tres semillas.
+
+- **¿Mira el rape hacia fuera?** · «yo no noto nada mal… revisa otra vez y dime qué
+  opinas». **Revisado: la queja de Claude estaba exagerada y la pieza se queda como
+  está.** Lo medible: la esca apunta al cristal más cercano el 27-29 % del tiempo,
+  en rachas de hasta 13-15 s —no «hasta medio minuto», como se había dicho—, y por
+  delante de la esca hay 43 % del ancho del cuadro de agua abierta DE MEDIA. O sea
+  que la trampa casi nunca está desperdiciada.
+
+  **Y la métrica que no vale:** medir «cuánto tiempo mira hacia fuera» da 30-37 % y
+  suena fatal, pero no distingue el rape aparcado de espaldas al agua del rape que
+  simplemente está cruzando. La pregunta buena es hacia dónde apunta la ESCA
+  respecto del centro. (Un primer intento midió la distancia de la esca a la pared
+  con un umbral del 6 % del ancho: no puede dispararse nunca, porque `M.salto` ya
+  recorta el objetivo de la esca a 0,9 U del cristal, que es más.)
+
+  Si algún día se quisiera apretar, el mando es la guarda `|f.vx| < M.U*0.15` de
+  `actualiza`, que hace que sólo se replantee el giro estando casi parado. Pero
+  quitarla lo haría girar más a menudo, que es lo contrario de un cazador de
+  emboscada.
+

@@ -5,7 +5,7 @@
    única relación causal entre organismos.
    ══════════════════════════════════════════════════════════════════ */
 import { M, especie } from '../motor.js';
-const {rgba, rnd, rango, opt, TAU} = M;
+const {rgba, rnd, rango, TAU} = M;
 import { porReparto, pintaHalo, paso, silencio } from './comun.js';
 
 especie('plancton', {
@@ -21,10 +21,21 @@ especie('plancton', {
       a: alto ? rango(p.alfaAlto) : rango(p.alfa),
       ph: Math.random()*TAU, sp: rnd(0.25,0.8),
       glow: 0, lit: null, cal: 0, dedo: 0,
-      /* sentido de la caída: se invierte al topar, y entonces la nieve marina
-         pasa a ser materia en suspensión circulando, que es lo que se ve en
-         una caja de agua sin fondo por el que caerse. */
-      sentido: 1 };
+      /* ── CADA MOTA CAE A LO SUYO, Y ESO ES LO QUE LA REPARTE ─────
+         `caida` es un RANGO por mota y `sentido` va sorteado, y las dos
+         mitades hacen falta. Con una sola velocidad para todas y todas
+         arrancando hacia abajo, la nieve marina no se reparte: rebota
+         contra el cristal EN BLOQUE, como un pistón. MEDIDO en franjas
+         horizontales sobre quince minutos de escena: al minuto el techo
+         se quedaba al 0 % y el suelo al 19 %, a los seis minutos estaba
+         al revés, y a los quince otra vez abajo. Con esto, ninguna franja
+         se sale del 7-13 % en ningún momento.
+
+         El sentido se invierte al topar, y entonces la nieve marina pasa a
+         ser materia en suspensión circulando, que es lo que se ve en una
+         caja de agua sin fondo por el que caerse. */
+      caida: rango(p.caida),
+      sentido: Math.random() < 0.5 ? 1 : -1 };
   },
 
   actualiza(m, M, L, p, dt){
@@ -82,8 +93,8 @@ especie('plancton', {
     }
     m.dedo *= Math.pow(p.apagaDedo, dt);
 
-    /* Vaivén propio, y `caida` como sesgo vertical constante: 0 deja la mota
-       en suspensión, positivo la hace nieve marina.
+    /* Vaivén propio, y la caída de esta mota como sesgo vertical constante:
+       0 deja la mota en suspensión, positivo la hace nieve marina.
 
        Va por `paso` y no por `avanza` porque la mota NO TIENE velocidad: al
        dedo se ENCIENDE, no se aparta, y nada más la empuja. El array que
@@ -91,7 +102,7 @@ especie('plancton', {
     const q = paso(M, L, dt, m.x, m.y,
                    Math.sin(m.ph + t*m.sp)*M.U*0.05,
                    Math.cos(m.ph*1.7 + t*m.sp)*M.U*0.05
-                     + (opt(p.caida, 0))*M.U*m.sentido);
+                     + m.caida*M.U*m.sentido);
     m.x = q[0]; m.y = q[1];
     /* el plancton no llama a reaccionBorde: el cristal es lo único que lo
        retiene. La caída se invierte SÓLO si sigue empujando contra esa

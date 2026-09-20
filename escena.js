@@ -694,7 +694,14 @@ export const ABISMO = {
          radio de reposo, poco más que las 1,9 a las que la deja una esca
          que pase cerca. Por encima de 1,5 no es un destello, es un bulto. */
       enciendeDedo: 2.2, topeDedo: 0.55, creceDedo: 0.7, apagaDedo: 0.2,
-      caida: 0.16,                // la nieve marina cae
+      /* ── LO QUE CAE CADA MOTA, Y ES UN RANGO A PROPÓSITO ────────
+         Con un solo número para todas, la nieve marina rebotaba contra el
+         cristal EN BLOQUE y el reparto vertical se iba: al minuto el
+         techo al 0 % y el suelo al 19 %, y a los seis minutos al revés.
+         Abierto —y con el sentido sorteado al nacer, que es la otra
+         mitad, en bichos/plancton.js— ninguna franja se sale del 7-13 %
+         en quince minutos. La media se queda donde estaba, 0,16. */
+      caida: [0.08, 0.24],
     },
 
     /* LAS MEDUSAS. El otro foco que se mueve: grandes, encendidas en todo
