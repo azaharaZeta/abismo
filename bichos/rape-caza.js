@@ -4,7 +4,7 @@
    campos con los que tapa y asusta, la mirada y la luz que le llega.
    ══════════════════════════════════════════════════════════════════ */
 import { M } from '../motor.js';
-const {rango, opt} = M;
+const {clamp, rango, suave, opt} = M;
 import { centro, aMundo } from './rape-cuerpo.js';
 import { hacia } from './comun.js';
 
@@ -161,8 +161,22 @@ function caza(f, M, L, p, dt){
    masa del tronco, no el filo de la cola.
 
    Tapa SIEMPRE, también negro sobre negro: se le encuentra por la
-   AUSENCIA de motas. Para que a oscuras no esté, escalar `fuerza` con la
-   luz recibida: suave(clamp(f.ilum/(p.techo*0.18), 0, 1)).
+   AUSENCIA de motas.
+
+   ── Y CUANDO NO LO ALUMBRA NADIE, ADEMÁS OSCURECE ──────────────────
+   Tapar no basta para que un cuerpo se lea a oscuras: quitarle las motas
+   a lo que tiene detrás deja un hueco del color del agua, y el agua ahí
+   abajo ya es casi negra. `oscuro` le añade la otra mitad —le quita luz
+   al AGUA, que es lo que hace legible al leviatán— y va por `agua` en el
+   mismo campo `tapa`, sin uno nuevo: es la misma elipse, así que la
+   sombra y el silencio no se pueden desalinear.
+
+   VA AL REVÉS QUE TODO LO DEMÁS DEL BICHO: crece según BAJA `ilum`, así
+   que el rape es un agujero mientras nadie lo mira y se disuelve en el
+   agua en cuanto algo lo alumbra y hay cuerpo que enseñar. El umbral es
+   medio `techo`, el mismo que usa `congela`: las dos cosas contestan a
+   «ya lo han encontrado» y contestarlo dos veces en sitios distintos es
+   la forma de que un día dejen de pasar a la vez.
 
    Se llama desde la pasada de campos, o sea ANTES de que el bicho se
    actualice, así que la postura que lee es la del fotograma anterior: da
@@ -183,10 +197,13 @@ function tapa(f, M, L, p){
      para los eventos. El reglaje está en escena.js. */
   const Lg = f.Lg, rot = -f.gx*f.ang;   // el mismo giro que enPez()
   const filo = p.tapaFilo;
+  /* lo que se lleva del agua, y sólo mientras esté a oscuras */
+  const agua = opt(p.oscuro, 0)
+             * (1 - suave(clamp(f.ilum/Math.max(0.001, p.techo*0.5), 0, 1)));
   for (const T of TAPAS){
     const c = aMundo(f, f.gx, Lg*T[0], 0);
     M.campos.push({ tipo:'tapa', plano: L.i, x: c[0], y: c[1],
-                    r: Lg*T[1], ky: T[2], rot, filo, fuerza: k });
+                    r: Lg*T[1], ky: T[2], rot, filo, fuerza: k, agua });
   }
 }
 

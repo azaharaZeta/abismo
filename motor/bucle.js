@@ -423,25 +423,28 @@ function abrePlano(L){
   return g;
 }
 
-function pasoPlanos(dt){
-  frente.length = 0;
+/* ── LOS CAMPOS DE LOS CUERPOS, Y ANTES DE TODO ─────────────────────
+   Un bicho puede empujar campos igual que un evento —el rape tapa con
+   uno—, pero no en su `actualiza`: `pasoEventos` vacía `campos` al empezar
+   el fotograma y los planos van del fondo al frente, así que un campo
+   empujado al actualizarse llegaría tarde para el plancton del fondo, que
+   es el 82 %.
 
-  /* ── LOS CAMPOS DE LOS CUERPOS, Y ANTES DE TODO ────────────────
-     Un bicho puede empujar campos igual que un evento —el rape tapa con
-     uno—, pero no en su `actualiza`: pasoEventos() vacía `campos` al
-     empezar el fotograma y los planos van del fondo al frente, así que un
-     campo empujado al actualizarse llegaría tarde para el plancton del
-     fondo, que es el 82 %. */
+   Y VA ANTES DE `pintaAgua`, que es lo que lo hace la pasada de LOS
+   CUERPOS y no la del plancton: `pintaSombras` recorre `campos` a pelo, y
+   estando esto dentro de `pasoPlanos` el agua sólo llegaba a ver los
+   campos de los eventos —un cuerpo podía callar a los demás pero no
+   oscurecer el agua, y el rape a oscuras se quedaba en un hueco del color
+   del agua (ver `oscuro` en la escena). */
+function camposBichos(){
   for (const L of PLANOS)
     for (const gr of L.grupos)
       if (gr.def.campos)
         for (const o of gr.items) gr.def.campos(o, M, L, gr.p);
+}
 
-  /* AQUÍ y no antes: es el último sitio del fotograma en que se empuja un
-     campo, y el primero es éste el que tiene que ver todos. `pintaSombras`
-     corre antes y no pasa por el índice —recorre `campos` a pelo—, que es
-     lo correcto: el agua sólo la tapan los `apaga` de los eventos. */
-  indexaCampos();
+function pasoPlanos(dt){
+  frente.length = 0;
 
   for (const L of PLANOS){
     const g = abrePlano(L);
@@ -574,7 +577,12 @@ function frame(ahora){
   V.ctx.imageSmoothingEnabled = true;
 
   tEtapa = performance.now();
-  pasoEventos(dt);  marca('eventos');
+  pasoEventos(dt);
+  camposBichos();
+  /* AQUÍ y no antes: es el último sitio del fotograma en que se empuja un
+     campo, y el primero que lo lee tiene que verlos todos. */
+  indexaCampos();
+  marca('eventos');
   pintaAgua();      marca('agua');
   pasoPlanos(dt);   marca('planos');
   componePlanos();  // se marca por dentro: suma, velo y grano

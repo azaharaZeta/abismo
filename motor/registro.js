@@ -85,7 +85,10 @@ const paramsDe = conf => conf.params || conf;
 
    Actúa por dos vías, y ninguna obliga a las especies a saber que existe:
      · CAMPOS → M.campos.push({tipo, x, y, r, ri?, ky?, rot?, plano?,
-                fuerza, filo?, c?, d?}) y el bicho pregunta M.campo(...).
+                fuerza, filo?, agua?, c?, d?}) y el bicho pregunta
+                M.campo(...). `agua` es lo único que no lee M.campo: lo
+                lee pintaSombras, y es qué parte de la `fuerza` se lleva
+                del agua —1 en un `apaga`, 0 en los demás si no lo dicen.
                 Un bicho también puede empujarlos —el rape tapa y asusta
                 con ellos—, pero entonces tiene que actualizarse ANTES que
                 quien lo lea: los campos se vacían al empezar cada

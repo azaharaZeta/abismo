@@ -677,6 +677,59 @@ export const ABISMO = {
        deja de ser un hallazgo. */
     { evento: 'gemacion', espera: 6,
       cada: [150, 340], primero: [40, 110] },
+
+    /* ── LAS BURBUJAS ───────────────────────────────────────────────
+       Algún organismo ha soltado aire ahí abajo: un racimo sube, se
+       deshilacha y algunas revientan por el camino. NO EMITEN —una pompa
+       de aire no tiene luz, tiene una película que refleja la que le
+       llega—, así que en agua vacía casi no están y se encienden enteras
+       cuando les pasa una medusa por debajo. El mecanismo, en
+       eventos/burbujas.js.
+
+       `radio` TIENE QUE SER UN PAR: del extremo grande sale lo deprisa que
+       sube cada una, que es lo que impide que el racimo ascienda en
+       bloque. En caja de móvil, de 2,6 a 8 px.
+
+       `hondo` es DÓNDE NACEN, en fracción del alto, y PASA DE 1 a propósito:
+       así el racimo nace fuera del cuadro y ENTRA subiendo, en vez de
+       aparecer dentro de él. Ahí abajo es donde estaría lo que soltó el
+       aire, fuera de plano. Con el reparto de `racimo` encima, el 85 % nace
+       por debajo del canto y el resto a menos de 15 px del suelo.
+
+       `sube` las hace tardar de doce a dieciséis segundos en cruzar el
+       cuadro entero —medido en caja de móvil, ocho semillas; tumbado son
+       ocho, que hay menos alto—: más rápido dejan de leerse como agua y
+       parecen chispas. Sale largo a propósito y no es gratis
+       —mientras corre, en el abismo no pasa nada más—, pero casi la mitad
+       revientan por el camino y el racimo se deshilacha mucho antes de
+       llegar arriba.
+
+       `arrastra` es cuánto las lleva la corriente —a 0 suben rectas y se
+       despegan del agua. */
+    { evento: 'burbujas', plano: 1,
+      cada: [70, 160], primero: [30, 80],
+      banda: [0.12, 0.88], hondo: [0.99, 1.06],
+      cuantas: [6, 13], radio: [0.09, 0.28], racimo: 0.55,
+      sube: [1.8, 3.2], serpentea: [0.10, 0.28], ritmo: [0.9, 2.2],
+      soltar: [0, 0.9], arrastra: 0.5,
+      /* cuántas revientan y qué dura el estallido: el aro se abre y se va
+         al cuadrado, o se lee como un desvanecido y no como un pop */
+      estalla: 0.45, vidaEstalla: 0.26, creceEstalla: 2.4,
+      /* lo que se ve de ellas. `alcance` generoso y `caida` floja porque
+         lo que se les pide es que cojan luz DE LEJOS: con el alcance corto
+         del rape sólo existirían pegadas a un foco. `destello` es el punto
+         especular, en fracción del radio: a 1 se come el aro y la burbuja
+         vuelve a ser un disco. */
+      brillo: 1.0, base: 0.06, alcance: 3.5, caida: 1.6, destello: 0.5,
+      /* EL COLOR VA POR RACIMO. El círculo entero de tono y muchos tramos,
+         porque lo que se sortea es DÓNDE empieza el trozo; `tramo` es
+         cuántas entradas seguidas se reparten las burbujas de una tanda.
+         Sin `peso`: aquí no se sortea por toda la paleta, se indexa un
+         trozo, así que nadie lo miraría. */
+      espectro: { tono: [0, 352], tramos: 24,
+                  sat: [0.55, 0.90], luz: [0.62, 0.80],
+                  satGlow: [0.50, 0.80], luzGlow: [0.18, 0.28] },
+      tramo: [3, 5] },
   ],
 
   /* ── BICHOS ───────────────────────────────────────────────────────
@@ -908,9 +961,12 @@ export const ABISMO = {
       intensidad: [0.42, 1.00],
       /* ── Y CUANDO ESTÁ SACIADO ─────────────────────────────────
          El parpadeo sigue, pero aquí abajo: mientras dura `reposo` la esca
-         queda CASI apagada, a un séptimo de lo que da normalmente. No a
+         queda CASI apagada, a un décimo de lo que da normalmente. No a
          cero, porque es el único punto de referencia del cuadro —lo que
-         tiene que leerse es una brasa, no un hueco.
+         tiene que leerse es una brasa, no un hueco. El suelo de verdad no
+         es este número sino `rLuz`: a 0,04 la esca todavía prende motas a
+         15 px en caja de móvil, y por debajo deja de alumbrar nada y el
+         punto se queda solo sobre negro.
 
          DE AQUÍ SALEN TRES COSAS, no una, porque las tres cuelgan del
          brillo de ahora normalizado contra `intensidad[0]`: lo que se ve,
@@ -919,12 +975,13 @@ export const ABISMO = {
          lo que se ve sería cosmético: el banco seguiría acudiendo a un
          señuelo negro y quedaría una nube de motas prendidas alrededor.
 
-         MEDIDO en pantalla, en un cuadro de 140 px alrededor de la esca:
-         lo que se derrumba es la CORONA, no el punto. Los píxeles por
-         encima de 120 pasan de 17.454 a 671 —26 veces menos— y la luz
-         total cae 3,9 veces, pero quedan 5.296 píxeles por encima de 60.
-         O sea que deja de ser una lámpara y sigue siendo una brasa, que es
-         lo que se le pide: sin ella el cuadro se queda sin ancla.
+         MEDIDO en pantalla —cuadro de 90 px alrededor de la esca, el grano
+         apagado y el bicho clavado, que sin las tres cosas la medida es
+         ruido—: lo que se derrumba es la CORONA, no el punto. De encendida
+         a saciada, los píxeles por encima de 120 pasan de 1.492 a NINGUNO
+         y los de más de 60, de 3.518 a 148. O sea que deja de ser una
+         lámpara y sigue siendo una brasa, que es lo que se le pide: sin
+         ella el cuadro se queda sin ancla.
 
          Y ES EL SUELO DE LO QUE TIRA. `escaSaciada[1]` no sólo dice lo
          apagada que se queda: es el punto en el que `senuelo` llega a
@@ -941,7 +998,7 @@ export const ABISMO = {
          Y la trampa no pierde: el cebado con la esca encendida SUBE
          (50→52 y 64→86 pez·segundo), porque el banco deja de gastar la
          mitad del rato en un señuelo que no responde. */
-      escaSaciada: [0.06, 0.16],
+      escaSaciada: [0.04, 0.11],
 
       /* Delante del morro, no encima del lomo: es para lo que sirve, y es
          lo que mantiene al pez a oscuras —cuanto más separada está la luz
@@ -964,6 +1021,19 @@ export const ABISMO = {
          desvanece antes del canto y se cuela luz por dentro de la silueta
          —29,6 % con filo 5, 4,8 % con filo 28. */
       tapa: 1, tapaFilo: 28,
+      /* ── Y LO OSCURO QUE SE PONE CUANDO NO LO MIRA NADIE ───────
+         `tapa` le quita las motas a lo de detrás, pero el hueco que deja
+         es del color del agua y el agua aquí abajo ya es casi negra: a
+         oscuras el rape no se lee, se INTUYE. `oscuro` le quita luz
+         también al AGUA —el mecanismo del leviatán, ver `pintaSombras` en
+         motor/agua.js— y sólo mientras `ilum` está por debajo de medio
+         `techo`, así que es un agujero con forma de pez hasta que algo lo
+         alumbra y entonces se disuelve y aparece el cuerpo.
+
+         A 1 es tan negro como el leviatán, que es una bestia a treinta
+         metros; éste está en el plano de delante y a esa altura tapa el
+         velo entero. Lo que se le pide es que se INSINÚE. */
+      oscuro: 0.7,
 
       /* `vigila` son los largos en los que algo le llama la atención;
          `velMira` lo que tarda el ojo en llegar; `pupila`, cuánto se

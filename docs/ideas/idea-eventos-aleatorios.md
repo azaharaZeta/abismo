@@ -1,6 +1,6 @@
 # Idea: Eventos aleatorios
 
-**Estado: EN CURSO** — arquitectura hecha. La pieza tiene hoy ocho eventos, cinco de
+**Estado: EN CURSO** — arquitectura hecha. La pieza tiene hoy nueve eventos, cinco de
 ellos de este catálogo; el resto del catálogo sigue vivo aquí y este fichero registra
 el estado de cada uno.
 **Empezada:** 2026-09-15 · **primera tanda:** 2026-09-15 · **última revisión:** 2026-09-20
@@ -667,10 +667,14 @@ setecientas llamadas que se ahorran.
 ## Reparto sugerido por pecera
 
 - **Abismo (hoy):** E-09 `contagio`, el `visitante`, E-16 `leviatan`, E-04 `carrona`,
-  E-17 `cuerpo` y E-19 `glitch`, más `floracion` y `gemacion`, que no salieron de este
-  catálogo. Son los ocho eventos que existen hoy y los ocho están en la escena: el
-  resto de la tabla está por escribir o borrado. Ya no hay que vigilar que se pisen:
-  desde el 2026-09-20 pasa uno a la vez y punto.
+  E-17 `cuerpo` y E-19 `glitch`, más `floracion`, `gemacion` y `burbujas`, que no
+  salieron de este catálogo. Son los nueve eventos que existen hoy y los nueve están
+  en la escena: el resto de la tabla está por escribir o borrado. Ya no hay que
+  vigilar que se pisen: desde el 2026-09-20 pasa uno a la vez y punto.
+
+  Y CADA EVENTO MÁS REPARTE EL MISMO HUECO. Con nueve, el turno de cada uno es más
+  raro aunque su `cada` no se haya tocado: el mando del ritmo es `ABISMO.relevo`, no
+  la entrada de ninguno. Es lo primero que hay que mirar antes de añadir el décimo.
 - **Abismo (propuesto):** sumarle E-02 · y E-08 de fondo.
 - **Medusas:** E-09, E-13, E-14 · y E-10 si se quiere algo grande.
 - **Una pecera alegre futura:** E-09, E-10, E-11, E-12, E-15.

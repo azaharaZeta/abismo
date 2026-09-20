@@ -765,3 +765,55 @@ documentación.
   él el lienzo, así que `M.U` se fue a cero y lo que medía no era el velo. La segunda
   vez, el velo salía flotando muy por encima de la sombra: le estaba pasando el ancho
   del diente en PÍXELES a una cuenta que mide en `s`.
+
+## 2026-09-20 · las burbujas, y la esca más baja al estar saciado
+
+- **«Evento: burbujas, no muy grandes, juntas, como si algún organismo hubiera soltado
+  aire; de un color random, pero todas de un mismo rango de color cada vez, de distintos
+  tamaños, subiendo y explotando algunas y otras no»** · hecho, `eventos/burbujas.js`.
+  Es el noveno evento, y con él cada uno sale menos: el reparto del hueco lo manda
+  `ABISMO.relevo` y no la entrada de nadie.
+
+  **UNA BURBUJA NO EMITE**, así que no se pinta un disco: se pintan las dos cosas que
+  tiene una película de aire en agua negra, y las dos salen de `M.luzEn`. **El ARO**
+  —`mancha` con `r0`, el centro vacío, que por ahí se ve el agua de detrás— y **el
+  DESTELLO**, un punto en el lado que mira a la luz, sacado del vector `vx,vy` que ya
+  usaba el canto del `cuerpo`. Sin el destello son anillos planos; con él, esferas. En
+  agua vacía casi no están y se encienden enteras cuando les pasa una medusa por debajo:
+  es la carroña aplicada a algo que sube.
+
+  **«Un mismo rango de color cada vez» no pedía un mecanismo nuevo.** `generaPaleta`
+  reparte el tono LINEALMENTE por el rango del espectro, o sea que la paleta ya viene
+  ordenada por tono: un racimo es un TROZO CONTIGUO de ella —se sortea dónde empieza y
+  cada burbuja coge una de las `tramo` siguientes—. Se indexa a mano y no con
+  `M.color()` a propósito, que ahí está el punto: que NO sea un sorteo por toda la
+  paleta. De ahí que su espectro vaya sin `peso`, que nadie miraría.
+
+  Lo único físico que llevan es que **la grande sube más** (de `radio[1]`); sin eso el
+  racimo asciende en bloque y se lee como una cortina. El serpenteo va en la POSICIÓN y
+  no en la velocidad: integrado se acumula y la burbuja se va de lado sin volver.
+
+- **«Baja un poquito más el brillo del señuelo del rape cuando no está cazando»** ·
+  `escaSaciada` de `[0.06, 0.16]` a `[0.04, 0.11]`. No es cosmético: de ese número
+  cuelgan también lo que TIRA (`senuelo`) y hasta dónde enciende plancton (`rLuz`), que
+  baja de 34 a 23 px en caja de móvil. `senuelo` sigue llegando a 0 estando saciado,
+  así que el picoteo no vuelve.
+
+  **Y LA MEDIDA VIEJA DEL BLOQUE ERA IRREPETIBLE**, que fue la mitad del trabajo. Medir
+  la esca restando dos fotogramas no converge por tres motivos a la vez, y los tres hay
+  que quitarlos: **el grano se re-sortea cada fotograma** (la resta se lo lleva entero),
+  **el ilicio sigue oscilando** con su muelle, y **el bicho se mueve**. Con el grano
+  apagado, el rape clavado y un cuadro de 90 px la medida sale limpia y monótona: de
+  encendida a saciada, los píxeles por encima de 120 pasan de 1.492 a NINGUNO y los de
+  más de 60, de 3.518 a 148. Los números que había en el comentario (17.454 → 671) no
+  se pueden reproducir con ninguna receta; se sustituyeron por éstos.
+
+- **Y UN FALLO ESTRUCTURAL QUE SALIÓ DE PASO: el agua no veía a los cuerpos.**
+  `pintaSombras` corre dentro de `pintaAgua` y la pasada `def.campos()` de los bichos
+  estaba dentro de `pasoPlanos`, que va DESPUÉS. O sea que el agua sólo llegaba a ver
+  los campos de los EVENTOS: un cuerpo podía callar a los de detrás (`tapa`) pero no
+  oscurecer el agua, hiciera lo que hiciera. La pasada se sacó a `camposBichos()` y
+  ahora va entre `pasoEventos` y `pintaAgua`. **No cambia la simulación** —nadie empuja
+  un campo entre los dos sitios— y está comprobado exigiendo firma numérica idéntica en
+  seis tiradas sembradas. Sin esto, la idea del rape oscuro no podía funcionar y no se
+  veía por qué.

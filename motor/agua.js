@@ -168,15 +168,30 @@ function sumaVeces(img, fuerza){
    brillando sobre el hueco.
 
    El agua es lo más lejano que hay, así que aquí NO se mira la guarda de
-   `plano`: todo campo `apaga` la tapa. La elipse es la misma que resuelve
-   M.campo, así que la sombra y el silencio son la misma forma. */
+   `plano`: todo campo que la oscurezca la tapa entera. La elipse es la
+   misma que resuelve M.campo, así que la sombra y el silencio son la misma
+   forma.
+
+   ── Y QUIÉN OSCURECE EL AGUA LO DICE EL CAMPO, NO SU TIPO ───────────
+   `agua` es qué parte de su `fuerza` se lleva de aquí, de 0 a 1. Un
+   `apaga` es masa y vale 1 si no lo dice; cualquier otro vale 0 —un `tapa`
+   le quita la luz al que tiene detrás y el agua no se entera, que es lo
+   que separa un esqueleto de una masa—, y quien quiera las dos cosas lo
+   pide. Lo pide el rape: `tapa` a los demás siempre, y además oscurece el
+   agua cuando no lo alumbra nadie (ver `oscuro` en la escena).
+
+   POR QUÉ NO SE RESUELVE CON UN `apaga` Y YA: los `apaga` no llevan guarda
+   de plano y `silencio()` los lee sin pasarle `L`, así que un cuerpo que
+   se ponga uno encima SE CALLA A SÍ MISMO —y en el rape lo primero que se
+   apagaría es su propia esca, que es lo único que se le ve a oscuras. */
 function pintaSombras(){
   const S = ABISMO.agua.sombra;
   if (!S || !(S.fuerza > 0) || !campos.length) return;
   for (let i=0;i<campos.length;i++){
     const c = campos[i];
-    if (c.tipo !== 'apaga') continue;
-    const a = Math.min(1, c.fuerza * S.fuerza);
+    const q = opt(c.agua, c.tipo === 'apaga' ? 1 : 0);
+    if (!(q > 0)) continue;
+    const a = Math.min(1, c.fuerza * S.fuerza * q);
     if (a < 0.01 || !(c.r > 0)) continue;
     const R = c.r;
     V.ctx.save();

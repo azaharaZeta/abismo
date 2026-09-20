@@ -52,7 +52,7 @@ motor/             util · color · registro · estado · agua · dedo · api ·
 bichos/            comun · medusa · plancton · copepodo ·
                    pezlinterna · rape (+ rape-cuerpo, rape-caza)
 eventos/           comun · contagio · visitante · leviatan · carrona ·
-                   cuerpo · glitch · floracion · gemacion
+                   cuerpo · glitch · floracion · gemacion · burbujas
 marco.css · js     la chapa, el título y el botón
 pruebas.js         el andamio
 manifest · icono   instalable en la pantalla de inicio
@@ -145,7 +145,11 @@ queda: **quitarle luz al que estaba detrás**. Dos mecanismos:
   guarda de plano).
 - **`pintaSombras()`** — la otra mitad: le quita luz al **agua**. Es el
   único punto de la tubería donde se puede restar, porque va antes de que
-  se sumen los planos.
+  se sumen los planos. Quién la oscurece **lo dice el campo y no su tipo**:
+  `agua` es qué parte de su `fuerza` se lleva de ahí —1 en un `apaga`, 0 en
+  los demás—, así que un `tapa` puede callar a los de detrás sin tocar el
+  agua (la carroña: un esqueleto no es una masa) o pedir las dos cosas (el
+  rape a oscuras, con `oscuro`).
 
 Corolario práctico: el orden de la lista `ABISMO.bichos` no cambia un
 píxel. Lo que cambia las cosas es cambiar de **plano**.
@@ -162,15 +166,23 @@ para pintarse en el plano delantero ese fotograma sin crecer ni afilarse.
 
 ```
 pasoEventos  → vacía `campos`, reinicia MOD, corre relojes y eventos vivos
+camposBichos → def.campos() de TODOS los planos, y después indexaCampos()
 pintaAgua    → tira de degradado + ondulación + pintaSombras + MOD.agua
-pasoPlanos   → def.campos() de TODOS los planos primero, luego por plano:
-               rehacer L.luces/L.presas/L.cardumen → actualiza → dibuja
+pasoPlanos   → por plano: rehacer L.luces/L.presas/L.cardumen →
+               actualiza → dibuja
 componePlanos→ suma los tres planos + pintaDispersion (el velo) + dither
 ```
 
 `campos` se vacía **al empezar** el fotograma, de ahí que un bicho que
 quiera tapar deba empujar su campo en `def.campos()` y no en
 `actualiza()`: en `actualiza()` llegaría tarde para el plancton del fondo.
+
+Y `camposBichos` va **antes de `pintaAgua`** por la otra mitad: los campos
+de los cuerpos tienen que existir cuando el agua los mira. Estando dentro
+de `pasoPlanos` —que corre después— el agua sólo llegaba a ver los de los
+eventos, así que un cuerpo podía callar a los demás pero no oscurecerla.
+Moverlo no cambia la simulación: nadie empuja un campo entre los dos
+sitios, y está comprobado exigiendo firma idéntica.
 
 ### Cómo se relacionan los bichos sin conocerse
 

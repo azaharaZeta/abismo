@@ -20,3 +20,4 @@ import './eventos/cuerpo.js';
 import './eventos/glitch.js';
 import './eventos/floracion.js';
 import './eventos/gemacion.js';
+import './eventos/burbujas.js';

@@ -119,6 +119,9 @@ const MANDOS = [
   {nombre:'rape · cuerpo',     ruta:'bichos.@rape.cuerpo',    min:0, max:2,   paso:0.02, aplica:null},
   {nombre:'rape · media altura', ruta:'bichos.@rape.altura',
    min:0, max:0.5, paso:0.02, aplica:null},
+  /* lo oscuro que se pone un rape al que no alumbra nadie: a 0 vuelve a ser
+     transparente y sólo se le encuentra por las motas que faltan */
+  {nombre:'rape · oscuro',     ruta:'bichos.@rape.oscuro',  min:0, max:1,   paso:0.05, aplica:null},
 ];
 
 /* Un tramo de ruta puede ser `@nombre`: busca en el array la entrada cuya
