@@ -296,6 +296,11 @@ export const ABISMO = {
       /* la cresta dorsal, en campos aparte: sierra el canto de arriba y
          deja la panza lisa. Dientes desiguales. */
       espinas: 10, cresta: 0.55,
+      /* Lo que cuelga la mandíbula bajo el cráneo, en veces el semigrosor
+         del cuerpo. Es lo único de la cabeza que es un mando: el morro y
+         el ojo son anatomía y viven en el evento. A 0 el bicho acaba en
+         punta y deja de tener boca. */
+      quijada: 1.0,
       /* `brillo` es SÓLO los dos cantos, los fotóforos y el ojo: el cuerpo
          no emite nada.
 
@@ -852,12 +857,21 @@ export const ABISMO = {
          O sea que deja de ser una lámpara y sigue siendo una brasa, que es
          lo que se le pide: sin ella el cuadro se queda sin ancla.
 
-         Y arregla el picoteo. Medido sobre 600 s y tres semillas: los
-         episodios de «pez pegado a un señuelo al que nadie responde» caen
-         del 9,8 % al 4,2 % del tiempo, y —lo que los hacía leer como
-         avería— la esca está encendida en el 9 % de ellos contra el 72 %.
-         El precio: la esca tira a pleno el 48 % del tiempo en vez del
-         100 %. Si el cuadro se queda sin ancla, ÉSTE es el número. */
+         Y ES EL SUELO DE LO QUE TIRA. `escaSaciada[1]` no sólo dice lo
+         apagada que se queda: es el punto en el que `senuelo` llega a
+         CERO, así que de este número depende que una esca apagada deje de
+         atraer del todo (ver `senuelo` en bichos/rape.js). Subirlo apaga
+         la trampa antes; bajarlo la deja tirando más rato.
+
+         MEDIDO sobre diez minutos y dos semillas, con el rape saciado el
+         60-71 % del tiempo: el cebado del banco sobre una esca APAGADA
+         cae de 47-49 pez·segundo a 6-8, o sea del 42-49 % de todo el
+         cebado al 9-11 %. Lo que queda es el segundo que tarda el brillo
+         en bajar al tragar, que es justo lo que hay que ver.
+
+         Y la trampa no pierde: el cebado con la esca encendida SUBE
+         (50→52 y 64→86 pez·segundo), porque el banco deja de gastar la
+         mitad del rato en un señuelo que no responde. */
       escaSaciada: [0.06, 0.16],
 
       /* Delante del morro, no encima del lomo: es para lo que sirve, y es

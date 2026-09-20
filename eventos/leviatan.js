@@ -130,17 +130,44 @@ evento('leviatan', {
                       r: paso*0.55*pen, ky: Math.max(0.05, h*0.9*pen/(paso*0.55*pen)),
                       rot: ang, fuerza: e.hondura*0.9, filo });
     }
-    /* LA QUIJADA, un lóbulo bajo el cráneo: es lo que convierte el morro
-       en una cabeza con boca y no en una punta. Va por el lado de la
-       panza —el +normal del eje—, igual que el hilo y el ojo: por el otro
-       es un bulto en la cabeza. */
-    const qj = levPunto(e, 0.085, _lvQ), aj = levAngulo(e, 0.085);
-    const semiJ = e.grosor*levPerfil(0.085);
-    M.campos.push({ tipo:'apaga', plano,
-                    x: qj[0] - Math.sin(aj)*semiJ*0.75,
-                    y: qj[1] + Math.cos(aj)*semiJ*0.75,
-                    r: e.largo*0.055*pen, ky: 0.85,
-                    rot: aj + e.dir*0.25, fuerza: e.hondura, filo });
+    /* ── LA QUIJADA ───────────────────────────────────────────────
+       Es lo que convierte el morro en una cabeza con boca. Va por el lado
+       de la PANZA —el −normal del eje—, igual que el hilo y el ojo: por el
+       otro es un bulto en el cráneo.
+
+       Y ES UNA CADENA de lóbulos del morro a la charnela, no un bulto
+       solo. Con una elipse redonda colgando lo que sale es papada: lo que
+       hace una cabeza de depredador es que el canto de abajo vaya LARGO y
+       casi recto mientras el de arriba es curvo. Los lóbulos van
+       achatados (`ky` bajo) y cada vez más hondos hacia atrás, así que la
+       línea de la boca se abre desde la punta.
+
+       `quijada` de la escena escala lo que cuelga: a 0 no hay mandíbula y
+       el bicho vuelve a acabar en punta. */
+    const qd = opt(p.quijada, 0);
+    if (qd > 0.004){
+      const NQ = 5;
+      for (let i=0;i<NQ;i++){
+        const u = i/(NQ-1);                       // 0 la punta, 1 la charnela
+        const s = 0.012 + 0.105*u;
+        const q = levPunto(e, s, _lvQ), a = levAngulo(e, s);
+        /* EL CANTO DE ABAJO, y se mide contra `grosor` y no contra el
+           semigrosor de AHÍ: si la quijada se encoge con el morro se queda
+           dentro de la silueta y no se ve. Lo que hace una cabeza de
+           depredador es justo lo contrario —el canto de abajo va recto y
+           el de arriba se curva—, así que la quijada es una cuña que se
+           abre hacia la charnela. */
+        const canto = e.grosor*(0.55 + 1.35*u)*qd;
+        const alto  = e.grosor*0.42*qd;
+        const hondo = Math.max(alto*0.25, canto - alto);
+        const rq = e.largo*0.026*pen;
+        M.campos.push({ tipo:'apaga', plano,
+                        x: q[0] - Math.sin(a)*hondo,
+                        y: q[1] + Math.cos(a)*hondo,
+                        r: rq, ky: Math.max(0.05, alto*pen/rq),
+                        rot: a + e.dir*0.10, fuerza: e.hondura, filo });
+      }
+    }
     /* Y LA CAUDAL, ahorquillada: dos lóbulos altos al final */
     const qc = levPunto(e, 0.985, _lvQ), ac = levAngulo(e, 0.985);
     const nxc = -Math.sin(ac), nyc = Math.cos(ac);
@@ -263,10 +290,16 @@ evento('leviatan', {
        luz» a 0 lo apague también. */
     const bo = br * opt(p.brilloOjo, 0);
     if (bo > 0.004){
-      const qo = levPunto(e, 0.075, _lvQ), ao = levAngulo(e, 0.075);
-      const semiO = e.grosor*levPerfil(0.075);
-      const ox = qo[0] - Math.sin(ao)*semiO*0.42;
-      const oy = qo[1] + Math.cos(ao)*semiO*0.42;
+      /* ARRIBA DEL EJE, no debajo: el ojo de un depredador va en el tercio
+         alto del cráneo. Colgado al 42 % hacia la panza caía justo encima
+         de la quijada, y lo que se leía era un ojo en la barbilla. Ahora
+         va por el lado del LOMO —el +normal, al revés que el hilo— y algo
+         más adelante, donde el cráneo ya tiene grosor y la cresta todavía
+         no ha empezado (la primera espina cae en 0,14). */
+      const qo = levPunto(e, 0.068, _lvQ), ao = levAngulo(e, 0.068);
+      const semiO = e.grosor*levPerfil(0.068);
+      const ox = qo[0] + Math.sin(ao)*semiO*0.30;
+      const oy = qo[1] - Math.cos(ao)*semiO*0.30;
       /* LATE, muy despacio y desacompasado del coletazo: un punto de alfa
          constante se lee como un píxel muerto y no como un ojo. */
       const lat = 0.70 + 0.30*Math.sin(M.t*0.42 + e.fase);
@@ -323,7 +356,11 @@ function levPunto(e, s, o){
 }
 /* semigrosor del cuerpo en `s`, con el perfil descrito arriba */
 function levPerfil(s){
-  const morro  = s < 0.06 ? 0.45 + 0.55*(s/0.06) : 1;
+  /* EL MORRO, y va LARGO y con la potencia por debajo de 1: sube deprisa
+     y luego se aplana, que es un hocico —fino en la punta y ya ancho al
+     llegar al cráneo—. A 0,45 sobre 0,06 de eslora era un bulbo del mismo
+     grosor que el cuerpo: lo que se leía en la silueta era una bala. */
+  const morro  = s < 0.11 ? 0.20 + 0.80*Math.pow(s/0.11, 0.62) : 1;
   const cuerpo = Math.pow(1-s, 0.55);
   const cuello = 1 - 0.30*Math.exp(-Math.pow((s-0.19)/0.075, 2));
   const cola   = 1 - 0.55*Math.pow(Math.max(0, (s-0.62)/0.38), 1.6);

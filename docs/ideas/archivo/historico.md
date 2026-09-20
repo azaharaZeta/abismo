@@ -451,3 +451,61 @@ documentación.
   quitarla lo haría girar más a menudo, que es lo contrario de un cazador de
   emboscada.
 
+## 2026-09-20 · el picoteo del señuelo apagado
+
+- **«los peces solo tienen que ir al señuelo cuando está encendido»** · la usuaria lo
+  seguía viendo después de la tanda de `escaSaciada` del 19, y tenía razón: aquella
+  tanda apagó la esca pero **no apagó lo que TIRA**.
+
+  `senuelo` y `rLuz` salían los dos de la misma cuenta, `brillo/intensidad[0]`. Con
+  `escaSaciada` en [0,06 · 0,16] e `intensidad[0]` en 0,42, eso deja `senuelo` entre
+  0,14 y 0,38 estando saciado —nunca cero—, o sea un radio de atracción de 0,6 a
+  1,7 U, que es un largo de pez. **Y el rape está saciado el 60-71 % del tiempo.**
+
+  MEDIDO sobre diez minutos y dos semillas, contando pez·segundo cebado y mirando si
+  el rape estaba en `reposo`: **el 42-49 % de todo el cebado del banco ocurría sobre
+  una esca apagada**. La medición vieja de la ficha (9,8 % → 4,2 % de «episodios»)
+  no lo cogía porque contaba episodios y no tiempo.
+
+  Arreglo: las dos cuentas se separan. `rLuz` sigue contra `intensidad[0]` —una
+  brasa tiene que seguir prendiendo las motas de al lado, o queda una nube encendida
+  alrededor de un señuelo oscuro— y `senuelo` pasa a ir contra `escaSaciada[1]`, así
+  que **llega a cero** en cuanto la esca baja a ese nivel. El suelo se lee de la
+  escena y no se teclea, para que no se desalineen.
+
+  Después: 6-8 pez·segundo (9-11 %), y lo que queda es el segundo que tarda el
+  brillo en bajar al tragar, que es justo lo que hay que ver. **Y la trampa no
+  pierde: el cebado con la esca ENCENDIDA sube** (50→52 y 64→86), porque el banco
+  deja de gastar la mitad del rato en un señuelo que no responde.
+
+## 2026-09-20 · la cabeza del leviatán
+
+- **«el morro está poco definido, mandíbula más intimidante, el ojo demasiado
+  bajo»** · los tres eran verdad y se veían de golpe al dibujar sus campos `apaga`
+  —que SON la silueta— sobre un lienzo aparte. El morro era un bulbo del mismo
+  radio que cualquier segmento del cuerpo; la quijada, UNA elipse casi circular
+  colgando (papada, no mandíbula); y el ojo caía al 42 % hacia la panza, o sea
+  justo encima de esa papada.
+
+  - `levPerfil`: el morro pasa de `0,45 + 0,55·(s/0,06)` a
+    `0,20 + 0,80·(s/0,11)^0,62` — más largo y con la potencia por debajo de 1, que
+    es lo que hace un hocico: fino en la punta y ya ancho al llegar al cráneo.
+  - La quijada pasa a ser una CADENA de cinco lóbulos achatados del morro a la
+    charnela, y —esto es lo que costó— **medida por su canto de abajo contra
+    `grosor`, no contra el semigrosor local**. Midiéndola contra el semigrosor se
+    encogía con el morro y se quedaba DENTRO de la silueta, invisible. Lo que hace
+    una cabeza de depredador es lo contrario: el canto de abajo va recto y el de
+    arriba se curva.
+  - El ojo sube al lado del LOMO (+30 % del semigrosor) y se adelanta a s=0,068,
+    donde el cráneo ya tiene grosor y la primera espina de la cresta (s=0,14)
+    todavía no ha empezado.
+
+  Nuevo mando: `quijada` en la escena, lo que cuelga la mandíbula. Es lo único de
+  la cabeza que es mando; el morro y el ojo son anatomía y viven en el evento.
+
+- **Y cómo mirar un bicho que es un hueco:** dibujar `M.campos` filtrado por
+  `tipo === 'apaga'` sobre un canvas propio, cada campo como su elipse. Da la
+  geometría EXACTA sin duplicar una fórmula, y se ve en un fotograma —que con el
+  `requestAnimationFrame` estrangulado del panel es la diferencia entre mirar y
+  esperar un minuto a que el bicho cruce.
+

@@ -138,20 +138,34 @@ especie('rape', {
     f.brillo = hacia(f.brillo, f.objBrillo, 1.6, dt);
 
     /* ── LO QUE LA ESCA TIRA Y HASTA DÓNDE ALCANZA ────────────────
-       Las dos salen del brillo de AHORA, normalizado contra el suelo del
-       parpadeo normal: a brillo de `intensidad` valen 1 y no cambia nada;
-       apagada, caen con ella.
+       Las dos salen del brillo de AHORA, pero NO se normalizan igual, y
+       ahí está la diferencia entre una brasa y una trampa:
 
-         `senuelo` es cuánto tira, y la presa multiplica su `atraccion` por
-                   él (ver `cardumen` en pezlinterna). Sin esto, apagar la
-                   esca es cosmético: el banco sigue acudiendo igual y el
-                   picoteo no se arregla.
-         `rLuz`    hasta dónde enciende plancton. Sin esto queda una nube
-                   de motas prendidas alrededor de un señuelo oscuro, que
-                   es peor que el problema que se venía a arreglar. */
+         `rLuz`    hasta dónde enciende plancton. Va contra el suelo del
+                   parpadeo normal, así que baja con la esca pero no se
+                   apaga: una brasa sigue prendiendo las motas de al lado,
+                   y sin esto quedaba una nube encendida alrededor de un
+                   señuelo oscuro.
+         `senuelo` cuánto TIRA, y la presa multiplica su `atraccion` por él
+                   (ver `cardumen` en pezlinterna). Éste va contra el techo
+                   de `escaSaciada`, o sea que llega a CERO en cuanto la
+                   esca baja al nivel de saciada: una trampa apagada no es
+                   una trampa floja, no es una trampa.
+
+       POR QUÉ NO VALE LA MISMA CUENTA PARA LAS DOS. Cuando las dos iban
+       contra `intensidad[0]`, `senuelo` no bajaba de 0,145 estando saciado
+       —y el rape lo está el 71 % del tiempo—, así que la esca apagada
+       seguía atrayendo desde 0,6-1,7 U, que es un largo de pez. MEDIDO
+       sobre diez minutos y dos semillas: el 42-49 % de todo el cebado del
+       banco ocurría sobre una esca apagada. Eso es el picoteo, y era la
+       mitad del trabajo de la trampa.
+
+       El suelo sale de `escaSaciada[1]` y no de un número escrito aquí:
+       así no se pueden desalinear si se toca la escena. */
     const tira = Math.min(1, f.brillo/p.intensidad[0]);
-    f.senuelo = tira;
     f.rLuz = Lg*p.alcanceLuz*tira;
+    const suelo = p.escaSaciada[1];
+    f.senuelo = clamp((f.brillo - suelo)/(p.intensidad[0] - suelo), 0, 1);
     /* ── LA RÁFAGA, Y NO HAY MÁS QUE UNA ──────────────────────────
        El bocado no enciende una luz aparte: es la esca, que durante un
        instante emite mucho más, y el cuerpo se enciende por el mismo

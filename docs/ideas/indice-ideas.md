@@ -32,10 +32,9 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 - Claude dijo: "- Un `manifest.json` con `orientation: portrait` y `display: standalone` dejaría la pieza instalable en la pantalla de inicio. " . Respuesta de usuaria:  vale.
 
 - como de viable es hacer que, salvo las medusas y los peces, todos los demás bichos y objetos tapen el placton? estudiarlo bien porque podría tener impacto o ser engorroso d hacer.
-- sigo viendo peces intentando comerse el señuelo del rape cuando está apagado. los peces solo tienen que ir al señuelo cuando está encendido.
 - rape: un pelín más pequeño. y quiero mejorar su dibujo, algo más detallado. más intimidante, y revisar su forma y su ojo, manteniendo el estilo de la simulación. quizá es buena idea presentarme varios dibujos de prueba para ir decidiendo los cambios.
-- Leviatan: el morro está poco definido, hacerle una mandíbula más intimidante. posicionarle mejor el ojo, está demasiado bajo.
 -solo un evento a la vez.
+-evento: burbujas! no muy grandes, juntas, como si algún organismo hubiera soltado aire. de un color random, pero todas de un mismo rango de color cada vez, varias burbujas juntas de distintos tamaños, subiendo y explotando algunas y otras no. 
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos de las ideas procesadas el 2026-09-17, el 2026-09-18 y el 2026-09-19.
 
