@@ -338,7 +338,22 @@ function volumen(g, f, col, nuc, br, bcx, bcy, dl, ladoY){
    lo que lo alumbra, el ojo se enciende de golpe.                   */
 function ojo(g, f, gx, col, nuc, br, sh, p){
   const Lg = f.Lg;
-  const ox = Lg*0.175, oy = -Lg*0.155, r = Math.max(0.8, Lg*0.042);
+  /* ── DÓNDE VA, Y NO ES LIBRE ──────────────────────────────────────
+     Atrás y arriba: un depredador lleva el ojo en el tercio alto del
+     cráneo y no pegado al morro. Pero además hay una COTA DURA, y es la
+     boca: la quijada de arriba gira sobre la charnela y al abrirse barre
+     hacia atrás, y el hueco que abre se le RESTA al cuerpo (ver
+     `bocaPath`), así que un ojo dentro de ese barrido se queda flotando
+     fuera de la silueta.
+
+     MEDIDO punto en polígono contra el hueco, en veinticinco posturas de
+     `ataque`: con la boca de hoy (`bocaLargo` 0,47 · `abertura` 0,52)
+     cualquier sitio vale. Con una boca mayor —0,56 y 0,70— el ojo en
+     0,175/−0,155 se lo traga la boca a partir de `ataque` 0,44, y aquí,
+     en 0,22/−0,20, queda LIBRE en todo el bocado con 0,175 de largo de
+     margen hasta el lomo. Lo que NO se puede subir es `quijadaArriba`:
+     a 0,34 vuelve a chocar, y a 0,42 choca esté el ojo donde esté. */
+  const ox = Lg*0.22, oy = -Lg*0.20, r = Math.max(0.8, Lg*0.050);
   /* EL GLOBO sólo recoge: sin luz que le dé, no está. */
   if (br > 0.004){
     enPez(g, f, gx, () => { g.beginPath(); g.arc(ox, oy, r, 0, TAU); });

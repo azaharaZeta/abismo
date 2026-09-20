@@ -509,3 +509,42 @@ documentación.
   `requestAnimationFrame` estrangulado del panel es la diferencia entre mirar y
   esperar un minuto a que el bicho cruce.
 
+## 2026-09-20 · la cara del rape
+
+- **«un pelín más pequeño, más intimidante, revisar su forma y su ojo»** · elegido
+  por la usuaria sobre una hoja de bocetos: ojo recolocado + boca mayor, sin tocar
+  el detalle interior ni el perfil del cuerpo (la forma se queda como estaba).
+
+  - `largo` [5,4 · 7,4] → **[5,1 · 6,7] U**. Y un comentario que mentía por cuatro:
+    decía «un quinto del ancho del cuadro» y eran el **80 %** del ancho de un móvil
+    de pie —`largo` va en U y además lo multiplica el `scale` 1,32 del plano de
+    delante, y el comentario venía de antes del cambio de `escala`—. Ahora, 72 %.
+  - El ojo pasa de (0,175 · −0,155) a **(0,22 · −0,20)** y de r 0,042 a 0,050.
+  - La boca: `bocaLargo` 0,47 → 0,56, `bocaHondo` 0,26 → 0,34, `abertura` 0,52 →
+    0,70, `dientes` [10,15] → [15,20].
+
+  **EL TOPE QUE SALIÓ DE MEDIRLO, y es el dato que vale:** la quijada de arriba
+  gira sobre la charnela y el hueco que abre se le RESTA al cuerpo (`bocaPath`), así
+  que un ojo dentro de ese barrido se queda flotando FUERA de la silueta. Medido
+  punto en polígono contra el hueco en veinticinco posturas de `ataque`:
+
+  | | ¿se come la boca al ojo? |
+  |---|---|
+  | boca vieja, ojo viejo | nunca |
+  | boca nueva, ojo viejo | sí, desde `ataque` 0,44 |
+  | boca nueva + `quijadaArriba` 0,42 | sí, con el ojo en CUALQUIER sitio probado |
+
+  O sea: **`quijadaArriba` no se sube**, y no se arregla moviendo el ojo. La boca
+  crece por `bocaLargo`. Con 0,30 y el ojo en 0,22/−0,20 queda libre en todo el
+  bocado, con 0,175 de largo de margen hasta el lomo.
+
+  Lo pilló la usuaria mirando los bocetos —«te han quedado los ojos fuera del
+  cuerpo»— antes de que nada tocara la pieza.
+
+- **Cómo se hicieron los bocetos**, que sirve para la próxima: un servidor local con
+  un POST que guarda PNG, y en la página un panel por variante llamando a
+  `ESPECIES.rape.dibuja()` sobre un lienzo propio con un rape clonado, la luz puesta
+  a mano y el color FIJADO —si no, cada recarga lo re-sortea y dos paneles dejan de
+  ser comparables—. Y para componer la hoja, `createImageBitmap` y no
+  `img.decode()`: con el panel del navegador oculto, `decode()` no resuelve nunca.
+

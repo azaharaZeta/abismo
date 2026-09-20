@@ -794,9 +794,13 @@ export const ABISMO = {
          por área esto no se puede decir. */
       por: [0, 0, 1],
       /* GRANDE: es lo que sostiene el detalle —miómeros, cristalino,
-         dientes y barbilla no existen por debajo de cierto tamaño—. En el
-         plano de delante, un quinto del ancho del cuadro. */
-      largo: [5.4, 7.4],
+         dientes y barbilla no existen por debajo de cierto tamaño—. Pero
+         la caja que manda es el MÓVIL DE PIE: `largo` va en U y además lo
+         multiplica el `scale` 1,32 del plano de delante, así que a 7,4 el
+         bicho medía el 80 % del ancho de esa pantalla. A 6,7, el 72 %.
+         El mínimo baja poco: por debajo de 5 se le empieza a caer el
+         detalle, que es lo que lo sostiene. */
+      largo: [5.1, 6.7],
       brillo: 1.15,               // el del señuelo: éste sí quema
       /* El cuerpo casi no se ve, y aquí se decide: `cuerpo` escala la luz
          recibida y `techo` la recorta ANTES de escalarla. */
@@ -935,14 +939,24 @@ export const ABISMO = {
          barbilla pone una SEGUNDA luz separada de la esca, y entre las dos
          no se dibuja nada: el tamaño de la cabeza lo declara su
          distancia. */
-      dientes: [10, 15],
+      dientes: [15, 20],
       paladar: true,              // la fila interior, la del paladar
       entreabierta: 0.13,         // la quijada nunca acaba de cerrar
-      bocaLargo: 0.47,            // casi media cabeza es boca
-      bocaHondo: 0.26,            // y la quijada se descuelga
-      /* reparto de la abertura: 0,30 la quijada de arriba y el resto la de
-         abajo, que es como abre un rape. A 0,5 la de arriba le pasa por
-         encima al ojo en pleno bocado. */
+      bocaLargo: 0.56,            // más de media cabeza es boca
+      bocaHondo: 0.34,            // y la quijada se descuelga
+      /* ── EL REPARTO DE LA ABERTURA, Y ES UN TOPE MEDIDO ──────────
+         0,30 la quijada de arriba y el resto la de abajo, que es como abre
+         un rape. Y NO SE PUEDE SUBIR: la de arriba gira sobre la charnela
+         y el hueco que abre se le RESTA al cuerpo (ver `bocaPath`), así
+         que barriendo de más se traga el ojo y lo deja flotando fuera de
+         la silueta.
+
+         MEDIDO punto en polígono contra el hueco, en veinticinco posturas
+         de `ataque` y con la boca de aquí arriba: a 0,30 el ojo queda
+         libre en todo el bocado; a 0,34 ya choca a `ataque` 0,60 y a 0,42
+         choca esté el ojo DONDE ESTÉ —subirlo no se arregla moviendo el
+         ojo, se arregla no subiéndolo—. Si algún día se quiere una boca
+         aún mayor, el que crece es `bocaLargo`, no esto. */
       quijadaArriba: 0.30,
       barba: 0.50, barbas: [3, 5], barbaBrillo: 0.42,
       /* y el detalle del cuerpo, que sólo existe a este tamaño */
@@ -994,7 +1008,7 @@ export const ABISMO = {
          acecho de una trituradora. Tras acertar, más: está tragando. */
       reposo: [10, 24], reposoFallo: [3, 7],
       bocado: 0.55,               // lo que dura el ¡ÑACA!, en segundos
-      abertura: 0.52,             // cuánto se abre la quijada, en radianes
+      abertura: 0.70,             // cuánto se abre la quijada, en radianes
       acometida: [5, 8],          // el tirón del bocado
       acierto: 0.72,              // falla una de cada cuatro
       trasComer: [7, 16],         // la esca se apaga DESPUÉS de tragar
