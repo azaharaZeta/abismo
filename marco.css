@@ -220,15 +220,15 @@ html,body{margin:0;padding:0;height:100%;background:#000103;overflow:hidden;
 }
 
 /* Tumbado manda el alto: un móvil de lado deja 320-375 px, y la ficha de
-   pie pide 350 —el botón de cerrar quedaba fuera del cuadro—. Lo que la
-   hace caber es ENCOGER EL ARMAZÓN: ojo de buey, márgenes y cuerpo de
-   letra, de 350 a 249.
+   pie pide 330 contra los 300 que caben —el botón de cerrar quedaba
+   fuera del cuadro—. Lo que la hace caber es ENCOGER EL ARMAZÓN: ojo de
+   buey, márgenes y cuerpo de letra, de 330 a 231.
 
-   ENSANCHARLA AQUÍ NO PINTA NADA (350 → 335), y conviene saber por qué:
-   el ancho sólo ahorra líneas, y con dos párrafos el alto se lo lleva el
-   armazón. Con un texto largo se invierte —entonces ensanchar valía 31
-   px y era lo que la salvaba—, así que si el texto vuelve a crecer, hay
-   que volver a medir las dos cosas.
+   ENSANCHARLA AQUÍ NO PINTA NADA (330 → 315), y conviene saber por qué:
+   el ancho sólo ahorra LÍNEAS, y con un texto de dos párrafos el alto se
+   lo lleva el armazón, que no depende del ancho. Con un texto largo se
+   invierte —medido entonces: ensanchar valía 31 px y encoger 40—, así
+   que si el texto vuelve a crecer hay que volver a medir las dos.
 
    Y el tope sube al 92 % porque con el 80 el margen en una pantalla de
    320 se queda en 7 px, y la prosa va en una serif que Android NO trae:

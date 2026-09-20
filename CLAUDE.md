@@ -316,27 +316,31 @@ escrito: `ondaArranca`/`ondaAnillo` en
 [eventos/comun.js](eventos/comun.js), que es lo que comparten el contagio
 y la floración. Ahí sólo entra lo que ya estaba escrito dos veces.
 
-**EN EL ABISMO PASA UNA COSA A LA VEZ**, y no hay bandera que lo pida ni
-forma de pedir lo contrario: es de la pieza y no del evento. El que le
-toca turno y encuentra el cuadro ocupado no pierde el suyo —se le rearma
-el reloj con `ABISMO.relevo`—, así que al escribir uno nuevo no hay que
-pensar con quién puede coincidir. Lo que sí hay que pensar es que cada
-evento más REPARTE el mismo hueco: el mando del ritmo es `relevo`.
+**EN EL ABISMO PASA ALGO CADA TREINTA SEGUNDOS**, y lo lleva UN SOLO
+RELOJ que es de la pieza y no de cada evento: cuando salta, `pasoEventos`
+sortea uno de los instalados y lo lanza, esté o no corriendo otro. Los
+eventos no tienen reloj propio y el sorteo es PLANO —entre los que no
+están ya en marcha, para que ninguno se solape consigo mismo—, así que al
+escribir uno nuevo no hay que pensar ni cuándo sale ni con quién puede
+coincidir: puede coincidir con cualquiera.
 
-**NO LE PONGAS VALORES, NI SIQUIERA SU RELOJ.** Todos sus parámetros salen
-de su entrada en `ABISMO.eventos`, `cada` y `primero` incluidos. Los
-eventos llevaban además un `def.prueba` para poder lanzarlos desde el panel
-sin que la escena los configurase, y eran 102 claves que la pieza cargaba
-sólo para el andamio: nadie las ejercitaba, así que envejecían solas —23 ya
-no coincidían con la escena—. Con `cada`/`primero` en la def pasó lo mismo
-en pequeño: dieciséis claves que la escena pisaba siempre, y diez habían
-dejado de coincidir. **El panel es temporal y la pieza no depende de él.**
+El mando es `ABISMO.cadencia`, y es el del ritmo entero. Medido con el
+arnés de Node, dos tiradas de media hora de reloj de escena: salen unos
+118 eventos por hora, el cuadro tiene algo el 72-77 % del tiempo y llegan
+a juntarse tres o cuatro. Bajar `cadencia` amontona; subirlo vacía.
 
-Para probar uno sin instalarlo, se le pone **`cada: null`** en la escena y
-queda DORMIDO: configurado, lanzable a mano, y no sale nunca por su cuenta
-—ni se instala por haberlo lanzado—. Un evento registrado y sin entrada en
-la escena no se puede lanzar, y el panel lo enseña apagado diciendo por
-qué.
+**NO LE PONGAS VALORES, NI SIQUIERA POR DEFECTO.** Todos sus parámetros
+salen de su entrada en `ABISMO.eventos`. Los eventos llevaban un
+`def.prueba` para poder lanzarlos desde el panel sin que la escena los
+configurase, y eran 102 claves que la pieza cargaba sólo para el andamio:
+nadie las ejercitaba, así que envejecían solas —23 ya no coincidían con la
+escena—. **El panel es temporal y la pieza no depende de él.**
+
+Para probar uno sin instalarlo, se le pone **`dormido: true`** en la
+escena y queda fuera del sorteo: configurado, lanzable a mano, y no sale
+nunca por su cuenta —ni se instala por haberlo lanzado—. Un evento
+registrado y sin entrada en la escena no se puede lanzar, y el panel lo
+enseña apagado diciendo por qué.
 
 **Un mando nuevo en el panel**: añade una fila a `MANDOS` en
 [pruebas.js](pruebas.js) con la ruta dentro de `ABISMO`. Los tramos

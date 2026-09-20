@@ -136,36 +136,31 @@ evento('leviatan', {
                         rot: ang, fuerza: e.hondura*0.9, filo });
       }
     }
-    /* ── LA QUIJADA ───────────────────────────────────────────────
+    /* ── LA QUIJADA, Y VA ENTREABIERTA ────────────────────────────
        Es lo que convierte el morro en una cabeza con boca. Va por el lado
        de la PANZA —el −normal del eje—, igual que el hilo y el ojo: por el
        otro es un bulto en el cráneo.
 
-       Y ES UNA CADENA de lóbulos del morro a la charnela, no un bulto
-       solo. Con una elipse redonda colgando lo que sale es papada: lo que
-       hace una cabeza de depredador es que el canto de abajo vaya LARGO y
-       casi recto mientras el de arriba es curvo. Los lóbulos van
-       achatados (`ky` bajo) y cada vez más hondos hacia atrás, así que la
-       línea de la boca se abre desde la punta.
+       Y ES UNA CADENA de lóbulos achatados (`ky` bajo) del morro a la
+       charnela, HONDA EN LA PUNTA y cerrándose hacia atrás, que es una
+       mandíbula BAJADA: la bisagra está detrás, así que lo que se separa
+       al abrir la boca es el morro. Al revés —creciendo hacia la
+       charnela— lo que cuelga es una papada.
 
-       `quijada` de la escena escala lo que cuelga: a 0 no hay mandíbula y
+       `quijada` de la escena escala lo que baja: a 0 no hay mandíbula y
        el bicho vuelve a acabar en punta. */
     const qd = opt(p.quijada, 0);
     if (qd > 0.004){
       const NQ = 5;
       for (let i=0;i<NQ;i++){
         const u = i/(NQ-1);                       // 0 la punta, 1 la charnela
-        const s = 0.012 + 0.105*u;
+        const s = levBocaS(u);
         const q = levPunto(e, s, _lvQ), a = levAngulo(e, s);
-        /* EL CANTO DE ABAJO, y se mide contra `grosor` y no contra el
-           semigrosor de AHÍ: si la quijada se encoge con el morro se queda
-           dentro de la silueta y no se ve. Lo que hace una cabeza de
-           depredador es justo lo contrario —el canto de abajo va recto y
-           el de arriba se curva—, así que la quijada es una cuña que se
-           abre hacia la charnela. */
-        const canto = e.grosor*(0.55 + 1.35*u)*qd;
-        const alto  = e.grosor*0.42*qd;
-        const hondo = Math.max(alto*0.25, canto - alto);
+        /* el canto de ARRIBA de la mandíbula es el paladar más lo que
+           abre; el lóbulo cuelga de ahí hacia fuera */
+        const alto   = e.grosor*LEV_ALTO*qd;
+        const dentro = e.grosor*(levPerfil(s) + levAbre(u)*qd);
+        const hondo  = dentro + alto;
         const rq = e.largo*0.026*pen;
         M.campos.push({ tipo:'apaga', plano,
                         x: q[0] - Math.sin(a)*hondo,
@@ -207,16 +202,61 @@ evento('leviatan', {
       bx.push(q[0] - Math.sin(a)*semi);
       by.push(q[1] + Math.cos(a)*semi);
     }
+    const bp = br * opt(p.brilloPanza, 0);
     const gr = g.createLinearGradient(bx[0], by[0], bx[N], by[N]);
     gr.addColorStop(0.00, rgba(e.c.mid, 0));
-    gr.addColorStop(0.18, rgba(e.c.mid, 0.55*br));
-    gr.addColorStop(0.66, rgba(e.c.mid, 0.26*br));
+    gr.addColorStop(0.18, rgba(e.c.mid, 0.55*bp));
+    gr.addColorStop(0.66, rgba(e.c.mid, 0.26*bp));
     gr.addColorStop(1.00, rgba(e.c.mid, 0));
-    g.strokeStyle = gr;
-    g.lineWidth = Math.max(0.8, M.U*0.05);
-    g.beginPath();
-    for (let i=0;i<=N;i++) i ? g.lineTo(bx[i], by[i]) : g.moveTo(bx[i], by[i]);
-    g.stroke();
+    if (bp > 0.002){
+      g.strokeStyle = gr;
+      g.lineWidth = Math.max(0.8, M.U*0.05);
+      g.beginPath();
+      for (let i=0;i<=N;i++) i ? g.lineTo(bx[i], by[i]) : g.moveTo(bx[i], by[i]);
+      g.stroke();
+    }
+
+    /* ── LOS DIENTES ──────────────────────────────────────────────
+       La boca va entreabierta, y eso NO SE PUEDE DIBUJAR: el hueco entre
+       las quijadas es agua, el agua aquí es negra y un hueco negro entre
+       dos masas negras no lo ve nadie. Lo que dice que hay una boca son
+       los dientes, y por eso son lo único encendido de la cabeza además
+       del ojo.
+
+       Cruzados —uno del paladar, el siguiente de la quijada— y menguando
+       hacia la charnela, que es donde la boca se cierra. Salen de la
+       MISMA `levAbre` que talla el campo: con dos cuentas distintas se
+       quedan flotando fuera de la boca. */
+    const bd = br * opt(p.brilloDientes, 0);
+    const nd = p.dientes|0, qd = opt(p.quijada, 0);
+    if (bd > 0.004 && nd > 0 && qd > 0.004){
+      for (let i=0;i<nd;i++){
+        /* por donde la boca está ABIERTA y no por toda ella: junto a la
+           charnela el hueco es de un píxel y el diente no se ve */
+        const u = 0.06 + 0.72*(i + 0.5)/nd;
+        const s = levBocaS(u);
+        const q = levPunto(e, s, _lvQ), a = levAngulo(e, s);
+        const nx = -Math.sin(a), ny = Math.cos(a);   // hacia la panza
+        const tx =  Math.cos(a), ty = Math.sin(a);   // a lo largo del eje
+        const paladar = e.grosor*levPerfil(s);       // el canto del cráneo
+        const abre    = e.grosor*levAbre(u)*qd;      // lo que separa ahí
+        const arriba  = (i & 1) === 0;
+        const base  = arriba ? paladar : paladar + abre;
+        const hacia = arriba ? 1 : -1;               // hacia dentro de la boca
+        /* el diente mide una parte de lo que abre la boca, así que nunca
+           la cruza ni se sale, y mengua solo hacia la charnela */
+        const largo = abre*0.62;
+        const ancho = Math.max(e.grosor*0.035, largo*0.40);
+        const x0 = q[0] + nx*base, y0 = q[1] + ny*base;
+        g.fillStyle = rgba(e.c.mid, bd*(0.55 - 0.38*u));
+        g.beginPath();
+        g.moveTo(x0 - tx*ancho, y0 - ty*ancho);
+        g.lineTo(x0 + tx*ancho, y0 + ty*ancho);
+        g.lineTo(x0 + nx*hacia*largo, y0 + ny*hacia*largo);
+        g.closePath();
+        g.fill();
+      }
+    }
 
     /* ── Y EL LOMO, QUE ES EL OTRO CANTO ─────────────────────────
        El de arriba no tenía nada de color: sólo la sierra oscura de los
@@ -360,6 +400,32 @@ function levPunto(e, s, o){
   o[1] = e.y + a*sa + b*ca;
   return o;
 }
+/* ── LA BOCA, en tres cuentas ───────────────────────────────────────
+   `levBocaS` es dónde cae, en `s`, el punto `u` de la boca —0 la punta
+   del morro, 1 la charnela—. `levAbre` es CUÁNTO SE SEPARAN las dos
+   quijadas ahí, en veces `grosor`: todo en la punta y nada en la
+   charnela, que es una mandíbula BAJADA —la bisagra está detrás, así que
+   lo que se separa es el morro—. Al revés, creciendo hacia atrás, lo que
+   cuelga es una papada.
+
+   Y ES LINEAL porque una bisagra lo es: el hueco entre dos quijadas
+   crece con la distancia al eje del giro y no de otra manera. Con una
+   potencia por encima de 1 la boca se cierra demasiado pronto y los
+   dientes de atrás se quedan en un píxel.
+
+   Y LA MANDÍBULA SE MIDE CONTRA EL PALADAR, o sea contra `levPerfil`, y
+   NO contra el eje. El morro se afila, así que cerca de la punta el
+   semigrosor del cuerpo es 0,4 y en la charnela 0,85: una quijada medida
+   desde el eje se mete DENTRO de la cabeza justo donde la boca tiene que
+   abrirse, y lo que sale son dientes flotando por dentro del cráneo.
+
+   Las tres las usan dos sitios —el campo que talla la quijada y los
+   dientes que la marcan—, y con cuentas distintas los dientes se quedan
+   fuera de la boca. */
+const levBocaS = u => 0.012 + 0.105*u;
+const levAbre  = u => 0.40*(1 - u);
+const LEV_ALTO = 0.30;        // semigrosor de la mandíbula, en `grosor`
+
 /* semigrosor del cuerpo en `s`, con el perfil descrito arriba */
 function levPerfil(s){
   /* EL MORRO, y va LARGO y con la potencia por debajo de 1: sube deprisa

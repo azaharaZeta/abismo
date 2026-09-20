@@ -1,5 +1,5 @@
 import { ABISMO } from '../escena.js';
-import { clamp, opt, rango, fusiona } from './util.js';
+import { clamp, opt, rango, elige, fusiona } from './util.js';
 import { V, vaciaCampos, indexaCampos,
          MOD, reiniciaMod, frente, PLANOS } from './estado.js';
 import { ESPECIES, EVENTOS, especie, evento, paramsDe } from './registro.js';
@@ -14,8 +14,10 @@ import { M } from './api.js';
 /* el reloj del bucle y el del redimensionado */
 let ultimo=0;
 let anchoPrev=0, altoPrev=0, tempRedim=null, corriendo=false;
-/* los grupos son el reloj de cada evento; evVivos, los que corren ahora */
-let evGrupos = [], evVivos = [];
+/* `evGrupos` es el catálogo instalado —uno por entrada de la escena— y
+   `evVivos` los que corren ahora. El reloj es UNO y es de la pieza:
+   `proxEvento` es lo que falta para el siguiente sorteo. */
+let evGrupos = [], evVivos = [], proxEvento = 0;
 
 /* ══════════════════════════════════════════════════════════════════
    POBLACIÓN
@@ -84,19 +86,13 @@ function preparaEventos(){
       continue;
     }
     const p = paramsDe(conf);
-    /* `cada: null` es un evento DORMIDO: está en la escena, con sus
-       parámetros, y no sale nunca por su cuenta. Es lo que deja probar
-       uno desde el panel sin que se instale en la pieza, y sin que haya
-       una segunda copia de sus parámetros en ninguna parte.
-
-       Y EL RELOJ TAMPOCO LO TRAE EL EVENTO. Los pares de aquí abajo son
-       el neutro del motor —«la escena no lo dijo»— y no una copia de
-       ella: puestos también en la def, eran dieciséis claves que nadie
-       ejercitaba y diez ya no coincidían con la escena. */
-    evGrupos.push({ def, p, vivo: null,
-                    prox: p.cada === null ? Infinity
-                        : rango(opt(p.primero, [20,60])) });
+    /* `dormido: true` es un evento que está en la escena, con sus
+       parámetros, y no entra en el sorteo. Es lo que deja probar uno
+       desde el panel sin que se instale en la pieza, y sin que haya una
+       segunda copia de sus parámetros en ninguna parte. */
+    evGrupos.push({ def, p, vivo: null });
   }
+  proxEvento = rango(ABISMO.cadencia);
 }
 
 /* `p` es para el andamio: unos parámetros que valen SÓLO para este
@@ -111,37 +107,29 @@ function lanza(gr, x, y, p){
   return e;
 }
 
-/* Vuelve a poner el reloj de un grupo. Un dormido (`cada: null`) vuelve a
-   dormirse: haberlo lanzado a mano una vez no puede instalarlo. */
-function reprograma(gr){
-  gr.vivo = null;
-  gr.prox = gr.p.cada === null ? Infinity
-                               : rango(opt(gr.p.cada, [90,240]));
-}
+/* Al morir, el grupo vuelve a estar disponible para el sorteo. No hay
+   reloj que reponer: el reloj es uno y es de la pieza. */
+function libera(gr){ gr.vivo = null; }
 
 function pasoEventos(dt){
   /* se rehacen: un evento que ya no está no tiene que borrar nada */
   vaciaCampos();
   reiniciaMod();
 
-  /* UNO Y NADA MÁS. No es una propiedad de cada evento sino de la pieza:
-     lo que se mira es si hay ALGUNO vivo. */
-  let ocupado = evVivos.length > 0;
+  /* UN RELOJ PARA TODOS, y es de la pieza y no de cada evento: cuando
+     salta, sortea uno y lo lanza pase lo que pase —pueden juntarse—.
+     Ver `cadencia` en la escena.
 
-  for (const gr of evGrupos){
-    if (gr.vivo) continue;
-    gr.prox -= dt;
-    if (gr.prox > 0) continue;
-    /* el que llega tarde espera su turno en vez de perder el suyo, y
-       espera de VERDAD: se le vuelve a armar el reloj. Dejándole el `prox`
-       correr en negativo arrancaba en el mismo fotograma en que moría el
-       que lo tapaba. Ver `relevo` en la escena. */
-    if (ocupado){
-      gr.prox = rango(opt(gr.p.relevo, ABISMO.relevo));
-      continue;
-    }
-    lanza(gr);
-    ocupado = true;
+     El sorteo va entre los que no están corriendo ya, así que un evento
+     no se solapa consigo mismo; si no queda ninguno libre, el turno se
+     pasa en blanco. Y el reloj se rearma ANTES de mirar si hay a quien
+     lanzar, o un cuadro lleno dejaría el turno pendiente y dispararía en
+     cuanto muriese cualquiera. */
+  proxEvento -= dt;
+  if (proxEvento <= 0){
+    proxEvento = rango(ABISMO.cadencia);
+    const libres = evGrupos.filter(gr => !gr.vivo && !gr.p.dormido);
+    if (libres.length) lanza(elige(libres));
   }
 
   for (let i=evVivos.length-1; i>=0; i--){
@@ -149,7 +137,7 @@ function pasoEventos(dt){
     e.t += dt;
     if (e.def.actualiza(e, M, e.p, dt) === false){
       evVivos.splice(i, 1);
-      reprograma(e.gr);
+      libera(e.gr);
     }
   }
   /* `M.mod` es lo único de la API que un evento ESCRIBE, y clamp() deja
@@ -174,7 +162,7 @@ function pasoEventos(dt){
    sin que la escena lo configurase, y eran 102 claves que la pieza
    cargaba sólo para alimentar al panel: nadie las ejercitaba, así que
    envejecían solas —23 ya no coincidían con la escena—. Para probar uno
-   sin instalarlo se le pone `cada: null` en la escena y queda dormido.
+   sin instalarlo se le pone `dormido: true` en la escena.
 
    ── Y `extra` ES DE ESTE LANZAMIENTO, NO DEL GRUPO ─────────────────
    La fusión va a un objeto APARTE y `gr.p` sigue siendo la entrada de
@@ -187,9 +175,9 @@ function pasoEventos(dt){
    el `extra` de UNA prueba se lo quedaban también los lanzamientos
    automáticos del resto de la sesión.
 
-   Y de paso arregla al DORMIDO: `reprograma()` lee `gr.p.cada`, así que un
-   `cada` escrito en el panel ya no puede instalar en la pieza un evento
-   que la escena dejó con `cada: null`.
+   Y de paso arregla al DORMIDO: el sorteo lee `gr.p.dormido`, que es la
+   escena, así que lo que se escriba en el panel no puede instalar en la
+   pieza un evento que la escena dejó fuera.
 
    Lo que el JSON sí hace es CONGELAR: el lanzamiento se queda con la foto
    de la escena del momento, así que mover un deslizador no alcanza a esa
@@ -201,8 +189,8 @@ function dispara(nombre, extra){
   const gr = evGrupos.find(g => g.def === def);
   if (!gr){
     avisa('suelto:'+nombre, 'evento «' + nombre + '» sin parámetros: no está '
-        + 'en ABISMO.eventos. Añádelo con `cada: null` para poder lanzarlo '
-        + 'sin que salga solo.');
+        + 'en ABISMO.eventos. Añádelo con `dormido: true` para poder '
+        + 'lanzarlo sin que salga solo.');
     return false;
   }
   const p = extra ? fusiona(gr.p, extra) : gr.p;
@@ -222,8 +210,10 @@ function dispara(nombre, extra){
      un `espectroX` escrito en el panel no ha pasado por ahí y se quedaría
      en `M.color(undefined)`. */
   resuelveEspectros(p);
-  /* uno a mano echa al que hubiera, sea cual sea: en el abismo pasa una
-     cosa a la vez también cuando la pide el panel. */
+  /* UNO A MANO DEJA EL CUADRO LIMPIO, y eso es del andamio y no de la
+     pieza —que desde que hay un reloj solo, los eventos se solapan—: lo
+     que se pide al lanzar uno desde el panel es MIRARLO. Para verlos
+     juntos, se dejan salir solos. */
   para();
   lanza(gr, undefined, undefined, p);
   return true;
@@ -234,7 +224,7 @@ function para(nombre){
     const e = evVivos[i];
     if (nombre && e.def.nombre !== nombre) continue;
     evVivos.splice(i,1);
-    reprograma(e.gr);
+    libera(e.gr);
   }
   vaciaCampos();
   reiniciaMod();

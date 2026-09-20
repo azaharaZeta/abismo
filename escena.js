@@ -233,27 +233,25 @@ export const ABISMO = {
      puede probar sin tocar nada: `?dpr=1.2` en el panel. */
   calidad: { dprMax: 2, dprMin: 0.7 },
 
-  /* Cuánto espera un evento que le toca turno y se encuentra el cuadro
-     ocupado —y SIEMPRE lo puede estar: en el abismo pasa una cosa a la
-     vez, sin excepción ni bandera que la pida (ver motor/registro.js)—.
-     Sin relevo se le sigue descontando el reloj, se queda en negativo y
-     arranca en el mismo fotograma en que muere el que lo tapaba: salían
-     encadenados.
+  /* CADA CUÁNTO PASA ALGO, en segundos. Es un solo reloj para toda la
+     pieza: cuando salta, sortea uno de los eventos de abajo y lo lanza,
+     esté o no corriendo otro. Los eventos NO tienen reloj propio.
 
-     ES EL MANDO DEL RITMO DE LA PIEZA, y el que hay que tocar si se
-     quieren más cosas o menos. Medido, tres semillas de media hora de
-     reloj de escena: el cuadro tiene algo pasando el 70 % del tiempo y
-     salen unos 90 eventos por hora. Subirlo vacía y bajarlo aprieta; los
-     ocho eventos
-     siguen saliendo todos, incluido el `cuerpo`, que es el de reloj más
-     largo. */
-  relevo: [25, 70],
+     El sorteo es PLANO —los nueve salen por igual, así que cada uno sale
+     cada nueve turnos de media— y se echa sólo entre los que no están ya
+     en marcha: un evento no se solapa consigo mismo. Si no queda
+     ninguno libre, ese turno se pasa en blanco.
+
+     ES EL MANDO DEL RITMO DE LA PIEZA, y el único: subirlo vacía el
+     cuadro y bajarlo lo llena. Ojo con bajarlo, que aquí ya no hay nada
+     que impida que se junten tres. */
+  cadencia: [25, 35],
 
   /* ── EVENTOS ──────────────────────────────────────────────────────
      Cada entrada: {evento, plano?, ...parámetros}. Un `porContacto: 0..1`
-     deja que el dedo lo dispare, y un `cada: null` lo deja DORMIDO —está
-     configurado y no sale nunca solo, que es como se prueba uno desde el
-     panel sin instalarlo en la pieza.
+     deja que el dedo lo dispare, y un `dormido: true` lo deja fuera del
+     sorteo —está configurado y no sale nunca solo, que es como se prueba
+     uno desde el panel sin instalarlo en la pieza.
 
      `banda` lo llevan casi todos y quiere decir lo mismo en todos: en qué
      franja de pantalla puede NACER, en fracción y por el eje que le toque
@@ -265,7 +263,7 @@ export const ABISMO = {
   eventos: [
     /* la cadena de encendido: un soplo que va prendiendo la nieve marina */
     { evento: 'contagio', vel: [3, 7], salto: 6.5,
-      alcance: [0.55, 1.1], cada: [55, 145], primero: [18, 55],
+      alcance: [0.55, 1.1],
       /* SIN `porContacto`: el dedo y el contagio son cosas distintas y no
          se pisan. Lo que hace el dedo es encender el plancton que tiene
          cerca —su propia onda, en motor/dedo.js—; el contagio es una
@@ -285,7 +283,6 @@ export const ABISMO = {
        que la onda viaje del morro a la cola y `embestida` sincroniza el
        avance con el coletazo, así que no cruza a velocidad constante. */
     { evento: 'leviatan', plano: 0,
-      cada: [150, 330], primero: [45, 120],
       /* En U. El tamaño se ajusta contra el alto que ocupa la MASA oscura
          (donde el apagado pasa de 0,45), no contra la penumbra, y la
          esbeltez se mantiene en ~5:1: a 8:1 lee como anguila y no como
@@ -321,13 +318,21 @@ export const ABISMO = {
          sierra y no pinchos sueltos. La forma del diente —base ancha y
          punta de aguja— vive en `levPua`, en eventos/leviatan.js. */
       espinas: 10, cresta: 0.80,
-      /* Lo que cuelga la mandíbula bajo el cráneo, en veces el semigrosor
-         del cuerpo. Es lo único de la cabeza que es un mando: el morro y
-         el ojo son anatomía y viven en el evento. A 0 el bicho acaba en
-         punta y deja de tener boca. */
-      quijada: 1.0,
-      /* `brillo` es SÓLO los dos cantos, los fotóforos y el ojo: el cuerpo
-         no emite nada.
+      /* LA BOCA, ENTREABIERTA. `quijada` es cuánto baja la mandíbula bajo
+         el cráneo, en veces el semigrosor del cuerpo: la cadena de
+         lóbulos va honda en la punta del morro y se cierra hacia la
+         charnela, que es una mandíbula bajada. A 0 el bicho acaba en
+         punta y deja de tener boca.
+
+         Y los DIENTES son lo único que hace que la boca se lea: el hueco
+         entre las quijadas es agua, el agua aquí es negra, y un hueco
+         negro entre dos masas negras no lo ve nadie (ver
+         eventos/leviatan.js). Van cruzados, menguando hacia la charnela,
+         y `brilloDientes` multiplica a `brillo` como los demás. Cortos a
+         propósito: lo que se pide es que se marquen, no una dentadura. */
+      quijada: 0.92, dientes: 5, brilloDientes: 0.85,
+      /* `brillo` es SÓLO los dos cantos, los dientes, los fotóforos y el
+         ojo: el cuerpo no emite nada.
 
          MEDIDO sobre negro, pintándolo a mano y contando píxeles: deja 400
          píxeles por encima de 60 con un pico de 280 de 765. El mando de
@@ -380,7 +385,14 @@ export const ABISMO = {
          y casi no se ve, porque lo reparte por veinte mil píxeles: contra
          el hilo de la panza —347 de 765— va a una trigésima parte, y las
          espinas a una docena de veces menos. */
-      brilloLomo: 0.55, brilloEspinas: 2.0 },
+      brilloLomo: 0.30, brilloEspinas: 2.0,
+      /* ── Y LA PANZA ──────────────────────────────────────────────
+         El hilo del canto de abajo es lo más brillante de la bestia —347
+         de 765 midiendo el píxel más alto—, y por eso tiene su propio
+         mando: LOS DOS CANTOS VAN APENAS MARCADOS. Lo que tiene que
+         leerse es que hay un cuerpo ahí, no el dibujo de un pez: el
+         leviatán es un hueco. */
+      brilloPanza: 0.35 },
 
     /* ── LA CARROÑA ─────────────────────────────────────────────────
        Algo muerto que se hunde, y NO EMITE NADA: se ve sólo mientras pasa
@@ -394,7 +406,7 @@ export const ABISMO = {
        `ganancia` altas son «hay que ponerse cerca, pero entonces se ve
        bien»; `base` es lo que se intuye sin nada, y va mínimo. */
     { evento: 'carrona', plano: 1,
-      cada: [130, 280], primero: [35, 95], banda: [0.14, 0.86],
+      banda: [0.14, 0.86],
       vel: [0.55, 0.95], largo: [5.2, 9.0],
       giro: [-0.10, 0.10], deriva: 0.25,
       /* ── SIEMPRE HUESO ───────────────────────────────────────────
@@ -461,7 +473,6 @@ export const ABISMO = {
        alto y asimétrico, así que de vez en cuando uno sale a 0 y cruza un
        bicho sin parapodios o sin antenas. A 0 todos son el mismo. */
     { evento: 'visitante', plano: 0,
-      cada: [50, 120], primero: [15, 42],
       cruce: [28, 46], cuentas: [18, 40],
       /* ── EL TAMAÑO, Y LA CAJA QUE MANDA ES EL MÓVIL DE PIE ──────
          `largo` va en U y el cuadro enseña `escala` U de lado, así que un
@@ -501,20 +512,14 @@ export const ABISMO = {
 
        El más lento y el más raro de la pecera. A 0,36-0,66 U/s cada cuerpo
        tarda entre 48 y 80 segundos en bajar, que es el rato que hace
-       falta para dudar de lo que se está viendo; con `cada` de seis a doce
-       minutos no se convierte en decorado. `giro` en centésimas: una
+       falta para dudar de lo que se está viendo. `giro` en centésimas: una
        vuelta cada dos minutos. Caen de uno a tres, escalonados. */
     { evento: 'cuerpo', plano: 1,
-      /* `cada` sube con los cuerpos de dos en dos y de tres en tres: con
-         el desfase, una tirada de tres dura casi el doble que una sola, y
-         a reloj igual el evento se comía más cuadro del que le toca.
-         Medido, tres semillas de media hora: [360,720] deja al cuerpo en
-         el 6-16 % de los fotogramas —sale dos o tres veces por tirada, así
-         que el reparto es ruidoso; lo firme es que es de los que más
-         ocupan—. Y ahora que pasa una cosa a la vez, lo que ocupa se lo
-         quita a los otros siete: por eso éste lleva el reloj más largo de
-         la escena. */
-      cada: [360, 720], primero: [110, 250], banda: [0.16, 0.84],
+      /* ES EL QUE MÁS CUADRO OCUPA, y hay que contar con ello al mover
+         `cadencia`: los cuerpos caen de uno a tres escalonados, así que
+         una tirada de tres dura casi el doble que una sola. Medido, tres
+         semillas de media hora: está en el 6-16 % de los fotogramas. */
+      banda: [0.16, 0.84],
       /* ── EL TAMAÑO SE JUZGA TUMBADO ─────────────────────────────
          `alto` va en U, así que el cuerpo ocupa una fracción distinta
          según cómo se sostenga el aparato, y la caja apretada es el móvil
@@ -636,7 +641,6 @@ export const ABISMO = {
        son 2,6 ms sobre un fotograma de 8,3. Con este `radio` le toca a
        una o dos: 0,7-1,3 ms, y sólo durante los tirones. */
     { evento: 'glitch',
-      cada: [240, 540], primero: [70, 200],
       dura: [14, 24], saltos: [22, 40], salto: [0.22, 0.50],
       focos: [1, 2], radio: [5.85, 10.1],
       bandas: [8, 14], paso: [0.108, 0.235],
@@ -660,8 +664,7 @@ export const ABISMO = {
        sueltos cambiando. Con estos, la onda tarda unos ocho segundos en
        cruzar el cuadro. */
     { evento: 'floracion', vel: [1.6, 3.0], salto: 7.0,
-      alcance: [0.6, 1.1], filo: 1.4, banda: [0.12, 0.88],
-      cada: [90, 210], primero: [25, 70] },
+      alcance: [0.6, 1.1], filo: 1.4, banda: [0.12, 0.88] },
 
     /* ── LA GEMACIÓN ────────────────────────────────────────────────
        Una medusa echa una cría por el costado y la cría se va haciéndose
@@ -673,10 +676,8 @@ export const ABISMO = {
 
        `espera` es lo que el evento aguanta sin que nadie lo coja —con las
        medusas de la pecera siempre hay alguna, así que es una red por si un
-       día no hay—. `cada` va largo: es de las cosas que se miran, y a menudo
-       deja de ser un hallazgo. */
-    { evento: 'gemacion', espera: 6,
-      cada: [150, 340], primero: [40, 110] },
+       día no hay—. */
+    { evento: 'gemacion', espera: 6 },
 
     /* ── LAS BURBUJAS ───────────────────────────────────────────────
        Algún organismo ha soltado aire ahí abajo: un racimo sube, se
@@ -707,7 +708,6 @@ export const ABISMO = {
        `arrastra` es cuánto las lleva la corriente —a 0 suben rectas y se
        despegan del agua. */
     { evento: 'burbujas', plano: 1,
-      cada: [70, 160], primero: [30, 80],
       banda: [0.12, 0.88], hondo: [0.99, 1.06],
       cuantas: [6, 13], radio: [0.09, 0.28], racimo: 0.55,
       sube: [1.8, 3.2], serpentea: [0.10, 0.28], ritmo: [0.9, 2.2],

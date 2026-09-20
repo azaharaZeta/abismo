@@ -854,12 +854,12 @@ documentación.
 
   | | texto largo (4 bloques) | texto corto (2 bloques) |
   |---|---|---|
-  | como está de pie | 311 | 350 |
-  | sólo ensanchar a 42 rem | **280** | 335 |
-  | sólo encoger el armazón | 271 | **249** |
+  | como está de pie | 311 | 330 |
+  | sólo ensanchar a 42 rem | **280** | 315 |
+  | sólo encoger el armazón | 271 | **231** |
 
   Con el texto largo ensanchar valía 31 px y era la palanca buena; con el corto vale
-  15 y la buena es encoger, que vale 101. La razón es que **el ancho sólo ahorra
+  15 y la buena es encoger, que vale 99. La razón es que **el ancho sólo ahorra
   LÍNEAS y el armazón es constante**: cuanto menos texto, menos pinta el ancho. Así
   que el ensanchado se quitó y queda sólo el bloque que aprieta.
 
@@ -868,3 +868,67 @@ documentación.
   vista para poder tocarlo. Tumbada el tope se queda en el 92 % porque con el 80 el
   margen en una pantalla de 320 se queda en 7 px, y **la prosa va en Georgia, que
   Android no trae**: una sola línea de la fuente de repuesto se los come.
+
+## 2026-09-20 · el icono a dos peces, y la cara del leviatán
+
+- **«El icono: dos peces de dos colores distintos pero compatibles, nadando en
+  dirección contraria, ligeramente como un yin yang, y el tamaño más grande posible
+  sin que toquen el borde»** · hecho, con el trazado EXACTO de
+  `bichos/pezlinterna.js` —`PANZA`, `DENTRO`, `FOTO_T`— doblado sobre un arco: el eje
+  recto del pez se mapea a una circunferencia, así que el cuerpo se curva sin
+  ensancharse, que es lo que hace el pez de verdad al nadar. El segundo es el primero
+  girado 180° sobre el centro. Los colores son los dos de la paleta de la casa que
+  más se distinguen en chico: el verde del pez linterna y el `AZUL` de `escena.js`.
+
+  **EL PRIMER INTENTO SALIÓ MAL Y EL PORQUÉ SIRVE PARA LA PRÓXIMA VEZ:** se dibujó un
+  perfil de grosor inventado (26 % del largo, con caída suave) y sobre un arco de 168°,
+  y lo que salieron fueron dos medialunas gordas, no dos peces. El pez linterna real
+  es mucho más esbelto —semigrosor 0,12 del largo— y se afila deprisa. **Si el icono
+  es la pieza, el perfil también sale de la pieza**, no de una aproximación a ojo.
+
+  **Y EL LÍMITE NO ES EL CUADRADO, ES EL CÍRCULO:** Android recorta a círculo, y la
+  ficha del «acerca de» también. La primera versión a tamaño «máximo» llegaba a 277 px
+  de radio sobre los 256 disponibles, o sea que el recorte le quitaba morro y cola. La
+  versión que va llega a 235.
+
+- **«Reduce el brillo de los bordes del leviatán, que se note sólo muy ligeramente.
+  Quítale la barbilla, parece que se le ha caído la papada; cámbialo por una boca
+  entreabierta que marque sus dientes sutilmente»** · los dos cantos tienen ahora su
+  mando y van apagados —`brilloPanza: 0.35` (el hilo de la panza no lo tenía, iba a
+  `brillo` pelado) y `brilloLomo` de 0,55 a 0,30—, y la papada es una mandíbula
+  bajada con cinco dientes.
+
+  **LA PAPADA ERA UNA CUENTA AL REVÉS.** La cadena de lóbulos de la quijada crecía
+  hacia la charnela (`0.55 + 1.35·u`), o sea más honda ATRÁS: eso es exactamente una
+  papada. Una mandíbula bajada es lo contrario —la bisagra está detrás, así que lo que
+  se separa es el morro—, y además el hueco tiene que crecer LINEAL con la distancia
+  al eje del giro, porque una bisagra es eso. Con una potencia mayor que 1 la boca se
+  cierra demasiado pronto y los dientes de atrás se quedan en un píxel.
+
+  **Y EL ERROR QUE COSTÓ LA TARDE: la quijada se medía desde el EJE del bicho.** El
+  morro se afila —el semigrosor pasa de 0,40 en la punta a 0,85 en la charnela—, así
+  que una mandíbula colocada a una distancia fija del eje se mete DENTRO de la cabeza
+  justo donde la boca tiene que abrirse. Medido, el hueco salía negativo en los cinco
+  dientes (de −24 a −62 px), y lo que se veía eran triángulos sueltos flotando por
+  dentro del cráneo. Ahora se mide contra el PALADAR (`levPerfil`) y no contra el eje.
+
+  **Los dientes son lo único que hace legible una boca abierta en aditivo:** el hueco
+  entre las quijadas es agua, el agua aquí es negra, y un hueco negro entre dos masas
+  negras no lo ve nadie. Van cruzados —uno del paladar, el siguiente de la quijada—,
+  miden 0,62 de lo que abre la boca ahí (así nunca la cruzan ni se salen) y se
+  reparten sólo por el tramo abierto, `u` de 0,06 a 0,78.
+
+- **«Que se lance un evento cada 30 s ±5, independientemente de que se haya acabado el
+  anterior»** · el detalle, en `idea-eventos-aleatorios.md`. El resumen: fuera el
+  reparto de turnos entero —`relevo`, el `cada`/`primero` de las nueve entradas y la
+  espera— y en su sitio un reloj solo, `ABISMO.cadencia: [25,35]`, con sorteo PLANO
+  entre los que no están ya en marcha. Lo que más cambia no es cuánto pasa (72-77 % de
+  cuadro ocupado contra 74-76 %, y un 18 % más de eventos) sino que ahora es REGULAR:
+  los huecos iban de 0,4 s a 120 s y ahora van de 25 a 35.
+
+- **EL ARNÉS DE NODE MINTIÓ HASTA QUE SE LE PUSO `clientWidth`.** `setup()` lee
+  `V.cv.clientWidth`, que en un lienzo falso es `undefined`: `V.W` nacía NaN, con él
+  todas las posiciones, y los eventos no terminaban nunca —HEAD lanzaba 2 eventos en
+  media hora y el contador de no finitos marcaba 98 millones—. Se cazó porque los
+  mismos 98 millones salían en HEAD, o sea que no era del cambio. **Correr también el
+  «antes» no es por rigor, es lo que distingue un fallo del arnés de uno tuyo.**

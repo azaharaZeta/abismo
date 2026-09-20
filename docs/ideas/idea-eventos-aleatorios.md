@@ -1,17 +1,30 @@
 # Idea: Eventos aleatorios
 
-**Estado: EN CURSO** — arquitectura hecha. La pieza tiene hoy nueve eventos, cinco de
+**Estado: EN CURSO** — arquitectura hecha; el reparto de turnos, rehecho el 2026-09-20. La pieza tiene hoy nueve eventos, cinco de
 ellos de este catálogo; el resto del catálogo sigue vivo aquí y este fichero registra
 el estado de cada uno.
 **Empezada:** 2026-09-15 · **primera tanda:** 2026-09-15 · **última revisión:** 2026-09-20
 
-> **2026-09-20.** «Solo un evento a la vez.» La decisión 1 de abajo —un exclusivo a
-> la vez y los ligeros en paralelo— **queda derogada**, y con ella la bandera
-> `exclusivo`, que ya no distinguía nada y se borró de las ocho defs, del motor, del
-> contrato y del panel. Ahora es una propiedad de la PIEZA: `pasoEventos` mira si hay
-> alguno vivo, y el que llega tarde espera con `ABISMO.relevo` como esperaban antes
-> los exclusivos. Lo de abajo se queda escrito porque explica el mecanismo de espera,
-> que es el que ha sobrevivido; lo que ya no vale es el reparto en dos clases.
+> **2026-09-20 (tarde). EL REPARTO DE TURNOS SE HA IDO ENTERO.** «Que simplemente se
+> lance un evento cada 30 segundos ±5, independientemente de que se haya acabado el
+> anterior.» Con eso se van las dos decisiones anteriores sobre solapamiento —la
+> bandera `exclusivo` de la mañana del 15 y el «uno a la vez» de esta misma mañana—,
+> y con ellas `ABISMO.relevo`, el `cada`/`primero` de las nueve entradas y la espera
+> de turno. Queda **un reloj solo, `ABISMO.cadencia: [25,35]`**: cuando salta, sortea
+> PLANO entre los que no están ya en marcha y lanza. Lo de abajo sobre el mecanismo de
+> espera ya no describe nada del código; se queda porque explica por qué se probó.
+>
+> El sorteo plano lo eligió la usuaria sabiendo el precio, que estaba medido: los
+> eventos tenían relojes muy distintos —el `cuerpo` cada ~9 min, el `visitante` cada
+> ~1,4— y al repartir por igual el raro deja de ser raro. Medido después con el arnés
+> de Node, dos tiradas de media hora: el `cuerpo` pasa de 2-3 salidas a 5-9 y el
+> `visitante` de 7-10 a 5-8.
+>
+> **Y LO QUE MÁS CAMBIA NO ES CUÁNTO PASA, ES QUE AHORA ES REGULAR.** El cuadro sigue
+> ocupado casi lo mismo (72-77 % contra 74-76 %) y salen sólo un 18 % más de eventos
+> (59 contra 50 por media hora). Lo que se va es la irregularidad: con los relojes por
+> evento los huecos iban de 0,4 s a 120 s —dos encadenados o un minuto largo de nada—
+> y ahora van de 25 a 35 por construcción. A cambio se juntan hasta tres o cuatro.
 
 > **2026-09-17 (mañana).** El usuario quitó `mira`, `marea` y `vacio` de la escena del
 > abismo, pidió más detalle en el `visitante` y encargó un leviatán (E-16, abajo). Los

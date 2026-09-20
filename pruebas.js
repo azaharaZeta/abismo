@@ -315,7 +315,7 @@ let areaJSON = null, etiqJSON = null, elegido = null;
   const nombres = Object.keys(A.EVENTOS);
   /* Los de la escena, y no hay otro sitio de donde sacarlos: un evento no
      lleva valores propios. Uno que la escena no configure no se puede
-     lanzar —para probarlo se le añade con `cada: null` y queda dormido. */
+     lanzar —para probarlo se le añade con `dormido: true`. */
   const paramsDe = n => {
     const conf = (P.escena.eventos || []).find(c => c.evento === n);
     if (!conf) return {};
@@ -334,14 +334,14 @@ let areaJSON = null, etiqJSON = null, elegido = null;
     const conf = (P.escena.eventos || []).find(c => c.evento === n);
     /* tres estados, y el del medio es el que hace falta para probar sin
        instalar: en la escena y despierto · en la escena y DORMIDO
-       (`cada: null`, no sale solo) · registrado pero sin entrada, que no
+       (`dormido: true`, no entra en el sorteo) · registrado pero sin entrada, que no
        se puede lanzar porque sus parámetros viven en la escena. */
-    const dormido = conf && (conf.params || conf).cada === null;
+    const dormido = conf && !!(conf.params || conf).dormido;
     fila.appendChild(h('button', {className: 'ev' + (conf ? '' : ' roto'),
       textContent: (conf ? (dormido ? '◌ ' : '▶ ') : '▷ ') + n,
       disabled: !conf,
       title: !conf ? 'no está en ABISMO.eventos: no hay parámetros que darle.'
-                   + ' Añádelo con `cada: null` para poder lanzarlo sin que salga solo'
+                   + ' Añádelo con `dormido: true` para poder lanzarlo sin que salga solo'
            : dormido ? 'dormido en la escena: sólo sale si lo lanzas'
                      : 'configurado en la escena',
       onclick: () => {
