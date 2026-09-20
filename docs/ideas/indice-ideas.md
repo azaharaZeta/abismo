@@ -28,6 +28,8 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 ## Ideas de usuario (pendientes de procesar)
 > Solo un humano edita esta sección. Texto breve; el detalle se desarrolla al crear la ficha.
 -evento: burbujas! no muy grandes, juntas, como si algún organismo hubiera soltado aire. de un color random, pero todas de un mismo rango de color cada vez, varias burbujas juntas de distintos tamaños, subiendo y explotando algunas y otras no. 
+- baja un poquito  más el brillo del señuelo del rape cuando no está cazando.
+- probar a que el rape cuando está sin iluminar, en lugar de transparente, sea oscuro, un poco como la oscuridad del leviatan. pero esto quiero comprobarlo visualmente primero antes de aprobarlo.
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos de las ideas procesadas el 2026-09-17, el 2026-09-18 y el 2026-09-19.
 

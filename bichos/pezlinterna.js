@@ -569,13 +569,13 @@ especie('pezlinterna', {
 
     /* LOS FOTÓFOROS: esto sí se ve siempre, y es lo único que se ve de lejos.
        Una hilera en el vientre, con brillos desiguales. */
-    const n = z.nFoto, bfo = propia;
+    const n = z.nFoto;
     for (let i=0;i<n;i++){
       /* del morro a la cola, que es el orden en el que iban */
       const t = FOTO_T[1] - (FOTO_T[1]-FOTO_T[0])*reparte(i, n);
       const pz = panzaPez(t, Lg, cola);
       const fx = pz[0], fy = pz[1]*DENTRO;
-      const pa = bfo * (0.55 + 0.45*Math.sin(M.t*1.7 + i*1.9 + z.fase));
+      const pa = propia * (0.55 + 0.45*Math.sin(M.t*1.7 + i*1.9 + z.fase));
       /* y el punto tampoco puede pasar del hueco que le queda hasta el
          canto, así que la hilera se afina hacia el morro y hacia la cola
          —que es como la lleva un mictófido de verdad. */

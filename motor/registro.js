@@ -45,8 +45,8 @@
    el motor al consumirla, así que vale para un fotograma y no hay que
    acordarse de apagarla.
 
-   M es la escena viva: M.W M.H M.U M.t M.paleta y los métodos
-   M.color() M.empuje(x,y,banda) M.borde(x,y) M.flujoX(x,y,t) M.flujoY(x,y,t)
+   M es la escena viva: M.W M.H M.U M.t y los métodos
+   M.color(pal) M.empuje(x,y,banda) M.borde(x,y) M.flujoX(x,y,t) M.flujoY(x,y,t)
    M.envuelve(o,inset) M.salto(x,y,inset) M.campo(tipo,x,y,plano)
    M.luzEn(x,y,luces,op) M.luzDedo(x,y) M.halo(color) M.punto(color),
    más las utilidades M.rgba

@@ -16,10 +16,16 @@ const VERDOSO = {core:[228,255,246], mid:[110,224,190], glow:[ 14, 96, 92], peso
 const PLATA   = {core:[240,248,255], mid:[176,206,224], glow:[ 54, 82,104], peso:0.3};
 const ROJO    = {core:[255,226,220], mid:[228, 74, 62], glow:[120, 16, 14]};
 
+/* LA PALETA DE LA PECERA: la de quien NO trae espectro propio, hoy el
+   `contagio` y el `visitante`. La PIDEN por su nombre en sus entradas
+   —`M.color(pal)` no tiene paleta por defecto—, que es lo único que hace
+   visible desde aquí de dónde sale el color de esos dos. */
+const PALETA  = [AZUL, CIAN, HIELO, VERDOSO, PLATA];
+
 export const ABISMO = {
   nombre: 'Abismo',
 
-  paleta: [AZUL, CIAN, HIELO, VERDOSO, PLATA],
+  paleta: PALETA,
 
   agua: {
     /* LA LUZ DE FONDO, multiplicador sobre la tira de abajo: a 0 el agua
@@ -265,7 +271,9 @@ export const ABISMO = {
          cerca —su propia onda, en motor/dedo.js—; el contagio es una
          cadena que cruza el agua por su cuenta. Tocar y que además saliera
          un contagio mezclaba las dos. */
-      banda: [0.12, 0.88] },
+      banda: [0.12, 0.88],
+      /* sin espectro propio: la onda va del color de la pecera */
+      paleta: PALETA },
 
     /* ── EL LEVIATÁN ────────────────────────────────────────────────
        Imposiblemente grande, al fondo del todo, y lo que se ve de él es
@@ -480,7 +488,9 @@ export const ABISMO = {
          dos. A 0,18 el pico del grande cae de 99 a 79 y los píxeles por
          encima de 60 se quedan en la mitad. */
       variedad: 0.8, brillo: 0.18,
-      patas: 0.95, antenas: 1.5, cola: 1.7 },
+      patas: 0.95, antenas: 1.5, cola: 1.7,
+      /* sin espectro propio: cruza del color de la pecera */
+      paleta: PALETA },
 
     /* ── EL CUERPO ──────────────────────────────────────────────────
        No dibuja NADA: la silueta es de campos `apaga`, así que lo que baja

@@ -60,11 +60,17 @@ const VACIO = [];
 const M = {
   get W(){ return V.W; }, get H(){ return V.H; },
   get U(){ return V.U; }, get t(){ return V.t; },
-  get paleta(){ return ABISMO.paleta; },
   empuje, luzDedo, borde, flujoX, flujoY, halo, punto,
-  /* Un color respetando pesos. Úsalo en vez de elige(M.paleta) o los
-     pesos no cuentan. La suma se cachea en el propio array. */
-  color(pal){ return eligeDePaleta(pal || ABISMO.paleta); },
+  /* Un color de `pal` respetando pesos. Úsalo en vez de elige(pal) o los
+     pesos no cuentan. La suma se cachea en el propio array.
+
+     Y LA PALETA SE PIDE, NO SE HEREDA. Esto caía a `ABISMO.paleta` cuando
+     no se le pasaba ninguna, y con eso el color del `contagio` y del
+     `visitante` salía de una clave que sus entradas de escena no nombraban
+     y que ningún barrido encontraba leída: un defecto silencioso es
+     exactamente lo que esconde un acoplamiento. Quien la olvide se entera
+     en el acto, que es lo que se pide. */
+  color(pal){ return eligeDePaleta(pal); },
   rgba, clamp, rnd, rango, rangoE, elige, mezcla, suave, opt, TAU,
   /* ── LOS FOCOS DE UN PLANO ────────────────────────────────────────
      La MISMA lista que las especies reciben en `L.luces`, no una copia:

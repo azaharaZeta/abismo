@@ -13,7 +13,7 @@ import { M, especie } from '../motor.js';
 const {rgba, clamp, rnd, rango, rangoE, suave, opt, TAU} = M;
 import { porPlano, paso, reaccionBorde, hacia, gxSano,
          silencio } from './comun.js';
-import { enPez, aMundo, centro, bocaLargo, adelante, cuerpoPath, piel,
+import { enPez, aMundo, centro, adelante, cuerpoPath, piel,
          visceras, aletas, volumen, ojo, quijadas, bocaPath, boca,
          barbilla, senuelo } from './rape-cuerpo.js';
 import { querencia, caza, camposRape, mirada,
@@ -346,7 +346,7 @@ especie('rape', {
        punto va sobre la propia línea de la boca y hacia el fondo del hueco,
        así que la presa entra ENTRE las dos filas de dientes, que es lo único
        que hace que se lea como tragar. */
-    const bo = aMundo(f, f.gx, Lg*bocaLargo(p)*0.66, Lg*0.075);
+    const bo = aMundo(f, f.gx, Lg*p.bocaLargo*0.66, Lg*0.075);
     f.bocaX = bo[0]; f.bocaY = bo[1];
 
     caza(f, M, L, p, dt);
@@ -370,7 +370,7 @@ especie('rape', {
        que tiene que quemar— y `cuerpo` el del animal, que se queda en un
        susurro. Con un solo número no se puede pedir «un foco de color encima
        de algo que casi no está». `techo` recorta antes de escalar. */
-    const br = Math.min(p.techo, f.ilum + p.base) * opt(p.cuerpo, p.brillo) * sil;
+    const br = Math.min(p.techo, f.ilum + p.base) * p.cuerpo * sil;
     const bc = centro(f, gx);
     const bcx = bc[0], bcy = bc[1];
 

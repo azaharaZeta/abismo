@@ -1,5 +1,5 @@
 import { M, evento } from '../motor.js';
-const {rango, opt} = M;
+import { ondaArranca, ondaAnillo } from './comun.js';
 
 /* ══════════════════════════════════════════════════════════════════
    EL CONTAGIO
@@ -8,25 +8,17 @@ const {rango, opt} = M;
    prendiéndose—, así que la onda va por donde hay plancton y su frente se
    lee cruzando el agua. Es el evento más corto de la pieza y el que mejor
    explica por qué los buenos no dibujan.
+
+   El anillo en sí está en eventos/comun.js: lo comparte con la floración,
+   y de este fichero es sólo lo que lo hace un contagio —que el campo sea
+   `enciende` y que la onda lleve un color.
    ══════════════════════════════════════════════════════════════════ */
 evento('contagio', {
   arranca(M, p, x, y){
-    return {
-      x: opt(x, rango(p.banda)*M.W),
-      y: opt(y, rango(p.banda)*M.H),
-      r: 0,
-      vel:  rango(p.vel) * M.U,
-      rmax: Math.hypot(M.W, M.H) * rango(p.alcance),
-      /* un color para toda la onda, o que cada mota conserve el suyo */
-      c: p.suyo ? null : M.color(p.paleta),
-    };
+    const e = ondaArranca(M, p, x, y);
+    /* un color para toda la onda: sin espectro propio, el de la pecera */
+    e.c = M.color(p.paleta);
+    return e;
   },
-  actualiza(e, M, p, dt){
-    e.r += e.vel * dt;
-    if (e.r - M.U*p.salto > e.rmax) return false;
-    M.campos.push({ tipo:'enciende', x:e.x, y:e.y,
-                    r: e.r, ri: Math.max(0.0001, e.r - M.U*p.salto),
-                    fuerza: 1, filo: opt(p.filo, 1), c: e.c });
-    return true;
-  },
+  actualiza(e, M, p, dt){ return ondaAnillo(e, M, p, dt, 'enciende', e.c); },
 });

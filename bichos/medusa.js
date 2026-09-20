@@ -3,7 +3,7 @@
    Pulso propio, tentáculos por historial y silueta paramétrica.
    ══════════════════════════════════════════════════════════════════ */
 import { M, especie } from '../motor.js';
-const {rgba, clamp, rnd, rango, rangoE, TAU} = M;
+const {rgba, clamp, rnd, rango, rangoE, opt, TAU} = M;
 import { porPlano, mancha, reparte, seAparta, reaccionBorde,
          avanza, silencio } from './comun.js';
 
@@ -11,9 +11,15 @@ import { porPlano, mancha, reparte, seAparta, reaccionBorde,
    así que sale de su entrada de escena (`tent`) y no de `ABISMO.planos`.
    OJO con el nombre: `tent` a secas ya es el degradado del tentáculo,
    dentro de dibuja(). */
-const escNube = (p, L) => (p.tent && p.tent[L.i]) || 1;
+const escNube = (p, L) => opt(p.tent && p.tent[L.i], 1);
 
 const HIST = 48;              // muestras del buffer circular
+/* Y NINGUNA CINTA PASA DE AHÍ: `TX`/`TY` miden HIST y el historial se
+   indexa en módulo HIST, así que un `tent` por encima de 1 escribiría
+   fuera —en un typed array eso no da error, se pierde— y la cinta se
+   trazaría con `undefined`. El tope va aquí y no en la escena: es del
+   búfer, no del bicho. */
+const largoCinta = (n, suelo) => Math.min(HIST, Math.max(suelo, Math.round(n)));
 const SAMPLE = 1/26;          // intervalo fijo de muestreo
 const TX = new Float32Array(HIST), TY = new Float32Array(HIST);
 
@@ -262,7 +268,7 @@ const MEDUSA = {
     for (let t=0;t<nT;t++){
       /* la potencia sesga los largos hacia corto: muchos junto a la campana
          y unos pocos que se van lejos. Eso es una nube. */
-      j.tLen[t]  = Math.max(5, Math.round(HIST*(0.16+0.84*Math.pow(Math.random(),1.9))*escNube(p, L)));
+      j.tLen[t]  = largoCinta(HIST*(0.16+0.84*Math.pow(Math.random(),1.9))*escNube(p, L), 5);
       j.tSeed[t] = Math.random()*TAU;
       j.tAmp[t]  = rnd(0.5,1.7);
       j.tLat[t]  = reparte(t, nT) - 0.5 + rnd(-0.035,0.035);
@@ -446,7 +452,7 @@ const MEDUSA = {
       trazaCinta(g, j.tLen[ti], tent, 3.2*S, 0.34, 0.85*S, sh);
     }
 
-    const aLen = Math.max(8, Math.round(HIST*0.34*escNube(p, L)));
+    const aLen = largoCinta(HIST*0.34*escNube(p, L), 8);
     const brazo = [
       [0.00, rgba(j.c.core, 0.52*bright)], [0.35, rgba(j.c.mid, 0.26*bright)],
       [1.00, rgba(j.c.mid,  0)],

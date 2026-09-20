@@ -51,9 +51,9 @@ motor.js           la fachada: qué del motor es público
 motor/             util · color · registro · estado · agua · dedo · api · bucle
 bichos/            comun · medusa · plancton · copepodo ·
                    pezlinterna · rape (+ rape-cuerpo, rape-caza)
-eventos/           contagio · visitante · leviatan · carrona · cuerpo ·
-                   glitch · floracion · gemacion
-marco.css · js     la chapa, el título y los dos botones
+eventos/           comun · contagio · visitante · leviatan · carrona ·
+                   cuerpo · glitch · floracion · gemacion
+marco.css · js     la chapa, el título y el botón
 pruebas.js         el andamio
 manifest · icono   instalable en la pantalla de inicio
 ```
@@ -223,6 +223,14 @@ que lo usa y no del motor: vive en la entrada del plancton (`colorRaro`,
 con su `raro: 0.02`). Un color que sólo usa uno no es un concepto de la
 pecera.
 
+Y **`M.color(pal)` NO TIENE PALETA POR DEFECTO.** La tuvo —caía a
+`ABISMO.paleta` cuando no se le pasaba ninguna— y lo que salía de ahí era
+un acoplamiento invisible: el color del `contagio` y del `visitante`, los
+dos únicos sin espectro propio, venía de una clave que no aparecía en sus
+entradas y que ningún barrido encontraba leída. `ABISMO.paleta` sigue
+siendo la de la pecera, pero **quien la use la nombra** (`paleta: PALETA`
+en su entrada), y quien se olvide de darla se entera en el acto.
+
 Los halos y puntos de luz están **pre-dibujados y cacheados en la propia
 entrada de paleta** (`M.halo(c)`, `M.punto(c)`): un degradado radial por
 mota y fotograma sería el coste dominante. Por eso el espectro se cuantiza
@@ -283,7 +291,10 @@ mandan en el banco salen de ahí.
 **Un evento nuevo**: igual, en `eventos/` y con `evento('nombre', def)`
 (`arranca`, `actualiza`, `dibuja`). El contrato está en
 **REGISTRO DE EVENTOS**, en el mismo fichero. Los mejores eventos **no
-dibujan nada** — apagan.
+dibujan nada** — apagan. Si es un frente que se abre, el anillo ya está
+escrito: `ondaArranca`/`ondaAnillo` en
+[eventos/comun.js](eventos/comun.js), que es lo que comparten el contagio
+y la floración. Ahí sólo entra lo que ya estaba escrito dos veces.
 
 **EN EL ABISMO PASA UNA COSA A LA VEZ**, y no hay bandera que lo pida ni
 forma de pedir lo contrario: es de la pieza y no del evento. El que le

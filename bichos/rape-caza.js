@@ -148,7 +148,7 @@ function caza(f, M, L, p, dt){
       /* y aquí NO se le toca el brillo a la esca: subirlo la deja a tope
          hasta el siguiente parpadeo, o sea un segundo encendida detrás de
          la ráfaga. El parpadeo sigue su ciclo. */
-      f.reposo = rango(opt(p.reposoFallo, p.reposo));
+      f.reposo = rango(p.reposoFallo);
     }
     return;
   }

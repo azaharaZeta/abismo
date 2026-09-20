@@ -48,10 +48,10 @@ function impulso(x, y){
      rastro se congela donde EMPEZÓ el gesto. */
   const tope = Math.max(1, Math.round(ABISMO.dedo.tope));
   if (contactos.length >= tope){
-    let peor = 0, va = Infinity;
+    let peor = 0, min = Infinity;
     for (let i=0;i<contactos.length;i++){
       const v = ondaResto(contactos[i]);
-      if (v < va){ va = v; peor = i; }
+      if (v < min){ min = v; peor = i; }
     }
     contactos.splice(peor, 1);
   }

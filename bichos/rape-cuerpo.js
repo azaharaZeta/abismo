@@ -49,8 +49,6 @@ function aMundo(f, gx, lx, ly){
 
 /* El centro del cuerpo. Comparte el array de aMundo: consúmelo ya. */
 const centro = (f, gx) => aMundo(f, gx, f.Lg*0.45, 0);
-/* hasta dónde llega la charnela: cuánto del cuerpo ES boca */
-const bocaLargo = p => p.bocaLargo;
 
 /* punto de una quijada, en coordenadas del pez. También compartido. */
 const _q = [0,0], _q2 = [0,0];
@@ -420,7 +418,7 @@ function ojo(g, f, gx, col, nuc, br, sh, p){
    un pez con dientes, y con una que se come media cabeza, una trampa. */
 function quijadas(f, p){
   const Lg = f.Lg;
-  const jx = Lg*bocaLargo(p), jy = Lg*0.10;
+  const jx = Lg*p.bocaLargo, jy = Lg*0.10;
   const hondo = Lg*p.bocaHondo;
   const bocaY = u => u*u*jy + (1-u)*u*hondo;
   /* Abre de golpe y cierra más despacio: la potencia bajo el seno adelanta
@@ -659,6 +657,6 @@ function senuelo(g, f, gx, p, ebr){
     g.beginPath(); g.arc(f.x, f.y, nu, 0, TAU); g.fill();
   }
 }
-export { enPez, aMundo, centro, bocaLargo, adelante,
+export { enPez, aMundo, centro, adelante,
          cuerpoPath, piel, visceras, aletas, volumen, ojo, quijadas,
          bocaPath, boca, barbilla, senuelo };
