@@ -456,13 +456,13 @@ export const ABISMO = {
 
     /* ── EL CUERPO ──────────────────────────────────────────────────
        No dibuja NADA: la silueta es de campos `apaga`, así que lo que baja
-       es el hueco de un cuerpo humano. `alto` va en U, y grande —unas
-       siete, o sea un tercio del cuadro en apaisado— porque lo que hace el
-       evento es que se RECONOZCA; más pequeño es una mancha con forma
-       rara.
+       es el hueco de un cuerpo humano. `alto` va en U, y tiene un suelo
+       —por debajo de unas cuatro deja de reconocerse y es una mancha con
+       forma rara— y un techo, que es que quepa tumbado. Lo que hace el
+       evento es que se RECONOZCA.
 
-       El más lento y el más raro de la pecera. A 0,3-0,55 U/s cada cuerpo
-       tarda entre 55 y 115 segundos en bajar, que es el rato que hace
+       El más lento y el más raro de la pecera. A 0,36-0,66 U/s cada cuerpo
+       tarda entre 48 y 80 segundos en bajar, que es el rato que hace
        falta para dudar de lo que se está viendo; con `cada` de seis a doce
        minutos no se convierte en decorado. `giro` en centésimas: una
        vuelta cada dos minutos. Caen de uno a tres, escalonados. */
@@ -474,11 +474,25 @@ export const ABISMO = {
          cuerpo en el 15,2 % de los fotogramas y a todos los exclusivos en
          el 43 %. */
       cada: [360, 720], primero: [110, 250], banda: [0.16, 0.84],
-      alto: [5.46, 7.8], vel: [0.30, 0.55],
+      /* ── EL TAMAÑO SE JUZGA TUMBADO ─────────────────────────────
+         `alto` va en U, así que el cuerpo ocupa una fracción distinta
+         según cómo se sostenga el aparato, y la caja apretada es el móvil
+         TUMBADO: ahí 7,8 U eran el 64 % del alto del cuadro y el bicho
+         pasaba de «algo que baja» a «algo que no cabe». A 6,2 se queda en
+         el 51 % tumbado, el 39 % de un portátil y el 23 % de un móvil de
+         pie. Y el rango se abre un poco —1,55 contra 1,43— porque los
+         cuerpos se ven de uno en uno, separados por `retraso`: la
+         variedad sólo se lee comparando con el recuerdo del anterior.
+
+         `vel` sube un 20 %, que es lo que cabe sin tocar el tema: lo que
+         hace el evento es dar tiempo a dudar de lo que se está viendo.
+         Con estos, un cuerpo tarda 48-80 s en cruzar un móvil de pie y
+         27-43 s tumbado, contra los 62-106 y 36-59 de antes. */
+      alto: [4.0, 6.2], vel: [0.36, 0.66],
       giro: [-0.055, 0.055], deriva: 0.22,
       /* `cuantos` es cuántos caen en una tirada y `retraso` los segundos
          que tarda cada uno en asomar detrás del anterior. El retraso es
-         LARGO —10-30 s, y el cuerpo tarda 55-115 en bajar— porque no son
+         LARGO —10-30 s, y el cuerpo tarda 48-80 en bajar— porque no son
          tres cuerpos a la vez sino una formación: cuando el segundo entra
          por arriba el primero va ya por la mitad del cuadro. Cada uno
          lleva su sitio, tamaño, velocidad, volteo, postura y flexión. */

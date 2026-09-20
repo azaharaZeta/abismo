@@ -383,3 +383,37 @@ documentación.
 - **Onda de proa** · retirada por la usuaria. El leviatán y el plancton siguen como
   estaban: el leviatán lo APAGA, que es su mecanismo entero, y no lo empuja.
 
+## 2026-09-20 · tercera tanda
+
+- **El lomo del leviatán, «una catenaria colgada entre los picos»** · lo era, y por
+  una razón que no estaba en el muestreo sino en la propia fórmula. `levCresta` daba
+  a cada diente un semiancho de `0,62/n`, y la separación entre dos espinas es
+  `0,62/(n−1)`: con diez espinas, 0,062 contra 0,069. **Las tiendas de dos vecinas
+  se solapaban**, así que en el valle seguía quedando casi la mitad de la altura y
+  el canto nunca volvía al lomo.
+
+  **El resultado negativo:** el primer diagnóstico fue undersampling —40 muestras
+  para un diente de periodo 0,069 son 2,8 por diente— y **subir el muestreo no lo
+  arregla**: con N=160 el valle bajaba de 1,258 a 1,210 y ahí se quedaba, porque lo
+  que no bajaba era el perfil. Medir el RELIEVE (punta menos valle sobre altura del
+  diente) y no la altura de las puntas es lo que lo separó: por altura de punta no
+  se veía nada, porque las puntas estaban bien.
+
+  Hacen falta las dos mitades: semiancho a media separación (`levAncho`) y muestrear
+  el trazo en los tres puntos de cada diente además de la base uniforme (`levLomoS`,
+  cacheado por número de espinas). Relieve: 43 % → 82 % con sólo el ancho → **100 %
+  con las dos**, y con 61 puntos, menos que un N=120 a ciegas que se quedaba en 95 %.
+
+- **Los cuerpos, más pequeños y un pelín más rápidos** · `alto` [5,46 · 7,8] →
+  [4,0 · 6,2] U y `vel` [0,30 · 0,55] → [0,36 · 0,66] U/s. **La caja que manda es el
+  móvil TUMBADO**, no el de pie: ahí el cuerpo grande ocupaba el 64 % del alto del
+  cuadro (contra el 29 % de pie), que es donde dejaba de leerse como algo que baja.
+  Ahora 51 %. El rango se abre de 1,43 a 1,55 porque los cuerpos se ven de uno en
+  uno, separados por `retraso`: la variedad sólo se lee contra el recuerdo del
+  anterior.
+
+- **Y una trampa del entorno, medida:** en el panel de vista previa del navegador el
+  `requestAnimationFrame` va estrangulado —nueve segundos de reloj de pared dieron
+  1,5 de escena—, así que para mirar un evento largo hay que subirle la `vel` por
+  JSON, no esperar.
+

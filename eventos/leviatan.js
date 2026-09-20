@@ -204,14 +204,18 @@ evento('leviatan', {
     const bl = br * opt(p.brilloLomo, 0);
     const masa = levMasa(opt(p.penumbra, 1));
     if (bl > 0.002){
+      /* y no en `s` regular: en las de `levLomoS`, que llevan dentro los
+         cortes de cada diente. Con muestras regulares esto salía como una
+         catenaria colgada entre las puntas. */
+      const ss = levLomoS(ne, N), nl = ss.length - 1;
       const lx = [], ly = [];
-      for (let i=0;i<=N;i++){
-        const s = i/N, q = levPunto(e, s, _lvQ), a = levAngulo(e, s);
+      for (let i=0;i<=nl;i++){
+        const s = ss[i], q = levPunto(e, s, _lvQ), a = levAngulo(e, s);
         const semi = e.grosor*levPerfil(s)*levCresta(s, ne, cre)*masa;
         lx.push(q[0] + Math.sin(a)*semi);
         ly.push(q[1] - Math.cos(a)*semi);
       }
-      const gl = g.createLinearGradient(lx[0], ly[0], lx[N], ly[N]);
+      const gl = g.createLinearGradient(lx[0], ly[0], lx[nl], ly[nl]);
       gl.addColorStop(0.00, rgba(e.c.glow, 0));
       gl.addColorStop(0.24, rgba(e.c.glow, 0.30*bl));
       gl.addColorStop(0.70, rgba(e.c.glow, 0.16*bl));
@@ -219,7 +223,7 @@ evento('leviatan', {
       g.strokeStyle = gl;
       g.lineWidth = Math.max(1.2, M.U*0.30);
       g.beginPath();
-      for (let i=0;i<=N;i++) i ? g.lineTo(lx[i], ly[i]) : g.moveTo(lx[i], ly[i]);
+      for (let i=0;i<=nl;i++) i ? g.lineTo(lx[i], ly[i]) : g.moveTo(lx[i], ly[i]);
       g.stroke();
     }
     const be = br * opt(p.brilloEspinas, 0);
@@ -338,6 +342,17 @@ function levPerfil(s){
    unas cuatrocientas por fotograma y sólo mientras hay un leviatán. */
 const levEspina = (i, n) => 0.14 + 0.62*reparte(i, n);
 const levAlta = i => 0.55 + 0.45*Math.abs(Math.sin(i*2.3 + 1.1));
+/* ── EL SEMIANCHO DE UN DIENTE, Y ES MEDIA SEPARACIÓN ───────────────
+   De aquí depende que el canto de arriba sea una SIERRA y no una
+   catenaria. Las `n` espinas se reparten por 0,62 de eslora, así que la
+   separación entre dos es `0,62/(n−1)`; para que un diente acabe justo
+   donde empieza el siguiente, su semiancho tiene que ser la mitad de eso.
+
+   Iba a `0,62/n`, que es casi la separación ENTERA: las tiendas de dos
+   espinas vecinas se solapaban y en el valle seguía quedando la mitad de
+   la altura. MEDIDO: el relieve entre punta y valle era el 43 % del
+   diente, o sea una línea que ondula un poco colgada entre los picos. */
+const levAncho = n => n > 1 ? 0.62/(2*(n-1)) : 0.31;
 /* HASTA DÓNDE LLEGA LA MASA del canto de arriba, en veces el alto del
    diente: el campo que lo sierra se centra a 0,55·h y su semieje a lo ancho
    es 0,9·h·penumbra, y el apagado deja de leerse como masa —por debajo de
@@ -352,13 +367,43 @@ const levAlta = i => 0.55 + 0.45*Math.abs(Math.sin(i*2.3 + 1.1));
 const levMasa = pen => 0.55 + 0.69*pen;
 function levCresta(s, n, cresta){
   if (!(n > 0) || !(cresta > 0)) return 1;
-  const media = 0.62/n;
+  const media = levAncho(n);
   let pico = 0;
   for (let i=0;i<n;i++){
     const d = Math.abs(s - levEspina(i, n))/media;
     if (d < 1) pico = Math.max(pico, levAlta(i)*(1 - d));
   }
   return 1 + cresta*pico;
+}
+
+/* ── DÓNDE MUESTREAR EL CANTO DE ARRIBA ─────────────────────────────
+   Una sierra no se traza con muestras a intervalos regulares: con las 40
+   del cuerpo tocan 2,8 por diente y el trazo coge cada uno en una fase
+   distinta. Así que a la base uniforme se le añaden los TRES puntos que
+   definen cada diente —dónde empieza, la punta y dónde acaba—, sacados de
+   `levEspina` y `levAncho`, que son los mismos que usa `levCresta`: por
+   construcción no se pueden desalinear.
+
+   MEDIDO en relieve entre punta y valle, con 10 espinas: 43 % como
+   estaba, 82 % arreglando sólo el ancho, 95 % subiendo además el muestreo
+   uniforme a 120, y 100 % así, con 61 puntos.
+
+   Se cachea por número de espinas: la lista no depende de la travesía. */
+const _lomoS = new Map();
+function levLomoS(n, N){
+  const clave = n + 'x' + N;
+  let ss = _lomoS.get(clave);
+  if (ss) return ss;
+  ss = [];
+  for (let i=0;i<=N;i++) ss.push(i/N);
+  const w = levAncho(n);
+  for (let i=0;i<n;i++){
+    const s = levEspina(i, n);
+    ss.push(Math.max(0, s - w), s, Math.min(1, s + w));
+  }
+  ss.sort((a,b) => a-b);
+  _lomoS.set(clave, ss);
+  return ss;
 }
 
 const _lvA = [0,0], _lvB = [0,0];

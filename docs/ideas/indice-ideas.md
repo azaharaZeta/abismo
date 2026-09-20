@@ -33,9 +33,7 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 
 - Claude dijo: "- Un `manifest.json` con `orientation: portrait` y `display: standalone` dejaría la pieza instalable en la pantalla de inicio. " . Respuesta de usuaria:  vale.
 
-- evento cuerpos: los cuerpos son demasiado grandes, hacerlos algo más pequeños, y meterles un random de tamaño ligero. y caen dmasiado lentos, ponerlos que caigan un pelín (solo un poco) más rápido.
 - como de viable es hacer que, salvo las medusas y los peces, todos los demás bichos y objetos tapen el placton? estudiarlo bien porque podría tener impacto o ser engorroso d hacer.
-- evento: leviatan: el brillo en las aletas no está siguiendo el contorno de las aletas, parece una catenaria colgada entre los picos.
 - el placton tiende a concentrarse lejos del techo. intentar fixearlo, o si da problemas o es demaiado engorroso, valorar que el placton simplemente navegue la pecera como un escenario toroidal.
 
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
