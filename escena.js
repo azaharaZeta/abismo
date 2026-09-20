@@ -721,7 +721,15 @@ export const ABISMO = {
                   sat: [0.52, 0.90], luz: [0.62, 0.80],
                   satGlow: [0.45, 0.75], luzGlow: [0.14, 0.24],
                   luzCore: [0.84, 0.90] },
-      radio: [0.55, 1.35], banda: [0.04, 0.96],
+      /* EL MÁXIMO LO PONE EL MÓVIL DE PIE, medido en la campana del plano
+         de delante —`radio · planos[2].scale · ancho · U`—: a 1,35 medía
+         el 35 % del ancho del cuadro y a 1,10 mide el 28 %. De pie es el
+         caso que aprieta porque `U` va con la DIAGONAL, así que el mismo
+         número ocupa más proporción de ancho cuanto más estrecha sea la
+         caja. Y el tope gobierna la nube de paso: todo el bicho sale de
+         `j.r`. El mínimo no se toca: la variedad de tamaño es lo que hace
+         que tres medusas en tres planos se lean como tres distancias. */
+      radio: [0.55, 1.10], banda: [0.04, 0.96],
       /* El largo de los tentáculos por plano: al fondo la nube se recoge
          además de encogerse, o la medusa lejana arrastra una melena tan
          larga como la de cerca. Vive aquí y no en `ABISMO.planos` porque
@@ -775,6 +783,27 @@ export const ABISMO = {
          Si algún día se toca `empuja`, este número va detrás. */
       apartaDedo: 3.3, aparta: [0.7, 1.2], lag: [7, 12],
       apartaVuelve: 0.78,
+      /* ── Y RECELA DE LAS TRAMPAS ───────────────────────────────
+         `recela` es a cuántas U de un señuelo empieza a apartarse y
+         `recelo` la VELOCIDAD del desvío pegada al foco, en U/s —una
+         velocidad y no una fuerza: ver por qué en bichos/medusa.js—. El
+         radio lo escala el propio `senuelo` del foco, igual que hace la
+         `atraccion` del banco: es la misma cuenta con el signo cambiado,
+         así que una esca apagada ni atrae ni espanta.
+
+         PARA MEDIR ESTO HACEN FALTA MUCHAS MUESTRAS: con una medusa y
+         cinco minutos el ruido entre semillas es de ±1,5 U y tapa el
+         efecto entero. Con seis en el plano y cinco semillas sale limpio
+         —con la esca encendida el tiempo que pasan a menos de 4 U de ella
+         es del 12,7 % contra el 24,7 % sin recelo—, y dura: con la esca
+         ya apagada la media se queda 1,6 U más lejos.
+
+         Y NO LA PONE NERVIOSA, que es lo que acota el valor: los
+         percentiles de su velocidad real no se mueven ni una milésima
+         (p50 0,417 · p90 0,845 · p99 1,26 U/s, con recelo y sin él). Se
+         aparta dentro de lo que ya se movía. Una medusa que huye deja de
+         ser una medusa. */
+      recela: 5.0, recelo: 0.9,
       borde: 0.8,
     },
 

@@ -34,7 +34,6 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 - como de viable es hacer que, salvo las medusas y los peces, todos los demás bichos y objetos tapen el placton? estudiarlo bien porque podría tener impacto o ser engorroso d hacer.
 -solo un evento a la vez.
 -evento: burbujas! no muy grandes, juntas, como si algún organismo hubiera soltado aire. de un color random, pero todas de un mismo rango de color cada vez, varias burbujas juntas de distintos tamaños, subiendo y explotando algunas y otras no. 
-- medusas: reduce su tamaño máximo, es demasiado grande. Estudia si es posible que las medusas tiendan a alejarse de los rapes, si se puede resolver con poco código, y de forma elegante.
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos de las ideas procesadas el 2026-09-17, el 2026-09-18 y el 2026-09-19.
 

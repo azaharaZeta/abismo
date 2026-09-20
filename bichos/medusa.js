@@ -334,7 +334,39 @@ const MEDUSA = {
     if (j.cria) pasoCria(j, dt);
 
     reaccionBorde(j, M, p, j.x, j.y, dt);
-    avanza(j, M, L, dt, j.dx, j.dy);
+
+    /* ── RECELA DE LAS TRAMPAS ────────────────────────────────────
+       Y NO SABE QUÉ ES UN RAPE, ni pregunta. Mira las luces de SU plano y
+       se aparta de las que TIRAN —`senuelo`, que es la misma bandera con
+       la que la presa se ACERCA (ver `cardumen` en pezlinterna)—. Lo que
+       atrae a quien se come espanta a quien no, y las dos cosas salen del
+       MISMO número: cuando el rape se sacia y la esca deja de tirar, la
+       medusa deja de recelar en el mismo instante en que el banco deja de
+       acudir. De paso, recela de la TRAMPA y no del animal: con la esca
+       apagada el rape es un hueco invisible y se le acerca sin saberlo.
+
+       De ahí sale gratis la profundidad: `L.luces` es por plano, así que
+       una medusa del fondo no recela de una trampa que está delante. Con
+       un campo habría hecho falta guarda, y la de `M.campo` va justo al
+       revés de lo que aquí hace falta.
+
+       ES UNA VELOCIDAD Y VA DIRECTA A `avanza`, no una fuerza sobre
+       `vx,vy`, y ésa es la diferencia entre que funcione y que no: en
+       vx,vy se lo come el `arrastre` —lo mismo que explica el ladeo del
+       dedo cuatro bloques más arriba—, y de ahí no sale NINGUNA ganancia
+       sobre no hacer nada. La corriente la mueve más que ella misma. */
+    let rvx = 0, rvy = 0;
+    const rec = M.U*p.recela;
+    if (rec > 0) for (const o of L.luces){
+      if (!(o.senuelo > 0)) continue;
+      const r = rec*o.senuelo;
+      const ex = j.x - o.x, ey = j.y - o.y, d2 = ex*ex + ey*ey;
+      if (d2 > r*r) continue;
+      const d = Math.sqrt(d2) || 1e-4;
+      const w = (1 - d/r)*p.recelo*M.U;
+      rvx += ex/d*w; rvy += ey/d*w;
+    }
+    avanza(j, M, L, dt, j.dx + rvx, j.dy + rvy);
     topa(j, M, p);
 
     /* lo que alumbra va con el pulso, no fijo: así lo que la medusa revela

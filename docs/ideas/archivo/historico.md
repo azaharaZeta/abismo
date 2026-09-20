@@ -548,3 +548,45 @@ documentación.
   ser comparables—. Y para componer la hoja, `createImageBitmap` y no
   `img.decode()`: con el panel del navegador oculto, `decode()` no resuelve nunca.
 
+
+## 2026-09-20 · la medusa: más pequeña, y recela de las trampas
+
+- **«reduce su tamaño máximo, es demasiado grande»** · `radio` [0,55 · 1,35] →
+  **[0,55 · 1,10] U**. La campana del plano de delante pasa del 35 % al 28 % del
+  ancho de un móvil de pie. El mínimo no se toca: la variedad de tamaño es lo que
+  hace que tres medusas en tres planos se lean como tres distancias.
+
+  **Cómo se mide, que es lo que costó:** `radio · planos[2].scale · ancho · U`, y
+  `U = √(W·H)/escala` **en px de CSS** —no de dispositivo—. Con el `dpr` de más
+  sale la mitad y parece que el bicho es diminuto. `ancho` además va normalizado
+  por área en `crear()` (`1/√(an·al)`), así que su tope efectivo es 1,22 y no 1,20.
+
+- **«que las medusas tiendan a alejarse de los rapes, con poco código y elegante»** ·
+  hecho en 11 líneas. La medusa mira `L.luces` de su plano y se aparta de las que
+  traen `senuelo > 0` —la MISMA bandera por la que la presa se acerca—, con dos
+  mandos nuevos: `recela: 5.0` (radio, en U) y `recelo: 0.9` (velocidad, en U/s).
+  Ninguna especie nombra a otra, la profundidad sale gratis porque `L.luces` es por
+  plano, y recela de la TRAMPA y no del animal: con la esca apagada el rape es un
+  hueco invisible y se le acerca sin saberlo.
+
+  **Los dos tropiezos, que son el valor de la entrada:**
+
+  1. **Como FUERZA sobre `vx,vy` no funciona, y el porqué ya estaba escrito cuatro
+     bloques más arriba en el mismo fichero** (el ladeo del dedo): se lo come el
+     `arrastre` y la medusa acaba donde estaba. Va de VELOCIDAD, directa a
+     `avanza`. Cuatro semillas de cinco minutos como fuerza: cero ganancia.
+  2. **Con una medusa NO SE PUEDE MEDIR.** El ruido entre semillas es de ±1,5 U y
+     tapa el efecto entero; por poco se archiva como imposible. Con seis medusas
+     en el plano y cinco semillas —30× muestras— sale limpio: el tiempo a menos de
+     4 U de una esca encendida es del **12,7 % contra el 24,7 %**, y dura después
+     de apagarse (1,6 U más lejos de media).
+
+  Y lo que acota el valor: los percentiles de su velocidad real no se mueven ni
+  una milésima (p50 0,417 · p90 0,845 · p99 1,26 U/s, con recelo y sin él). Se
+  aparta dentro de lo que ya se movía, porque una medusa que huye deja de ser una
+  medusa.
+
+  **Trampa al leer `senuelo`:** el pez linterna lo declara como booleano `false` y
+  sólo el rape lo trae numérico, así que la guarda es `if (!(o.senuelo > 0))` y no
+  un `if (o.senuelo)` —con `true` valdría 1 y daría repulsión a tope—. Es el mismo
+  idiom que ya usaba `pezlinterna.js`.
