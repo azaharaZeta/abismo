@@ -10,7 +10,6 @@ const {rango, opt} = M;
    explica por qué los buenos no dibujan.
    ══════════════════════════════════════════════════════════════════ */
 evento('contagio', {
-  exclusivo: false,
   arranca(M, p, x, y){
     return {
       x: opt(x, rango(p.banda)*M.W),

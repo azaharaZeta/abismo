@@ -27,12 +27,9 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 
 ## Ideas de usuario (pendientes de procesar)
 > Solo un humano edita esta sección. Texto breve; el detalle se desarrolla al crear la ficha.
-- Claude dijo: "- Unidades del pez linterna: `alcanceLuz`, `alcanceCuerpo` y `revelado` van en LARGOS y escalan solos con el bicho, pero `atraccion`, `roce` y `vista` van en U y no. Ya está medido lo que cuesta: `vista` 4,2 U son 1,8 largos para el pez de delante y 3,2 para el de en medio, o sea que el mismo banco tiene dos alcances según el plano. Decidir un convenio. " . Respuesta de usuaria: sí, decide un convenio adecuado y simplifica esa lógica.
-
 - Claude dijo: "- Un `manifest.json` con `orientation: portrait` y `display: standalone` dejaría la pieza instalable en la pantalla de inicio. " . Respuesta de usuaria:  vale.
 
 - como de viable es hacer que, salvo las medusas y los peces, todos los demás bichos y objetos tapen el placton? estudiarlo bien porque podría tener impacto o ser engorroso d hacer.
--solo un evento a la vez.
 -evento: burbujas! no muy grandes, juntas, como si algún organismo hubiera soltado aire. de un color random, pero todas de un mismo rango de color cada vez, varias burbujas juntas de distintos tamaños, subiendo y explotando algunas y otras no. 
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos de las ideas procesadas el 2026-09-17, el 2026-09-18 y el 2026-09-19.

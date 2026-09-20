@@ -481,7 +481,7 @@ function pinta(){
     for (const v of vivos){
       const fila = h('div', {className:'fila'});
       fila.appendChild(h('label', {className:'vivo',
-        textContent: v.nombre + (v.exclusivo ? ' ·excl' : '') + '  ' + v.t + 's'}));
+        textContent: v.nombre + '  ' + v.t + 's'}));
       fila.appendChild(h('button', {className:'x', textContent:'■',
         onclick: () => { P.para(v.nombre); pinta(); }}));
       listaVivos.appendChild(fila);

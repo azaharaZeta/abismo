@@ -30,7 +30,6 @@ import { mancha, pintaHalo, reparte } from '../bichos/comun.js';
    la panza. Sus medidas están en la escena. */
 const _lvQ = [0,0];
 evento('leviatan', {
-  exclusivo: true,
   arranca(M, p){
     const dir = Math.random() < 0.5 ? 1 : -1;
     /* EL RUMBO. `base` es el lado por el que cruza y `ang` el rumbo real,

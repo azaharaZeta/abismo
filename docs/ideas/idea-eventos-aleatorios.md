@@ -5,6 +5,14 @@ ellos de este catálogo; el resto del catálogo sigue vivo aquí y este fichero 
 el estado de cada uno.
 **Empezada:** 2026-09-15 · **primera tanda:** 2026-09-15 · **última revisión:** 2026-09-20
 
+> **2026-09-20.** «Solo un evento a la vez.» La decisión 1 de abajo —un exclusivo a
+> la vez y los ligeros en paralelo— **queda derogada**, y con ella la bandera
+> `exclusivo`, que ya no distinguía nada y se borró de las ocho defs, del motor, del
+> contrato y del panel. Ahora es una propiedad de la PIEZA: `pasoEventos` mira si hay
+> alguno vivo, y el que llega tarde espera con `ABISMO.relevo` como esperaban antes
+> los exclusivos. Lo de abajo se queda escrito porque explica el mecanismo de espera,
+> que es el que ha sobrevivido; lo que ya no vale es el reparto en dos clases.
+
 > **2026-09-17 (mañana).** El usuario quitó `mira`, `marea` y `vacio` de la escena del
 > abismo, pidió más detalle en el `visitante` y encargó un leviatán (E-16, abajo). Los
 > tres quitados siguieron implementados y registrados: lo que cambió fue que la pecera
@@ -661,8 +669,8 @@ setecientas llamadas que se ahorran.
 - **Abismo (hoy):** E-09 `contagio`, el `visitante`, E-16 `leviatan`, E-04 `carrona`,
   E-17 `cuerpo` y E-19 `glitch`, más `floracion` y `gemacion`, que no salieron de este
   catálogo. Son los ocho eventos que existen hoy y los ocho están en la escena: el
-  resto de la tabla está por escribir o borrado. Dos son exclusivos —`leviatan` y
-  `cuerpo`—, así que conviene vigilar que no se pisen.
+  resto de la tabla está por escribir o borrado. Ya no hay que vigilar que se pisen:
+  desde el 2026-09-20 pasa uno a la vez y punto.
 - **Abismo (propuesto):** sumarle E-02 · y E-08 de fondo.
 - **Medusas:** E-09, E-13, E-14 · y E-10 si se quiere algo grande.
 - **Una pecera alegre futura:** E-09, E-10, E-11, E-12, E-15.
@@ -795,9 +803,10 @@ es lo que dice que el mecanismo funcionaba, y el mecanismo sigue en el motor.)
 ## Siguiente acción
 
 Elegir de la tabla los siguientes. `E-02 El apagón` sigue siendo el de más efecto por
-línea de código. Pero la pecera ya NO está escasa de eventos: son ocho, dos de ellos
-exclusivos. El siguiente problema es el contrario —que no se pisen— y para eso están
-`exclusivo` y los `cada`.
+línea de código. Pero la pecera ya NO está escasa de eventos: son ocho, y desde que
+pasa uno a la vez el problema de que se pisen está cerrado por construcción. Lo que
+hay que vigilar al añadir el noveno es lo contrario: cada evento nuevo REPARTE el
+mismo hueco, así que sale menos cada uno. El mando de eso es `ABISMO.relevo`.
 
 Y OJO CON LOS «YA CASI ESTÁ» DE ESTA SECCIÓN, que es lo que enseñó la revisión del
 2026-09-20: decían que a `E-10 La manta` sólo le faltaba un `empuja` y a `E-14 Lluvia`

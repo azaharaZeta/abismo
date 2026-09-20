@@ -63,6 +63,12 @@ const paramsDe = conf => conf.params || conf;
    Acuario.evento(nombre, def). Un evento no es una población: es algo
    que le pasa a la escena entera cada tanto.
 
+   Y PASA UNO SOLO A LA VEZ. No hay bandera que lo pida ni forma de pedir
+   lo contrario: es de la pieza y no del evento. El que le toca turno y
+   se lo encuentra ocupado NO lo pierde —se le rearma el reloj con
+   `ABISMO.relevo`—, así que escribir un evento nuevo no obliga a pensar
+   en con quién puede coincidir, porque no puede coincidir con nadie.
+
    NO LLEVA VALORES, Y SU RELOJ TAMPOCO. Todos sus parámetros salen de su
    entrada en `ABISMO.eventos` y de ningún otro sitio —`cada` y `primero`
    incluidos—: un bloque de valores propios para poder lanzarlo desde el
@@ -72,7 +78,6 @@ const paramsDe = conf => conf.params || conf;
 
    def es:
 
-     exclusivo     → no admite otro exclusivo a la vez
      arranca(M, p, x, y)    → el estado. x,y sólo si lo disparó un contacto.
      actualiza(e, M, p, dt) → false cuando ha terminado. Aquí es donde
                      empuja campos y modulación.

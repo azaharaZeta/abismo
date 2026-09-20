@@ -37,7 +37,6 @@ const {clamp, rnd, rango, rangoE, opt, TAU} = M;
 evento('glitch', {
   /* no necesita exclusividad: no toca la escena entera, y que rompa el
      dibujo mientras pasa un leviatán es mejor que peor */
-  exclusivo: false,
   arranca(M, p){
     const n = rangoE(p.focos);
     const focos = [];

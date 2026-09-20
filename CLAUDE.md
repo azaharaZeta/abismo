@@ -276,9 +276,16 @@ bicho: es donde va lo que toda la población comparte —los tonos que
 mandan en el banco salen de ahí.
 
 **Un evento nuevo**: igual, en `eventos/` y con `evento('nombre', def)`
-(`exclusivo`, `arranca`, `actualiza`, `dibuja`). El contrato está en
+(`arranca`, `actualiza`, `dibuja`). El contrato está en
 **REGISTRO DE EVENTOS**, en el mismo fichero. Los mejores eventos **no
 dibujan nada** — apagan.
+
+**EN EL ABISMO PASA UNA COSA A LA VEZ**, y no hay bandera que lo pida ni
+forma de pedir lo contrario: es de la pieza y no del evento. El que le
+toca turno y encuentra el cuadro ocupado no pierde el suyo —se le rearma
+el reloj con `ABISMO.relevo`—, así que al escribir uno nuevo no hay que
+pensar con quién puede coincidir. Lo que sí hay que pensar es que cada
+evento más REPARTE el mismo hueco: el mando del ritmo es `relevo`.
 
 **NO LE PONGAS VALORES, NI SIQUIERA SU RELOJ.** Todos sus parámetros salen
 de su entrada en `ABISMO.eventos`, `cada` y `primero` incluidos. Los

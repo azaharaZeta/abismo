@@ -259,7 +259,6 @@ function cuerpoNuevo(M, p, x, y, espera){
 }
 
 evento('cuerpo', {
-  exclusivo: true,
   arranca(M, p){
     /* el primero entra ya; los demás esperan lo suyo. El contacto no le
        pasa un sitio a ninguno: un cuerpo que sale del dedo se lee como

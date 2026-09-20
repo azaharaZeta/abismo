@@ -28,7 +28,6 @@ const apendice = v => Math.max(0, 1 + rnd(-1.4, 1)*(v || 0));
 const _vsP = [0,0], _vsN = [0,0], _ant = [0,0,0,0];
 
 evento('visitante', {
-  exclusivo: false,
   arranca(M, p){
     const v = opt(p.variedad, 0);
     return {

@@ -49,11 +49,11 @@ import { porReparto, pintaHalo, reparte, giroCorto, mezclaAng,
    Todos contra todos dentro del plano: con las docenas de la escena son
    unos cientos de comparaciones por plano y fotograma. El día que haya
    cientos de peces, aquí entra una rejilla. */
-function cardumen(z, M, L, p, libre, mira){
+function cardumen(z, L, p, libre, mira){
   const C = p.cardumen;
   if (!C) return;
-  const vista = C.vista*M.U, v2 = vista*vista;
-  const roce  = C.roce*M.U, r2 = roce*roce;
+  const vista = C.vista*z.Lg, v2 = vista*vista;
+  const roce  = C.roce*z.Lg, r2 = roce*roce;
   /* el cono ciego, como coseno y al cuadrado: así el reparto de vecinos se
      hace sin una sola raíz cuadrada, que en un bucle de todos contra todos
      es lo que importa */
@@ -322,7 +322,7 @@ especie('pezlinterna', {
     /* ¿hay una esca a la vista? Sólo señuelos: un pez linterna no persigue a
        otro pez linterna. */
     let cebo = null, md2 = Infinity;
-    const R = p.atraccion*M.U;
+    const R = p.atraccion*Lg;
     for (const o of L.luces){
       /* `senuelo` no es una bandera: es CUÁNTO tira ahora mismo, y el radio
          va con ello. Una esca apagada —un rape saciado— deja de juntar
@@ -359,7 +359,7 @@ especie('pezlinterna', {
     z.proxMira -= dt;
     const mira = z.proxMira <= 0;
     if (mira) z.proxMira = z.reacciona;
-    cardumen(z, M, L, p, !z.cebada && !z.susto, mira);
+    cardumen(z, L, p, !z.cebada && !z.susto, mira);
 
     /* ── Y AHORA SÍ, HUIR ─────────────────────────────────────────
        Después del cardumen y no antes: `aparta` acumula un vector por
@@ -455,7 +455,7 @@ especie('pezlinterna', {
        arriba. Meterlo allí pediría dos opciones más —filtra por bandera,
        quédate con el más próximo— que no comparte con nadie. */
     const ob = cebo
-      ? clamp(1.25/(1 + (Math.sqrt(md2)/(M.U*p.revelado))**2), 0, 1) : 0;
+      ? clamp(1.25/(1 + (Math.sqrt(md2)/(Lg*p.revelado))**2), 0, 1) : 0;
     z.ilum = hacia(z.ilum, ob, 7, dt);
   },
 

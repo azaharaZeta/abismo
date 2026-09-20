@@ -590,3 +590,55 @@ documentación.
   sólo el rape lo trae numérico, así que la guarda es `if (!(o.senuelo > 0))` y no
   un `if (o.senuelo)` —con `true` valdría 1 y daría repulsión a tope—. Es el mismo
   idiom que ya usaba `pezlinterna.js`.
+
+## 2026-09-20 · dos convenios: el banco en largos, y un evento a la vez
+
+- **«Decide un convenio de unidades para el pez linterna y simplifica esa lógica»** ·
+  el convenio es: **toda distancia de un bicho va en LARGOS DE SU CUERPO; sólo lo que
+  viene de fuera del agua —el dedo— va en U.** `Lg` ya lleva dentro el `scale` del
+  plano, y `scale` es PERSPECTIVA: el pez de en medio no es otro bicho, es el mismo
+  más lejos, así que todo lo suyo tiene que encoger a la vez.
+
+  `cardumen.vista` 4,2 → **1,8 largos**, `cardumen.roce` 3,0 → **1,3**,
+  `atraccion` 4,5 → **2,0**, `revelado` 1,6 → **0,7**.
+
+  **EL DEFECTO SE MEDÍA, y es el dato que vale:** `roce` 3,0 U eran 1,31 largos en el
+  plano de delante y 2,34 en el de en medio, o sea que a los de en medio **su propio
+  roce les prohibía juntarse**. Tres semillas de 100 s en caja de móvil:
+
+  | | a <1,2 largos | vecinos a <2 largos |
+  |---|---|---|
+  | en medio, antes | **0,0 %** | 0,00-0,03 |
+  | en medio, ahora | 3,0-6,5 % | 0,46-0,54 |
+  | delante, antes | 12-14 % | 1,13-1,31 |
+  | delante, ahora | 8-15 % | 1,05-1,48 |
+
+  **El anclaje se eligió midiendo.** Anclar en la media de la población afloja el
+  plano de delante —los apiñados caen al 2,5 %— y ése es justo el que estaba
+  ajustado. Anclado en el plano de delante, ése no se mueve y el otro entra en vereda.
+
+  Y `atraccion`/`revelado` son **inertes hoy**: `rape.por` es [0,0,1] y `L.luces` va
+  por plano, así que sólo hay esca que ver en el plano de delante. Comprobado igual,
+  porque el comentario de la escena avisa de que un alcance corto deja la trampa sin
+  clientes: 10 min × 3 semillas, 26-31 bocados antes y 28-31 después.
+
+  La simplificación que pedía la usuaria salió sola: `cardumen()` usaba `M` **sólo**
+  para `M.U`, así que el parámetro se fue. Y no cuesta nada, porque los cuatro sitios
+  ya se calculaban por pez.
+
+- **«Solo un evento a la vez»** · la bandera `exclusivo` se borró entera —ocho defs,
+  el motor, el contrato y el panel—: con la regla universal no distinguía nada. Pasa
+  a ser una propiedad de la pieza (`evVivos.length > 0`), y el mecanismo de espera que
+  ya existía para los exclusivos —rearmar el reloj con `ABISMO.relevo`— vale tal cual
+  para todos.
+
+  **LO QUE SORPRENDIÓ AL MEDIRLO**, tres semillas de media hora de reloj de escena:
+  el cuadro NO se vacía. Sigue teniendo algo pasando el 70 % del tiempo (67,8-72,1 %
+  después, 67,5-72,6 % antes), porque lo que desaparece no es tiempo de evento sino el
+  AMONTONAMIENTO —se llegaban a solapar cuatro, y el 26 % del rato había más de uno—.
+  Lo que baja es la cuenta: de ~145 a ~90 eventos/hora. Y no se muere de hambre
+  ninguno de los ocho, ni siquiera el `cuerpo`, que es el del reloj más largo (4-6/h,
+  su ritmo natural).
+
+  De paso, `dispara()` tenía un `para(nombre)` seguido de un bucle que borraba todo:
+  ahora es `para()` a secas, que además limpia campos y modulación.

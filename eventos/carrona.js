@@ -29,7 +29,6 @@ import { pintaHalo, reparte } from '../bichos/comun.js';
    es la silueta de las costillas.                                    */
 
 evento('carrona', {
-  exclusivo: false,
   arranca(M, p, x, y){
     const Lg = M.U * rango(p.largo);
     /* UN SOLO SORTEO de vértebras: de aquí salen el contador Y el largo

@@ -22,7 +22,6 @@ const {rango, opt} = M;
    tinte.
    ══════════════════════════════════════════════════════════════════ */
 evento('floracion', {
-  exclusivo: false,
   arranca(M, p, x, y){
     return {
       x: opt(x, rango(p.banda)*M.W),

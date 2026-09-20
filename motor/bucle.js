@@ -124,22 +124,24 @@ function pasoEventos(dt){
   vaciaCampos();
   reiniciaMod();
 
-  let hayGrande = evVivos.some(e => e.def.exclusivo);
+  /* UNO Y NADA MÁS. No es una propiedad de cada evento sino de la pieza:
+     lo que se mira es si hay ALGUNO vivo. */
+  let ocupado = evVivos.length > 0;
 
   for (const gr of evGrupos){
     if (gr.vivo) continue;
     gr.prox -= dt;
     if (gr.prox > 0) continue;
-    /* un exclusivo espera su turno en vez de perder el suyo, y espera de
-       VERDAD: se le vuelve a armar el reloj. Dejándole el `prox` correr en
-       negativo arrancaba en el mismo fotograma en que moría el que lo
-       tapaba. Ver `relevo` en la escena. */
-    if (gr.def.exclusivo && hayGrande){
+    /* el que llega tarde espera su turno en vez de perder el suyo, y
+       espera de VERDAD: se le vuelve a armar el reloj. Dejándole el `prox`
+       correr en negativo arrancaba en el mismo fotograma en que moría el
+       que lo tapaba. Ver `relevo` en la escena. */
+    if (ocupado){
       gr.prox = rango(opt(gr.p.relevo, ABISMO.relevo));
       continue;
     }
     lanza(gr);
-    if (gr.def.exclusivo) hayGrande = true;
+    ocupado = true;
   }
 
   for (let i=evVivos.length-1; i>=0; i--){
@@ -220,16 +222,9 @@ function dispara(nombre, extra){
      un `espectroX` escrito en el panel no ha pasado por ahí y se quedaría
      en `M.color(undefined)`. */
   resuelveEspectros(p);
-  para(nombre);
-  /* un exclusivo a mano echa al que hubiera. Se saca de la lista aquí y no
-     con otra llamada a para() porque para() recorre y corta la MISMA lista
-     que este bucle. */
-  if (def.exclusivo)
-    for (let i=evVivos.length-1;i>=0;i--)
-      if (evVivos[i].def.exclusivo){
-        reprograma(evVivos[i].gr);
-        evVivos.splice(i,1);
-      }
+  /* uno a mano echa al que hubiera, sea cual sea: en el abismo pasa una
+     cosa a la vez también cuando la pide el panel. */
+  para();
   lanza(gr, undefined, undefined, p);
   return true;
 }
@@ -250,7 +245,7 @@ function contactoEventos(x, y){
   for (const gr of evGrupos){
     const q = gr.p.porContacto;
     if (!q || gr.vivo) continue;
-    if (gr.def.exclusivo && evVivos.some(e => e.def.exclusivo)) continue;
+    if (evVivos.length) continue;
     if (Math.random() < q) lanza(gr, x, y);
   }
 }
@@ -647,8 +642,7 @@ window.Acuario = { arranca, reinicia, especie, evento, ESPECIES, EVENTOS, M,
     get escena(){ return ABISMO; },
     /* qué hay en marcha ahora mismo */
     get vivos(){ return evVivos.map(e => ({nombre: e.def.nombre,
-                                          t: +e.t.toFixed(1),
-                                          exclusivo: !!e.def.exclusivo})); },
+                                           t: +e.t.toFixed(1)})); },
     /* ── A DÓNDE SE VA EL FOTOGRAMA ──────────────────────────────
        Sólo para el panel, y es lo único que queda de medir rendimiento
        aquí: el motor ya no decide nada con ello. El tiempo de fotograma

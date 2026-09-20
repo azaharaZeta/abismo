@@ -50,7 +50,6 @@ import { M, evento } from '../motor.js';
                        borrosa de la pecera (medido: 0,43 U contra 1,16).
    ══════════════════════════════════════════════════════════════════ */
 evento('gemacion', {
-  exclusivo: false,
   arranca(){
     return { cupo: { quedan: 1, mejorR: 0, lista: false }, fot: 0 };
   },

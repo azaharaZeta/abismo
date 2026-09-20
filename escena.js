@@ -227,10 +227,20 @@ export const ABISMO = {
      puede probar sin tocar nada: `?dpr=1.2` en el panel. */
   calidad: { dprMax: 2, dprMin: 0.7 },
 
-  /* Cuánto espera un evento exclusivo que le toca turno y se lo
-     encuentra ocupado. Sin relevo se le sigue descontando el reloj, se
-     queda en negativo y arranca en el mismo fotograma en que muere el que
-     lo tapaba: un tercio de los exclusivos salían encadenados. */
+  /* Cuánto espera un evento que le toca turno y se encuentra el cuadro
+     ocupado —y SIEMPRE lo puede estar: en el abismo pasa una cosa a la
+     vez, sin excepción ni bandera que la pida (ver motor/registro.js)—.
+     Sin relevo se le sigue descontando el reloj, se queda en negativo y
+     arranca en el mismo fotograma en que muere el que lo tapaba: salían
+     encadenados.
+
+     ES EL MANDO DEL RITMO DE LA PIEZA, y el que hay que tocar si se
+     quieren más cosas o menos. Medido, tres semillas de media hora de
+     reloj de escena: el cuadro tiene algo pasando el 70 % del tiempo y
+     salen unos 90 eventos por hora. Subirlo vacía y bajarlo aprieta; los
+     ocho eventos
+     siguen saliendo todos, incluido el `cuerpo`, que es el de reloj más
+     largo. */
   relevo: [25, 70],
 
   /* ── EVENTOS ──────────────────────────────────────────────────────
@@ -475,9 +485,12 @@ export const ABISMO = {
       /* `cada` sube con los cuerpos de dos en dos y de tres en tres: con
          el desfase, una tirada de tres dura casi el doble que una sola, y
          a reloj igual el evento se comía más cuadro del que le toca.
-         Medido sobre seis horas de reloj de escena, [360,720] deja al
-         cuerpo en el 15,2 % de los fotogramas y a todos los exclusivos en
-         el 43 %. */
+         Medido, tres semillas de media hora: [360,720] deja al cuerpo en
+         el 6-16 % de los fotogramas —sale dos o tres veces por tirada, así
+         que el reparto es ruidoso; lo firme es que es de los que más
+         ocupan—. Y ahora que pasa una cosa a la vez, lo que ocupa se lo
+         quita a los otros siete: por eso éste lleva el reloj más largo de
+         la escena. */
       cada: [360, 720], primero: [110, 250], banda: [0.16, 0.84],
       /* ── EL TAMAÑO SE JUZGA TUMBADO ─────────────────────────────
          `alto` va en U, así que el cuerpo ocupa una fracción distinta
@@ -1204,25 +1217,46 @@ export const ABISMO = {
          gris oscuro con su forma—; a 0,18 salen lechosos. */
       base: 0.10,
       cuerpo: 1.22, blanco: 0.06, canto: 0.34,
-      brillo: 1.15, revelado: 1.6,// a cuántas U del cebo ya se le ve
-      /* Desde cuántas U ve una esca. Generoso a propósito: con un solo
-         rape, un alcance corto deja la trampa sin clientes y el bocado
-         —lo único que enciende al bicho— no llega a ocurrir en una
+      /* ── TODA DISTANCIA DE ESTE BICHO VA EN LARGOS DE CUERPO ───
+         `revelado`, `atraccion`, `vista` y `roce` se multiplican por el
+         `Lg` DEL PEZ, que ya lleva dentro el `scale` de su plano, y no
+         por `U`. El motivo es que `scale` es PERSPECTIVA: el pez de en
+         medio no es otro bicho, es el mismo más lejos, así que todo lo
+         suyo tiene que encoger a la vez. En U no encogía, y se medía:
+         `roce` 3,0 U eran 1,31 largos delante y 2,34 en medio, o sea que
+         a los de en medio su propio roce les PROHIBÍA juntarse —0,0 % a
+         menos de 1,2 largos, contra el 13 % de delante—. Los valores de
+         aquí abajo están anclados al plano de delante, que es contra el
+         que se ajustó el banco, así que ése no se mueve y el otro entra
+         en vereda (2,8-5,3 %).
+
+         LO ÚNICO QUE SE QUEDA EN U es lo que viene de FUERA del agua: el
+         dedo (`apartaDedo`, `aparta`), porque un dedo en la pantalla no
+         está a ninguna profundidad y no encoge con el plano. */
+      brillo: 1.15, revelado: 0.7, // largos del cebo a los que ya se le ve
+      /* Desde cuántos largos ve una esca. Generoso a propósito: con un
+         solo rape, un alcance corto deja la trampa sin clientes y el
+         bocado —lo único que enciende al bicho— no llega a ocurrir en una
          sesión. Si se suben los rapes, éste es el primer número que hay
-         que bajar. */
-      atraccion: 4.5,
+         que bajar.
+
+         Hoy esto y `revelado` sólo actúan en el plano de delante, porque
+         `rape.por` es [0,0,1] y `L.luces` va por plano: en los otros no
+         hay esca que ver. */
+      atraccion: 2.0,
 
       /* ── EL BANCO ────────────────────────────────────────────────
-         `vista` es a cuántas U se mira a los vecinos y `roce` a cuántas
-         empiezan a estorbarse; los tres pesos son no chocar / ir a la par
+         `vista` es a cuántos LARGOS se mira a los vecinos y `roce` a
+         cuántos empiezan a estorbarse —ver arriba por qué en largos y no
+         en U—; los tres pesos son no chocar / ir a la par
          / no quedarse solo, y `propio` cuánto de su idea conserva.
          `aparta` tiene que mandar sobre `junta`: al revés el banco se
          anuda.
 
          `vista` CORTA es lo que evita que el banco entero llegue a un
-         acuerdo: a 5,5 cada pez ve a 12 de sus 15-27 vecinos y la
-         alineación sube de 0,51 a 0,70. Por debajo de 3,2 deja de leerse
-         como banco.
+         acuerdo: al doble de ésta cada pez ve a 12 de sus 15-27 vecinos y
+         la alineación sube de 0,51 a 0,70. Por debajo de 1,4 largos deja
+         de leerse como banco.
 
          `reacciona` (cada cuánto vuelve a mirar, en segundos) y `ciego`
          (el cono que no ve a su espalda, en radianes: 1,9 ≈ 109°) son las
@@ -1250,7 +1284,7 @@ export const ABISMO = {
          tiempo sosteniendo rumbo EMPEORA, de 40 a 36 %. Lo barato es
          dejarlo ancho: a 2,4, y con el `rumbo` de abajo largo, cuesta
          0,04 de alineación porque casi nunca hace falta. */
-      cardumen: { vista: 4.2, roce: 3.0, propio: 0.40,
+      cardumen: { vista: 1.8, roce: 1.3, propio: 0.40,
                   aparta: 1.8, alinea: 1.6, junta: 0.9,
                   ciego: 1.9, reacciona: [0.18, 0.68], comodo: 2.4 },
       /* Segundos de pánico cuando algo muerde al lado, a peso pleno del
