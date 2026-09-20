@@ -304,8 +304,15 @@ export const ABISMO = {
          desvanecido ocurre fuera de ella. */
       hondura: [0.94, 1.0], filo: 2.2, penumbra: 1.3, segmentos: 22,
       /* la cresta dorsal, en campos aparte: sierra el canto de arriba y
-         deja la panza lisa. Dientes desiguales. */
-      espinas: 10, cresta: 0.55,
+         deja la panza lisa. Dientes desiguales.
+
+         `cresta` es CUÁNTO SOBRESALE del lomo el diente más alto, en
+         veces el semigrosor del cuerpo de ahí. El ancho no se toca desde
+         aquí y no es un gusto: es media separación entre espinas, que es
+         lo que hace que se toquen base con base y el canto salga una
+         sierra y no pinchos sueltos. La forma del diente —base ancha y
+         punta de aguja— vive en `levPua`, en eventos/leviatan.js. */
+      espinas: 10, cresta: 0.80,
       /* Lo que cuelga la mandíbula bajo el cráneo, en veces el semigrosor
          del cuerpo. Es lo único de la cabeza que es un mando: el morro y
          el ojo son anatomía y viven en el evento. A 0 el bicho acaba en
@@ -458,6 +465,12 @@ export const ABISMO = {
          que es lo suyo, pero se le ve la forma. */
       largo: [12.5, 18.0], onda: [0.59, 1.95],
       grosor: [0.38, 0.62], merma: [0.18, 0.70], panza: [0, 0.42],
+      /* Tapa la nieve marina por el espinazo, que es lo que lo convierte
+         en un cuerpo que PASA por delante en vez de un dibujo que se suma
+         encima. `tapaFilo` entre el del rape (28, macizo) y el de la
+         carroña (6, un esqueleto con huecos): un poliqueto es blando,
+         tiene canto pero no filo. */
+      tapa: 0.9, tapaFilo: 14,
       /* ── Y EL BRILLO, QUE NO VA CON EL TAMAÑO ───────────────────
          MEDIDO sobre negro, sin bichos ni velo ni grano, tomando el peor
          fotograma de siete por travesía: el visitante MÁS PEQUEÑO era el

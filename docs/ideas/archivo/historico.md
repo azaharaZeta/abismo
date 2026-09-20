@@ -642,3 +642,126 @@ documentación.
 
   De paso, `dispara()` tenía un `para(nombre)` seguido de un bucle que borraba todo:
   ahora es `para()` a secas, que además limpia campos y modulación.
+
+## 2026-09-20 · quién tapa la nieve marina, y la pieza instalable
+
+- **«¿Cómo de viable es que, salvo medusas y peces, todo lo demás tape el plancton?
+  Estudiarlo bien, podría tener impacto o ser engorroso»** · **ya estaba hecho en
+  cuatro de cinco cuerpos.** El estudio, medido con la nieve marina real (600 motas,
+  sin rape en la pecera para que su vaivén no tapara la señal, y contando sólo
+  mientras el evento vive):
+
+  | | motas apagadas, media | pico |
+  |---|---|---|
+  | leviatán (`apaga`) | 66-73 | 19 % de la nieve |
+  | cuerpo (`apaga`) | 10-12 | 4-5 % |
+  | carroña (`tapa`) | 3-5 | 2 % |
+  | rape (`tapa`) | 31-68 | — |
+  | **visitante** | **0** | **0** |
+
+  Así que la idea entera se reduce a **un bicho**, y son 25 líneas: un `tapa` por el
+  espinazo del visitante, como la carroña por las vértebras. Ahora apaga 3,9-4,0 motas
+  de media (pico 14-18) y **sólo en su plano**, que es lo que da gratis la guarda de
+  profundidad de `M.campo`.
+
+  **EL COPÉPODO NO ENTRA, y no por pereza:** mide 0,019-0,028 U de radio y una mota de
+  plancton mide 0,006-0,032. Es del mismo tamaño. Que una mota tape a otra no es
+  oclusión, es ruido.
+
+  **Coste medido**, campos vivos y JS puro por fotograma: el visitante pasa de 0 a 20
+  campos y de +0,00 a +0,08 ms. Para comparar, la carroña son 14 campos (+0,05 ms) y
+  el cuerpo y el leviatán 41-43 (+0,21 ms). O sea: no es engorroso ni pesa.
+
+  Dos cosas que costaron y no se ven en el código:
+
+  1. **`K` sigue a la ONDULACIÓN y no al largo.** El bicho lleva 2,6-4,2 ondas de
+     cuerpo; una cadena de elipses que las corte por las esquinas deja el agujero
+     fuera del animal en los vientres. Con seis por onda el error baja del grosor.
+  2. **La fuerza va con `fade`**, que en el visitante es su PRESENCIA y no su luz
+     —entra y sale del cuadro con ella—. Es la excepción a «tapa siempre, también a
+     oscuras» del rape y la carroña: aquéllos tienen el cuerpo ahí y a éste le
+     aparecería el agujero en la nieve antes que el animal.
+
+  **Y AL MEDIR ESTO SE FALLÓ DOS VECES**, que es lo que vale guardar: primero
+  comparando una ventana de 3 s contra otras de 12 s —el pico crece solo con la
+  ventana—, y después creyendo que `rape.total = 0` quitaba los rapes. **El rape
+  cuenta por `por`, no por `total`** (usa `porPlano`), así que seguía ahí tapando
+  31-68 motas y haciendo de suelo. Con el suelo puesto, el visitante —que entonces no
+  empujaba NINGÚN campo— salía +32 motas en una semilla y −14 en otra.
+
+- **`manifest.json`** · la pieza es instalable en la pantalla de inicio. `background_color`
+  y `theme_color` son el mismo `#000103` del `body`, que es lo que pinta el sistema
+  mientras arranca; cualquier otro da un fogonazo antes del abismo. El icono es un SVG
+  y no un PNG porque aquí no hay binarios: agua del degradado real de `ABISMO.agua.tono`
+  y una esca del tono del rape con su caña, sin rape —que es la obra.
+
+  El icono es **un pez linterna grande y verde con nieve marina detrás** —el primero
+  fue una esca sola sobre negro y a tamaño de pantalla de inicio era un cuadro negro
+  con un punto—. La curva del cuerpo, el ojo y la hilera de fotóforos salen de los
+  mismos números que `bichos/pezlinterna.js` (`PANZA`, `DENTRO`, `FOTO_T`). Tres cosas
+  que hubo que bajar del dibujo a mano al dibujo de la pieza: el canto iba a 0,020·Lg
+  y era un contorno de tebeo (ahora 0,009), el ojo a alfa plena era una pelota de golf
+  (ahora halo suave y núcleo a 0,40) y el cuerpo con `core` encima al 13 % salía
+  lavado en vez de verde (ahora 6 %).
+
+  **PENDIENTE DE DECIDIR: `orientation: portrait` riñe con el diseño.** La pieza no
+  gira el cuadro y se ve en las dos posturas a propósito; hay valores de la escena
+  ajustados mirándola TUMBADA. Instalada, esto la clava de pie. Queda como se pidió y
+  con el aviso escrito en `index.html`: son cuatro letras («any») para recuperarlo.
+
+## 2026-09-20 · la cresta del leviatán: de ubres a colmillos
+
+- **«Que el mismo algoritmo que genera la posición de la cresta se use para dibujar
+  su brillo, justo ahí»** · había **tres** expresiones distintas del canto de arriba:
+  el campo oscuro y el halo de la punta usaban `1 + levAlta(i)·cresta` en la espina, y
+  el velo de color usaba `levCresta`, una carpa lineal aparte. Ahora hay UNA:
+  **`levPua(d)`**, la altura del diente a la distancia `d` de su eje, de la que salen
+  el campo, el velo y el halo.
+
+  **LA FORMA COSTÓ TRES INTENTOS, y el orden importa:**
+
+  1. **Carpa lineal** → «palos». Lados rectos, y peor: el factor de masa multiplicaba
+     también al cuerpo desnudo, así que entre diente y diente el velo se quedaba
+     colgado un 45 % por encima del lomo. Cuñas con el pie en el aire.
+  2. **Envolvente de la elipse del campo** → «ubres». Alto y ancho parecidos y punta
+     redonda: una cúpula, no una cresta.
+  3. **`(1 − |d|)²`** → colmillo. Base ancha que arranca del lomo y punta de aguja:
+     a media altura el diente mide ya el 29 % de su base. Elegido por la usuaria
+     sobre una hoja de tres formas.
+
+  **Y AQUÍ ESTÁ LO QUE HAY QUE ENTENDER PARA NO REPETIRLO: una elipse no puede tener
+  los lados cóncavos**, así que la sombra NO puede hacer un colmillo con un campo por
+  diente. Se persiguió un rato: cadenas de rebanadas apiladas y de elipses anidadas,
+  midiendo el RMS contra la curva, y ninguna converge —a doce rebanadas por diente
+  (120 campos) todavía queda un escalón del 6,6 %—.
+
+  La salida no era una aproximación mejor sino **otra manera de repartir el trabajo**:
+  `levPua` es LA DEFINICIÓN, el velo la traza exacta y la sombra la aproxima con
+  cuatro rebanadas que quedan siempre POR DEBAJO de la curva. De ahí sale gratis que
+  el velo pase por el canto o por fuera y jamás hundido en la masa. «Un solo
+  algoritmo» es una sola DEFINICIÓN, no una sola fórmula de dibujo.
+
+  Alineación del velo con el borde de la sombra —midiendo el apagado del motor en los
+  puntos del propio trazo, tres semillas; el borde es 0,45:
+
+  | | mediana | fuera de la masa | hundido |
+  |---|---|---|---|
+  | carpa | 0,29-0,37 | 31-45 % | 0 % |
+  | cúpula | 0,40-0,44 | 14-22 % | 0 % |
+  | **colmillo** | **0,45-0,48** | **12-15 %** | 1-2 % |
+
+  **Coste:** la cresta pasa de 10 a 40 campos y el leviatán de 41 a 71; en JS puro,
+  de 0,69 a 0,83 ms de fotograma. Cuatro rebanadas y no más: el escalón peor es el
+  16 % del alto del diente, cinco píxeles en un móvil, y el desvanecido del campo se
+  los come. Subir a doce cuesta ochenta campos para arreglar algo que no se ve.
+
+  Dos números que ahora se derivan en vez de estar a mano: **`levLee`** —hasta dónde
+  llega un campo, `1 − 0,45^filo`, que con `filo` 2,2 son 0,83 y estaba escrito 0,76—
+  y el alto del diente, que pasa a ser `cresta` a secas (0,55 → **0,80**, el mismo
+  alto de antes) en vez de `cresta` multiplicado por un factor de masa.
+
+  **Y UN FALLO MÍO AL VERIFICAR, que casi cuela:** dije que el velo nuevo salía «casi
+  plano». Era falso — para ver el dibujo había borrado el `<body>` de la página y con
+  él el lienzo, así que `M.U` se fue a cero y lo que medía no era el velo. La segunda
+  vez, el velo salía flotando muy por encima de la sombra: le estaba pasando el ancho
+  del diente en PÍXELES a una cuenta que mide en `s`.

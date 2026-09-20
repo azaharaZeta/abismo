@@ -1,0 +1,14 @@
+{
+  "name": "Abyss by Zeta",
+  "short_name": "Abyss",
+  "description": "Aquí no llega el sol. Nadie está iluminado: cada cuerpo existe sólo hasta donde llega la luz que le dan, y el que tiende la trampa es el que vive más a oscuras.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000103",
+  "theme_color": "#000103",
+  "icons": [
+    { "src": "icono.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

@@ -116,18 +116,25 @@ evento('leviatan', {
        sierren el canto de arriba y dejen la panza lisa. Desiguales: una
        sierra regular se lee como decoración. Dónde va cada una lo dicen
        `levEspina` y `levAlta`, que comparte con `dibuja`. */
-    const ne = p.espinas|0;
+    const ne = p.espinas|0, cre = opt(p.cresta, 0);
+    const W = levAncho(ne), Wpx = W*e.largo, lee = levLee(filo);
     for (let i=0;i<ne;i++){
-      const s = levEspina(i, ne);
-      const q = levPunto(e, s, _lvQ), ang = levAngulo(e, s);
+      const t = levDiente(e, i, ne, cre, _lvD);
+      if (!(t[2] > 0)) break;
+      const q = levPunto(e, t[0], _lvQ), ang = levAngulo(e, t[0]);
       const nx = -Math.sin(ang), ny = Math.cos(ang);
-      const semi = e.grosor*levPerfil(s);
-      const alta = levAlta(i) * opt(p.cresta, 0);
-      const h = semi*(1 + alta);
-      M.campos.push({ tipo:'apaga', plano,
-                      x: q[0] - nx*h*0.55, y: q[1] - ny*h*0.55,
-                      r: paso*0.55*pen, ky: Math.max(0.05, h*0.9*pen/(paso*0.55*pen)),
-                      rot: ang, fuerza: e.hondura*0.9, filo });
+      /* una rebanada por tramo de altura, del ancho que `levPua` le da a
+         su BASE: así la rebanada cabe entera bajo la curva */
+      for (let j=0;j<LEV_LOB;j++){
+        const u0 = j/LEV_LOB, u1 = (j+1)/LEV_LOB;
+        const w = Math.max(0.05, levPuaInv(u0))*Wpx/lee;
+        const c = t[1] + t[2]*(u0+u1)*0.5;
+        const a = t[2]*(u1-u0)*0.5/lee;
+        M.campos.push({ tipo:'apaga', plano,
+                        x: q[0] - nx*c, y: q[1] - ny*c,
+                        r: w, ky: Math.max(0.05, a/w),
+                        rot: ang, fuerza: e.hondura*0.9, filo });
+      }
     }
     /* ── LA QUIJADA ───────────────────────────────────────────────
        Es lo que convierte el morro en una cabeza con boca. Va por el lado
@@ -228,16 +235,15 @@ evento('leviatan', {
        a 0 los apaga con todo lo demás. */
     const ne = p.espinas|0, cre = opt(p.cresta, 0);
     const bl = br * opt(p.brilloLomo, 0);
-    const masa = levMasa(opt(p.penumbra, 1));
+    const W = levAncho(ne);          // en `s`, que es como mide levLomo
     if (bl > 0.002){
-      /* y no en `s` regular: en las de `levLomoS`, que llevan dentro los
-         cortes de cada diente. Con muestras regulares esto salía como una
-         catenaria colgada entre las puntas. */
+      /* y no en `s` regular: en las de `levLomoS`, que aprietan las
+         muestras en la punta, que es donde el colmillo hace esquina */
       const ss = levLomoS(ne, N), nl = ss.length - 1;
       const lx = [], ly = [];
       for (let i=0;i<=nl;i++){
         const s = ss[i], q = levPunto(e, s, _lvQ), a = levAngulo(e, s);
-        const semi = e.grosor*levPerfil(s)*levCresta(s, ne, cre)*masa;
+        const semi = levLomo(e, s, ne, cre, W);
         lx.push(q[0] + Math.sin(a)*semi);
         ly.push(q[1] - Math.cos(a)*semi);
       }
@@ -257,7 +263,8 @@ evento('leviatan', {
       for (let i=0;i<ne;i++){
         const s = levEspina(i, ne);
         const q = levPunto(e, s, _lvQ), a = levAngulo(e, s);
-        const h = e.grosor*levPerfil(s)*(1 + levAlta(i)*cre)*masa;
+        /* en el mismo canto que traza el velo y que talla la sombra */
+        const h = levLomo(e, s, ne, cre, W);
         const x = q[0] + Math.sin(a)*h, y = q[1] - Math.cos(a)*h;
         /* desacompasadas entre ellas y con el coletazo, como los fotóforos:
            una hilera de puntos a alfa fijo se lee como una costura */
@@ -365,66 +372,93 @@ function levPerfil(s){
   const cola   = 1 - 0.55*Math.pow(Math.max(0, (s-0.62)/0.38), 1.6);
   return morro*cuerpo*cuello*cola;
 }
-/* ── LA CRESTA, EN UN SOLO SITIO ────────────────────────────────────
-   Dónde va la espina `i` de las `n` y cuánto se levanta sobre el lomo. Lo
-   comparten su `actualiza` —que pone los campos oscuros que sierran el
-   canto— y su `dibuja` —que le enciende la punta a cada diente—, y por eso
-   están aquí: escritas por separado se despegan y no coinciden ni en el
-   número de dientes.
-
-   `levCresta` es lo mismo pero muestreado en un `s` cualquiera, que es lo
-   que hace falta para trazar el canto de arriba: el diente más cercano y
-   su caída lineal hasta el valle. Cuesta `n` cuentas por muestra, o sea
-   unas cuatrocientas por fotograma y sólo mientras hay un leviatán. */
+/* Dónde va la espina `i` de las `n` y cuánto se levanta sobre el lomo:
+   los dos ladrillos con los que se construye la cresta, aquí abajo. */
 const levEspina = (i, n) => 0.14 + 0.62*reparte(i, n);
 const levAlta = i => 0.55 + 0.45*Math.abs(Math.sin(i*2.3 + 1.1));
-/* ── EL SEMIANCHO DE UN DIENTE, Y ES MEDIA SEPARACIÓN ───────────────
-   De aquí depende que el canto de arriba sea una SIERRA y no una
-   catenaria. Las `n` espinas se reparten por 0,62 de eslora, así que la
-   separación entre dos es `0,62/(n−1)`; para que un diente acabe justo
-   donde empieza el siguiente, su semiancho tiene que ser la mitad de eso.
 
-   Iba a `0,62/n`, que es casi la separación ENTERA: las tiendas de dos
-   espinas vecinas se solapaban y en el valle seguía quedando la mitad de
-   la altura. MEDIDO: el relieve entre punta y valle era el 43 % del
-   diente, o sea una línea que ondula un poco colgada entre los picos. */
+/* ── EL COLMILLO, Y SE DEFINE UNA SOLA VEZ ──────────────────────────
+   `levPua` ES LA CRESTA: la altura del diente a la distancia `d` de su
+   eje, de 0 en el valle a 1 en la punta. De aquí salen las TRES cosas
+   que tocan el canto de arriba, y por eso la luz no puede ir a un sitio
+   distinto que la sombra:
+
+     · `actualiza` · la cadena de elipses que lo talla
+     · `levLomo`   · el canto que traza el velo de color
+     · el halo     · la punta encendida de cada diente
+
+   ES EL CUADRADO Y NO OTRA COSA. Con una elipse por diente salían
+   cúpulas —alto y ancho parecidos, punta redonda—, que es una ubre. Con
+   caída lineal salían palos, cuñas de lados rectos. El cuadrado da lo
+   que hace falta: base ancha que arranca del lomo y punta de aguja, con
+   los lados metidos hacia dentro. A media altura el diente mide ya el
+   29 % de su base.
+
+   `levPuaInv` es su INVERSA —a qué distancia del eje queda la altura
+   `u`— y se escribe al lado a propósito: es la que necesita la sombra
+   para saber de qué ancho hacer cada rebanada. */
+const levPua    = d => { const a = 1 - Math.abs(d); return a > 0 ? a*a : 0; };
+const levPuaInv = u => 1 - Math.sqrt(u < 0 ? 0 : u > 1 ? 1 : u);
+
+/* EL SEMIANCHO DE UN DIENTE ES MEDIA SEPARACIÓN, así que los dientes se
+   tocan base con base y el canto sale una sierra continua y no una
+   hilera de pinchos sueltos con lomo liso entre ellos. */
 const levAncho = n => n > 1 ? 0.62/(2*(n-1)) : 0.31;
-/* HASTA DÓNDE LLEGA LA MASA del canto de arriba, en veces el alto del
-   diente: el campo que lo sierra se centra a 0,55·h y su semieje a lo ancho
-   es 0,9·h·penumbra, y el apagado deja de leerse como masa —por debajo de
-   0,45, que es el umbral con el que está ajustado el tamaño en la escena—
-   al 76 % de ese semieje con `filo` 2,2. Medido campo a campo: 1,45·h con
-   la penumbra en 1,3.
 
-   Lo usan los dos que pintan ese canto —el velo del lomo y la punta
-   encendida de cada diente—, y por eso está aquí: iban los dos a `h`, o
-   sea DENTRO del diente y a dos tercios de su altura, así que la luz no
-   seguía el contorno que dibuja la sombra. */
-const levMasa = pen => 0.55 + 0.69*pen;
-function levCresta(s, n, cresta){
-  if (!(n > 0) || !(cresta > 0)) return 1;
-  const media = levAncho(n);
-  let pico = 0;
-  for (let i=0;i<n;i++){
-    const d = Math.abs(s - levEspina(i, n))/media;
-    if (d < 1) pico = Math.max(pico, levAlta(i)*(1 - d));
+/* HASTA DÓNDE LLEGA UN CAMPO, en veces su semieje: el apagado entra como
+   pow(1 − d/r, 1/filo) y deja de leerse como masa por debajo de 0,45,
+   que es el umbral con el que está ajustado el tamaño en la escena. O
+   sea `1 − 0,45^filo`, que con `filo` 2,2 son 0,83. Se divide por él al
+   armar cada elipse para que el CONTORNO caiga donde dice `levPua` y no
+   el radio entero. */
+const levLee = filo => 1 - Math.pow(0.45, filo);
+
+/* CUÁNTAS REBANADAS APROXIMAN EL COLMILLO. Una elipse no puede tener los
+   lados cóncavos, así que la sombra lo trocea en rebanadas del ancho que
+   el colmillo tiene a esa altura. La cadena queda siempre POR DEBAJO de
+   la curva —nunca la desborda—, y de ahí sale gratis que el velo pase por
+   el canto o por fuera y jamás hundido en la masa.
+
+   Con cuatro el escalón peor entre rebanadas es el 16 % del alto del
+   diente: a tamaño de móvil son cinco píxeles y se los traga el
+   desvanecido del campo. Subirlo cuesta diez campos por rebanada. */
+const LEV_LOB = 4;
+
+const _lvD = [0,0,0];
+/* el diente `i`: [su `s`, el semigrosor del lomo ahí, lo que sobresale] */
+function levDiente(e, i, ne, cre, o){
+  const s = levEspina(i, ne);
+  o[0] = s;
+  o[1] = e.grosor*levPerfil(s);
+  o[2] = o[1]*levAlta(i)*cre;
+  return o;
+}
+/* el canto de arriba en un `s` cualquiera, que es el cuerpo o el diente
+   que le pille encima */
+function levLomo(e, s, ne, cre, W){
+  let borde = e.grosor*levPerfil(s);
+  if (!(ne > 0) || !(cre > 0)) return borde;
+  for (let i=0;i<ne;i++){
+    const d = (s - levEspina(i, ne))/W;
+    if (d*d >= 1) continue;
+    const t = levDiente(e, i, ne, cre, _lvD);
+    const v = t[1] + t[2]*levPua(d);
+    if (v > borde) borde = v;
   }
-  return 1 + cresta*pico;
+  return borde;
 }
 
 /* ── DÓNDE MUESTREAR EL CANTO DE ARRIBA ─────────────────────────────
-   Una sierra no se traza con muestras a intervalos regulares: con las 40
-   del cuerpo tocan 2,8 por diente y el trazo coge cada uno en una fase
-   distinta. Así que a la base uniforme se le añaden los TRES puntos que
-   definen cada diente —dónde empieza, la punta y dónde acaba—, sacados de
-   `levEspina` y `levAncho`, que son los mismos que usa `levCresta`: por
-   construcción no se pueden desalinear.
-
-   MEDIDO en relieve entre punta y valle, con 10 espinas: 43 % como
-   estaba, 82 % arreglando sólo el ancho, 95 % subiendo además el muestreo
-   uniforme a 120, y 100 % así, con 61 puntos.
+   Una sierra no se traza con muestras a intervalos regulares: con las
+   del cuerpo tocan menos de tres por diente y el trazo coge cada uno en
+   una fase distinta. A la base uniforme se le añade cada diente
+   muestreado APRETANDO HACIA LA PUNTA, que es donde el colmillo hace
+   esquina; la falda no la necesita porque llega al lomo con pendiente
+   cero. Los `s` salen de `levEspina` y `levAncho`, los mismos que usa
+   `levLomo`: por construcción no se pueden desalinear.
 
    Se cachea por número de espinas: la lista no depende de la travesía. */
+const LEV_FALDA = [0, 0.05, 0.12, 0.24, 0.42, 0.66, 1];
 const _lomoS = new Map();
 function levLomoS(n, N){
   const clave = n + 'x' + N;
@@ -435,7 +469,10 @@ function levLomoS(n, N){
   const w = levAncho(n);
   for (let i=0;i<n;i++){
     const s = levEspina(i, n);
-    ss.push(Math.max(0, s - w), s, Math.min(1, s + w));
+    for (const u of LEV_FALDA){
+      ss.push(clamp(s - u*w, 0, 1));
+      if (u) ss.push(clamp(s + u*w, 0, 1));
+    }
   }
   ss.sort((a,b) => a-b);
   _lomoS.set(clave, ss);

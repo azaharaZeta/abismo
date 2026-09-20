@@ -7,6 +7,17 @@
 <title>Abyss by Zeta</title>
 <meta name="description" content="Aquí no llega el sol. Nadie está iluminado: cada cuerpo existe sólo hasta donde llega la luz que le dan, y el que tiende la trampa es el que vive más a oscuras.">
 <link rel="stylesheet" href="marco.css">
+<!-- INSTALABLE EN LA PANTALLA DE INICIO. `background_color` y el
+     `theme_color` son el mismo #000103 del `body` en marco.css: es lo que
+     pinta el sistema mientras arranca, y cualquier otro color da un
+     fogonazo antes del abismo.
+
+     OJO CON `orientation: portrait`: la pieza NO gira el cuadro y se ve
+     en las dos posturas a propósito —hay valores de la escena ajustados
+     mirándola tumbada—. Instalada, esto la clava de pie. Para recuperar
+     el apaisado basta con poner "any". -->
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icono.svg" type="image/svg+xml">
 </head>
 <body>
 <!-- LA CHAPA. El abismo vive dentro de #pecera y no puede pintar fuera:

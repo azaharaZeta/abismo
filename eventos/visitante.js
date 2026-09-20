@@ -25,7 +25,33 @@ const apendice = v => Math.max(0, 1 + rnd(-1.4, 1)*(v || 0));
 
 /* un punto del cuerpo, su normal y las dos puntas de las antenas. Fuera
    del `dibuja` como el resto de los del fichero. */
-const _vsP = [0,0], _vsN = [0,0], _ant = [0,0,0,0];
+const _vsP = [0,0], _vsN = [0,0], _ant = [0,0,0,0], _tapA = [0,0];
+
+/* ── EL CUERPO, Y POR QUÉ ESTÁ AQUÍ ARRIBA ──────────────────────────
+   La cabeza, el espinazo y el grosor los necesitan los DOS: `dibuja`, para
+   pintarlo, y `actualiza`, para decir por dónde tapa. Escritos dos veces
+   se desincronizan y el agujero en la nieve marina se va a otro sitio que
+   el bicho —el mismo motivo por el que `nrm` saca la normal del propio
+   `pt` y no de la analítica.
+
+   `s` es 0 en la cabeza y 1 en la cola. La ondulación crece hacia atrás:
+   la cabeza marca el rumbo y la cola lo obedece. */
+const cabezaV = (e, M) => {
+  const span = M.W + e.largo*2, u = e.t/e.dur;
+  return e.dir > 0 ? -e.largo + u*span : M.W + e.largo - u*span;
+};
+const puntoV = (e, hx, s, o) => {
+  o[0] = hx - e.dir*s*e.largo;
+  o[1] = e.y + Math.sin(s*e.nOnda + e.t*e.vel)*e.amp*(0.35 + s*0.65);
+  return o;
+};
+/* `merma` adelgaza hacia la cola —a 0,18 es un tubo, a 0,70 un cono— y
+   `panza` le mete un bulto con el máximo a un 37 % del morro, que es donde
+   lo tiene un huso. Con `panza` a 0 sale el cono de siempre. De aquí salen
+   el radio de las cuentas y el largo de los parapodios, así que el bicho
+   engorda entero y no sólo por el espinazo. */
+const grosorV = (e, s) => e.base * (1 - s*e.merma)
+                        * (1 + e.panza*Math.sin(Math.PI*Math.pow(s, 0.7)));
 
 evento('visitante', {
   arranca(M, p){
@@ -48,11 +74,48 @@ evento('visitante', {
       c: M.color(p.paleta),
     };
   },
-  actualiza(e, M, p){ return e.t < e.dur; },
+  /* ── LO QUE TAPA ──────────────────────────────────────────────
+     Una cadena de elipses por el espinazo, como hace la carroña por las
+     vértebras: es lo que lo convierte en un CUERPO que pasa por delante de
+     la nieve marina en vez de un dibujo que se le suma encima. Aquí y no
+     en `dibuja` porque los campos se leen antes de que se pinte nadie.
+
+     `K` SIGUE A LA ONDULACIÓN, no al largo: el bicho lleva 2,6-4,2 ondas
+     de cuerpo y una cadena que las corte por las esquinas deja el agujero
+     fuera del animal en los vientres. Con seis por onda el error se queda
+     por debajo del grosor.
+
+     Y la fuerza va con `fade`, que es su presencia y no su luz —entra y
+     sale del cuadro con ella—: sin eso el agujero en la nieve aparecería
+     antes que el animal. Es la diferencia con el rape y la carroña, que
+     tapan también a oscuras porque su cuerpo YA está ahí. */
+  actualiza(e, M, p){
+    const k = opt(p.tapa, 0);
+    if (k > 0.004){
+      const fade = Math.sin(e.t/e.dur*Math.PI);
+      const hx = cabezaV(e, M);
+      const K = Math.max(8, Math.round(e.nOnda*6));
+      const paso = e.largo/K;
+      for (let i=0;i<K;i++){
+        const s = (i+0.5)/K;
+        const q = puntoV(e, hx, s, _vsP), qx = q[0], qy = q[1];
+        const h = 0.5/K;
+        const a = puntoV(e, hx, Math.max(0, s-h), _tapA), ax = a[0], ay = a[1];
+        const b = puntoV(e, hx, Math.min(1, s+h), _vsP), bx = b[0], by = b[1];
+        const r = paso*0.9;
+        M.campos.push({ tipo:'tapa', plano: p.plano,
+                        x: qx, y: qy, r,
+                        ky: Math.max(0.06, grosorV(e, s)/r),
+                        rot: Math.atan2(by-ay, bx-ax),
+                        filo: p.tapaFilo, fuerza: k*fade });
+      }
+    }
+    return e.t < e.dur;
+  },
   dibuja(e, M, p, g){
     const u = e.t/e.dur;
-    const N = e.n, span = M.W + e.largo*2;
-    const headX = e.dir > 0 ? -e.largo + u*span : M.W + e.largo - u*span;
+    const N = e.n;
+    const headX = cabezaV(e, M);
     const fade = Math.sin(u*Math.PI);          // entra y sale con un seno
     const base = e.base;
     const br = p.brillo*fade;
@@ -63,13 +126,7 @@ evento('visitante', {
     const gAntenas = p.antenas * e.kAntenas;
     const gCola    = p.cola    * e.kCola;
 
-    /* el punto `s` del cuerpo, 0 en la cabeza y 1 en la cola. La ondulación
-       crece hacia atrás: la cabeza marca el rumbo y la cola lo obedece. */
-    const pt = (s) => {
-      _vsP[0] = headX - e.dir*s*e.largo;
-      _vsP[1] = e.y + Math.sin(s*e.nOnda + e.t*e.vel)*e.amp*(0.35 + s*0.65);
-      return _vsP;
-    };
+    const pt = s => puntoV(e, headX, s, _vsP);
     /* la normal del cuerpo en `s`, por diferencias finales: la analítica de
        esta curva es fácil de escribir y fácil de desincronizar del `pt` de
        arriba, y entonces las patas salen del sitio equivocado. */
@@ -81,14 +138,7 @@ evento('visitante', {
       _vsN[0] = -dy/d; _vsN[1] = dx/d;
       return _vsN;
     };
-    /* EL PERFIL, y es lo que de verdad cambia de bicho a bicho. `merma`
-       adelgaza hacia la cola —a 0,18 es un tubo, a 0,70 un cono— y `panza`
-       le mete un bulto con el máximo a un 37 % del morro, que es donde lo
-       tiene un huso. Con `panza` a 0 sale el cono de siempre. De aquí salen
-       también el radio de las cuentas y el largo de los parapodios, así que
-       el bicho engorda entero y no sólo por el espinazo. */
-    const grosor = s => base * (1 - s*e.merma)
-                        * (1 + e.panza*Math.sin(Math.PI*Math.pow(s, 0.7)));
+    const grosor = s => grosorV(e, s);      // el perfil, definido arriba
 
     /* EL ESPINAZO, primero y flojo: es lo que hace que la fila de cuentas
        se lea como un cuerpo y no como un collar. */

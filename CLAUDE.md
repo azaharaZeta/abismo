@@ -55,7 +55,12 @@ eventos/           contagio · visitante · leviatan · carrona · cuerpo ·
                    glitch · floracion · gemacion
 marco.css · js     la chapa, el título y los dos botones
 pruebas.js         el andamio
+manifest · icono   instalable en la pantalla de inicio
 ```
+
+El `manifest.json` lleva `orientation: portrait`, y eso **choca con que la
+pieza se vea en las dos posturas**: instalada, la clava de pie. Es lo que
+se pidió y está avisado en `index.html`; para deshacerlo, `"any"`.
 
 Cuatro separaciones, y son el punto:
 
