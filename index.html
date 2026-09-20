@@ -28,14 +28,32 @@
   <footer id="pie">
     <h1 id="titulo">Abyss <i>by</i> Zeta</h1>
     <nav id="mandos">
+      <button id="acerca" type="button" aria-haspopup="dialog">acerca de</button>
       <button id="reinicia" type="button">reiniciar</button>
     </nav>
   </footer>
 </div>
 
+<!-- ACERCA DE. Va FUERA de #marco a propósito: un diálogo modal se pinta
+     en la capa de encima, así que no lo recorta nada, y colgando del
+     <body> no hereda el `container-type` de la chapa —la ficha se mide
+     contra la PANTALLA, y el título de la franja contra el cuadro—.
+     El <dialog> no lleva relleno y todo su interior es el <article>:
+     de ahí sale el clic fuera que lo cierra (marco.js). -->
+<dialog id="acercade" aria-labelledby="rotulo">
+  <article>
+    <img src="icono.svg" alt="" width="512" height="512">
+    <h2 id="rotulo">Abyss <i>by</i> Zeta</h2>
+    <p>En el abismo la oscuridad no es el vacío: es el silencio observándote..</p>
+    <p>Aquí el abismo no solo te devuelve la mirada.</p>
+    <p class="firma">Arte generativo · Ningún pez fue dañado en el proceso · El anglerfish solo quiere jugar</p>
+    <button id="cierra" type="button">cerrar</button>
+  </article>
+</dialog>
+
 <!-- La pieza. abismo.js tira del resto por imports: motor.js, escena.js
-     y el catálogo de bichos/ y eventos/. marco.js sólo cablea el
-     botón de la franja. -->
+     y el catálogo de bichos/ y eventos/. marco.js sólo cablea los
+     botones de la franja. -->
 <script type="module" src="abismo.js"></script>
 <script type="module" src="marco.js"></script>
 

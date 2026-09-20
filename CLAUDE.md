@@ -53,7 +53,7 @@ bichos/            comun · medusa · plancton · copepodo ·
                    pezlinterna · rape (+ rape-cuerpo, rape-caza)
 eventos/           comun · contagio · visitante · leviatan · carrona ·
                    cuerpo · glitch · floracion · gemacion · burbujas
-marco.css · js     la chapa, el título y el botón
+marco.css · js     la chapa, el título, los botones y la ficha
 pruebas.js         el andamio
 manifest · icono   instalable en la pantalla de inicio
 ```
@@ -99,13 +99,21 @@ Cuatro separaciones, y son el punto:
    respetar (ver [motor/util.js](motor/util.js)).
 3. **la pieza ↔ el andamio.** [pruebas.js](pruebas.js) **no forma parte de
    la pieza**: borrar su `<script>` de `index.html` lo hace desaparecer.
-4. **el abismo ↔ el marco.** La chapa, el título y el botón son
-   DOM ([marco.css](marco.css), [marco.js](marco.js)), no lienzo. De ahí
-   sale gratis lo único que se le pide al marco —que el abismo no pinte
-   por encima—: el lienzo es MÁS PEQUEÑO que la pantalla, así que no
-   puede alcanzarlo, y ninguna de las pasadas a pantalla completa del
-   motor tiene que acordarse de recortar. `marco.js` no llama al motor
-   más que para `reinicia()`.
+4. **el abismo ↔ el marco.** La chapa, el título, los botones y la ficha
+   del «acerca de» son DOM ([marco.css](marco.css), [marco.js](marco.js)),
+   no lienzo. De ahí sale gratis lo único que se le pide al marco —que el
+   abismo no pinte por encima—: el lienzo es MÁS PEQUEÑO que la pantalla,
+   así que no puede alcanzarlo, y ninguna de las pasadas a pantalla
+   completa del motor tiene que acordarse de recortar. `marco.js` no
+   llama al motor más que para `reinicia()`.
+
+   La ficha es un `<dialog>` modal, y por eso no hay que escribir el
+   fondo, el ESC ni el foco: los trae el navegador. Va colgada del
+   `<body>` y no del marco —se mide contra la PANTALLA, mientras que el
+   título se mide contra el cuadro—, y **el diálogo no lleva relleno**
+   porque de ahí sale cerrar al tocar fuera: si un clic llega con
+   `target` en él, es que no llegó al `<article>`. La pieza no se para
+   mientras está abierta.
 
    El marco NO gira el cuadro y no hay por dónde pedírselo: la pieza es
    la caja que le dé la pantalla —alta de pie, ancha tumbada— y para

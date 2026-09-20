@@ -11,6 +11,9 @@
      mismos 46 en un móvil son el 15 % —girado el cuadro tiene 390 px de
      alto, y tumbado unos 330—. El suelo lo pone el botón, que mide 26. */
   --pie:   clamp(34px, 6.5%, 46px);
+  /* la letra del rótulo: el título de la franja y el de la ficha son el
+     mismo letrero, así que la familia se nombra una vez */
+  --rotulo: Didot,'Bodoni MT','Playfair Display',Georgia,'Times New Roman',serif;
   --filo:  #102c38;             /* el filo apagado */
   --filo2: #2a5c70;             /* el filo que coge luz */
   --tinta: #5d8899;
@@ -100,14 +103,14 @@ html,body{margin:0;padding:0;height:100%;background:#000103;overflow:hidden;
 }
 #titulo{
   grid-column:2;justify-self:center;margin:0;
-  font:400 15px/1 Didot,'Bodoni MT','Playfair Display',Georgia,'Times New Roman',serif;
+  font:400 15px/1 var(--rotulo);
   text-transform:uppercase;letter-spacing:.42em;text-indent:.42em;
   color:var(--viva);white-space:nowrap;
   /* respira muy despacio y una vez por vuelta se le va: un parpadeo
      regular es un letrero de neón, y uno que falla es otra cosa */
   animation:respira 13s ease-in-out infinite;
 }
-#titulo i{font-style:italic;font-size:.7em;letter-spacing:.18em;
+#titulo i,#acercade h2 i{font-style:italic;font-size:.7em;letter-spacing:.18em;
   color:var(--tinta);text-shadow:none}
 @keyframes respira{
   0%,100%{opacity:.82;text-shadow:0 0 9px #235f74, 0 0 22px #09303f}
@@ -118,7 +121,7 @@ html,body{margin:0;padding:0;height:100%;background:#000103;overflow:hidden;
 @media (prefers-reduced-motion:reduce){#titulo{animation:none}}
 
 #mandos{grid-column:3;justify-self:end;display:flex;gap:6px}
-#pie button{
+#pie button,#acercade button{
   font:11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
   text-transform:uppercase;letter-spacing:.13em;
   color:var(--tinta);background:#071218;
@@ -126,17 +129,20 @@ html,body{margin:0;padding:0;height:100%;background:#000103;overflow:hidden;
   padding:7px 10px;cursor:pointer;
   transition:color .18s,border-color .18s,background .18s,box-shadow .18s;
 }
-#pie button:hover,#pie button:focus-visible{
+#pie button:hover,#pie button:focus-visible,
+#acercade button:hover,#acercade button:focus-visible{
   color:var(--viva);border-color:#2e6d83;background:#0c2029;
   box-shadow:0 0 12px -3px #17576e;outline:none;
 }
-#pie button:active{background:#040d12;transform:translateY(1px)}
+#pie button:active,#acercade button:active{background:#040d12;transform:translateY(1px)}
 
 /* En pantalla estrecha —o BAJA, que un móvil tumbado tiene 330 px de alto
    y ahí la chapa y los botones de una ventana grande se comen la pieza— la
    chapa adelgaza y los botones encogen: eso depende del aparato. */
 @media (max-width:560px), (max-height:560px){
   :root{--marco:8px}
+  /* sólo los de la franja: los aprieta el hueco de la banda, y el de la
+     ficha no está en la banda */
   #pie button{padding:7px 8px;font-size:10px;letter-spacing:.1em}
 }
 
@@ -150,4 +156,89 @@ html,body{margin:0;padding:0;height:100%;background:#000103;overflow:hidden;
   #titulo{grid-column:1;justify-self:start;
     font-size:12px;letter-spacing:.3em;text-indent:.3em}
   #mandos{grid-column:2}
+}
+
+/* ── LA FICHA («acerca de») ─────────────────────────────────────────
+   Un <dialog> modal y no un div: el fondo, el ESC, el foco atrapado y
+   el pintar por encima de todo vienen de serie, y aquí no hay
+   dependencias que los traigan de otro sitio.
+
+   VA SIN RELLENO y el <article> se lo come todo por dentro: así un clic
+   cuyo `target` sea el diálogo es un clic en el fondo, que es como
+   marco.js cierra al tocar fuera. El único falso positivo es el borde. */
+#acercade{
+  padding:0;color:var(--tinta);
+  width:min(30rem,86vw);
+  /* `dvh` antes que `vh`: con la barra de URL fuera, un tanto por ciento
+     de `vh` se pasa del alto real y la ficha se sale por abajo. Y es un
+     TOPE, no un encaje: de pie el texto pide 392 px —428 en un móvil de
+     320, el peor— así que cabe con aire en todos. El 80 es el fondo que
+     queda a la vista, que es lo que se toca para cerrar. */
+  max-height:min(80dvh,80vh);
+  overflow-y:auto;overscroll-behavior:contain;
+  background:linear-gradient(180deg,#0a1218,#050a0e 30%,#03070a);
+  border:1px solid var(--filo2);border-radius:3px;
+  box-shadow:0 0 0 1px #000, 0 14px 46px -8px #000, inset 0 0 34px 5px #000;
+}
+/* el fondo va OPACO y sin `backdrop-filter`: desenfocar a pantalla
+   completa un lienzo que se repinta entero cuesta lo que cuesta el panel
+   de pruebas —unos 7 ms por fotograma en un móvil— y la pieza sigue viva
+   detrás. Aquí el velo ya tapa, así que el desenfoque sólo se pagaría. */
+#acercade::backdrop{background:rgba(0,1,3,.82)}
+#acercade article{padding:22px 22px 18px;text-align:center}
+
+/* el icono de la pieza, recortado a ojo de buey. Es EL MISMO fichero que
+   el de la pantalla de inicio, no una copia */
+#acercade img{
+  display:block;margin:0 auto 14px;width:88px;height:88px;
+  border-radius:50%;border:1px solid var(--filo2);
+  box-shadow:0 0 22px -5px #17576e, inset 0 0 20px 4px #000;
+}
+#acercade h2{
+  margin:0 0 14px;
+  font:400 16px/1 var(--rotulo);
+  text-transform:uppercase;letter-spacing:.34em;text-indent:.34em;
+  color:var(--viva);text-shadow:0 0 12px #235f74, 0 0 26px #09303f;
+}
+#acercade p{margin:0 0 11px;text-align:left;
+  font:400 13px/1.6 Georgia,'Times New Roman',serif}
+/* la firma va en la letra de los mandos: es una etiqueta del aparato y
+   no parte de lo que cuenta la ficha */
+#acercade .firma{
+  margin:16px 0;padding-top:13px;border-top:1px solid var(--filo);
+  text-align:center;color:#3f6675;
+  font:10px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;
+  text-transform:uppercase;letter-spacing:.11em;
+}
+
+@keyframes asoma{from{opacity:0;transform:translateY(8px) scale(.98)}}
+@keyframes entraFondo{from{opacity:0}}
+#acercade[open]{animation:asoma .2s ease-out}
+#acercade[open]::backdrop{animation:entraFondo .2s ease-out}
+@media (prefers-reduced-motion:reduce){
+  #acercade[open],#acercade[open]::backdrop{animation:none}
+}
+
+/* Tumbado manda el alto: un móvil de lado deja 320-375 px, y la ficha de
+   pie pide 350 —el botón de cerrar quedaba fuera del cuadro—. Lo que la
+   hace caber es ENCOGER EL ARMAZÓN: ojo de buey, márgenes y cuerpo de
+   letra, de 350 a 249.
+
+   ENSANCHARLA AQUÍ NO PINTA NADA (350 → 335), y conviene saber por qué:
+   el ancho sólo ahorra líneas, y con dos párrafos el alto se lo lleva el
+   armazón. Con un texto largo se invierte —entonces ensanchar valía 31
+   px y era lo que la salvaba—, así que si el texto vuelve a crecer, hay
+   que volver a medir las dos cosas.
+
+   Y el tope sube al 92 % porque con el 80 el margen en una pantalla de
+   320 se queda en 7 px, y la prosa va en una serif que Android NO trae:
+   una sola línea de la fuente de repuesto se los come. */
+@media (max-height:560px){
+  #acercade{max-height:min(92dvh,92vh)}
+  #acercade article{padding:14px 20px 12px}
+  #acercade img{width:46px;height:46px;margin-bottom:8px}
+  #acercade h2{margin-bottom:8px;font-size:13px;
+    letter-spacing:.26em;text-indent:.26em}
+  #acercade p{margin-bottom:8px;font-size:12px;line-height:1.5}
+  #acercade .firma{margin:10px 0;padding-top:9px;font-size:9px}
 }

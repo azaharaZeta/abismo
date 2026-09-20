@@ -817,3 +817,54 @@ documentación.
   un campo entre los dos sitios— y está comprobado exigiendo firma numérica idéntica en
   seis tiradas sembradas. Sin esto, la idea del rape oscuro no podía funcionar y no se
   veía por qué.
+
+## 2026-09-20 · la ficha: un «acerca de» en la franja
+
+- **«Un botón Acerca De al lado del de reiniciar, que abra un popup con el logo, el
+  título y una descripción de la aplicación, sencilla y graciosa»** · hecho con un
+  **`<dialog>` modal**, que es lo que evita escribir código: el fondo, el ESC, el foco
+  atrapado y el pintar por encima de todo los trae el navegador, y aquí no hay
+  dependencias que los traigan. Lo único escrito a mano es cerrar al tocar fuera, y
+  sale de una decisión de CSS: **el diálogo no lleva relleno y todo su interior es el
+  `<article>`**, así que un clic cuyo `target` sea el diálogo llegó por el fondo. El
+  logo es `icono.svg` —el mismo fichero de la pantalla de inicio, recortado a ojo de
+  buey—, y la pieza sigue viva detrás mientras la ficha está abierta.
+
+  **LA FICHA SE MIDE CONTRA LA PANTALLA Y NO CONTRA EL CUADRO**, y por eso cuelga del
+  `<body>` y no de `#marco`: la chapa es un `container-type:inline-size` —lo que
+  gobierna el título de la franja— y un modal que lo heredase se ajustaría al lado del
+  cuadro en vez de al de la pantalla.
+
+  **El fondo va opaco, sin `backdrop-filter`:** desenfocar a pantalla completa un
+  lienzo que se repinta entero cuesta lo que cuesta el panel de pruebas —unos 7 ms por
+  fotograma en un móvil, ya medido— y la pieza sigue corriendo detrás. El velo ya
+  tapa, así que el desenfoque sólo se pagaría.
+
+- **El texto, a la segunda, y el primero estaba MAL.** Decía que los bichos no tienen
+  luz propia. La emiten ellos: lo que no hay es luz de escena. Dicho en corto, la
+  regla de la casa es **«aquí la luz la ponen ellos y no hay más»**, nunca «nadie
+  tiene luz propia». Además era largo y aburrido. El que va son dos párrafos: qué es
+  —un abismo simulado—, que la luz la ponen ellos, que de vez en cuando cruza algo, y
+  el remate del rape, que ya estaba escrito en la descripción de la web.
+
+- **Y AL ACORTARLO SE DIO LA VUELTA LA RAZÓN DEL CSS DE TUMBADO.** Un móvil de lado
+  deja 320-375 px de alto y la ficha de pie no cabe. Hay dos palancas —ensancharla
+  (menos líneas) o encoger el armazón: ojo de buey, márgenes y cuerpo de letra— y
+  **cuál manda depende del largo del texto.** Medido en 812×375, alto que pide:
+
+  | | texto largo (4 bloques) | texto corto (2 bloques) |
+  |---|---|---|
+  | como está de pie | 311 | 350 |
+  | sólo ensanchar a 42 rem | **280** | 335 |
+  | sólo encoger el armazón | 271 | **249** |
+
+  Con el texto largo ensanchar valía 31 px y era la palanca buena; con el corto vale
+  15 y la buena es encoger, que vale 101. La razón es que **el ancho sólo ahorra
+  LÍNEAS y el armazón es constante**: cuanto menos texto, menos pinta el ancho. Así
+  que el ensanchado se quitó y queda sólo el bloque que aprieta.
+
+  De pie ya no hay nada que resolver: pide 392 px —428 en un móvil de 320, el peor— y
+  cabe con aire en todos, así que el tope de alto es sólo el fondo que queda a la
+  vista para poder tocarlo. Tumbada el tope se queda en el 92 % porque con el 80 el
+  margen en una pantalla de 320 se queda en 7 px, y **la prosa va en Georgia, que
+  Android no trae**: una sola línea de la fuente de repuesto se los come.

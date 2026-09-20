@@ -27,7 +27,9 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 
 ## Ideas de usuario (pendientes de procesar)
 > Solo un humano edita esta sección. Texto breve; el detalle se desarrolla al crear la ficha.
-pon un botón Acerca De, al lado del de reiniciar, que abra un popup con el logo, el título, y  una descripción de la aplicación, sencilla y graciosa.
+- icono del app: que sean dos peces de dos colores distintos (pero compatibles), nadando en dircción contraria, ligeramente como un yin yang, y tamaño más grande posible sin que toquen el borde.
+- en lugar de que solo pueda haber un evento a la vez, cambialo a que simplemente se lance un evento cada 30 segundos +- un random de 5 segundos. Independientemente de que se haya acabado el evento anterior.
+- reduce el brillo del los bordes del leviatan. que se note solo muy ligeramente. quitale la "barbilla", parece que se le ha caido la papada. cambialo por una boca entreabierta, que marque sus dientes sutilmente.
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos de las ideas procesadas el 2026-09-17, el 2026-09-18 y el 2026-09-19.
 - `M.mod.agua` / `M.mod.ritmo`: la maquinaria está viva y la lee el motor, pero no la escribe ningún evento. O se usa en alguno, o se quita como se quitó `M.cardumen()`.
