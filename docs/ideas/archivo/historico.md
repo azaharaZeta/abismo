@@ -932,3 +932,38 @@ documentación.
   media hora y el contador de no finitos marcaba 98 millones—. Se cazó porque los
   mismos 98 millones salían en HEAD, o sea que no era del cambio. **Correr también el
   «antes» no es por rigor, es lo que distingue un fallo del arnés de uno tuyo.**
+
+## 2026-09-20 · y el rape tampoco MUERDE con la esca apagada
+
+- **«Revisa que el anglerfish sólo cace cuando tiene el señuelo encendido. Además, los
+  peces se deben sentir atraídos al señuelo sólo cuando está encendido»** · eran dos
+  cosas y sólo una estaba mal. **La atracción ya estaba cerrada** desde la tanda del
+  picoteo: `pezlinterna.js` hace `if (!(o.senuelo > 0)) continue`, y medido ahora, el
+  cebado sin ninguna esca encendida en el plano es **0 pez·segundo, también en la
+  versión vieja**. Lo que la usuaria veía era lo otro.
+
+  **`caza()` no miraba el brillo en absoluto:** comprobaba `reposo` y la distancia a
+  la boca, nada más. O sea que un rape saciado —la esca a 0,04-0,11, sin tirar de
+  nadie— mordía igual a cualquier pez que le pasara por delante.
+
+  **Y `reposo` NO lo cubre, que es el porqué:** lo que dura el enfriamiento
+  (`reposo: [10,24]`) y lo que dura el apagón (`trasComer: [7,16]`) son **dos sorteos
+  independientes**, así que se destapan solos. Con 16 s de esca apagada y 10 s de
+  enfriamiento quedan seis segundos de cazador invisible.
+
+  Medido sobre diez minutos y tres semillas, contando cada presa que pasa a `tragado`
+  y apuntando el `senuelo` del que muerde en ese instante:
+
+  | | mordiscos | con la esca a CERO |
+  |---|---|---|
+  | antes | 8 · 8 · 8 | 2 · 1 · 2 → **21 %** |
+  | ahora | 7 · 8 · 7 | 0 · 0 · 0 |
+
+  Arreglo: una línea, `if (!(f.senuelo > 0)) return;`, y a propósito contra `senuelo`
+  y no contra `brillo` —es el MISMO número que hace que la presa se acerque, así que
+  la trampa que no tira tampoco muerde y no hay dos umbrales que desalinear—.
+
+  **Y LA TRAMPA GANA, como la otra vez:** el cebado con la esca encendida sube en las
+  tres semillas (82,6→93,4, 65,9→73,4 y 51,0→74,7 pez·segundo), porque el rape que
+  deja de comer a oscuras pasa menos tiempo saciado y más tiempo encendido. Los
+  bocados totales apenas se mueven: 24 contra 22.

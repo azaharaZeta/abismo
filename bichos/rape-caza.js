@@ -116,6 +116,16 @@ function caza(f, M, L, p, dt){
     return;
   }
   if (f.reposo > 0) return;
+  /* Y NO CAZA CON LA TRAMPA APAGADA. `senuelo` es cuánto tira ahora mismo
+     —el MISMO número que hace que la presa se acerque, ver rape.js—, así
+     que a 0 no hay trampa: un rape saciado que se encuentre un pez en la
+     boca no lo muerde.
+
+     Hace falta decirlo aparte porque `reposo` NO lo cubre: lo que dura el
+     apagón es `trasComer` y son dos sorteos distintos —10-24 s contra
+     7-16—, así que se destapan solos. Medido antes de ponerlo: uno de
+     cada cuatro bocados salía con la esca a cero. */
+  if (!(f.senuelo > 0)) return;
   const rb = f.Lg*p.alcanceBoca;
   for (const z of L.presas){
     if (z.tragado) continue;              // ése ya va camino de una boca
