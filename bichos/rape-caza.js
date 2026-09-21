@@ -35,16 +35,23 @@ function querencia(f, M, p, dt){
   const cx = M.W*0.5, cy = M.H*0.5;
   const ex = (f.bx - cx)/cx, ey = (f.by - cy)/cy;   // -1..1 por eje
   f.vy -= ey * opt(p.altura, 0) * M.U * dt;
-  const falta = p.aro - Math.abs(ex);
+  /* ── Y TIRA HACIA SU LADO, NO HACIA EL MÁS CERCANO ─────────────
+     `f.lado` se sortea al nacer —o lo fija la escena con `lado`— y ya no
+     cambia. Mirando `Math.sign(ex)`, el lado era el que tocara en cada
+     fotograma: un rape que cruzaba el centro se quedaba en el otro
+     canto, y con DOS en la pecera los dos acababan en el mismo. MEDIDO,
+     cuatro semillas de 200 s: compartían lado entre el 23 % y el 83 %
+     del tiempo y pasaban el 41-86 % a menos de 1,4 largos uno de otro,
+     o sea encima. Con el lado propio, cada uno se planta en el suyo.
+
+     `falta` va con SIGNO contra su lado, así que un rape que aparezca en
+     el lado contrario tiene el empuje más grande y vuelve a su sitio. */
+  const falta = p.aro - ex*f.lado;
   if (falta <= 0) return;
-  /* justo en la vertical del centro no hay «hacia fuera» que valga: se le
-     da un lado y ya se encarga el resto */
-  const nx = Math.abs(ex) > 1e-3 ? Math.sign(ex)
-                                 : (Math.random() < 0.5 ? 1 : -1);
   /* la rampa sube rápido: con `falta*2.5` el empuje se queda en un tercio
      a mitad de camino y la corriente —que aquí da más que el crucero del
      bicho— lo devuelve al centro; se plantaba en 0,69 y no en 0,84. */
-  f.vx += nx * p.querencia * M.U * Math.min(1, falta*6) * dt;
+  f.vx += f.lado * p.querencia * M.U * Math.min(1, falta*6) * dt;
 }
 
 /* ── LA CAZA ────────────────────────────────────────────────────────

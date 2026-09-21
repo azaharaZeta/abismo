@@ -137,6 +137,45 @@ function cardumen(z, L, p, libre, mira){
     sx += gx; sy += gy;
   }
   sx += ex*C.aparta; sy += ey*C.aparta;
+
+  /* ── Y EL CRISTAL, QUE NO VOTA: VETA ────────────────────────────
+     Todo lo de arriba son VECTORES QUE SE SUMAN, y el canto no puede
+     entrar como uno más: en una esquina los vecinos están todos hacia
+     dentro, o sea que `aparta` apunta AL CRISTAL, y con 1,8 contra el
+     0,40 de `propio` le gana al rumbo hacia dentro que dejó puesto
+     envuelve() al acabar el fotograma anterior. Y se lo vuelve a ganar
+     al siguiente. MEDIDO, seis tiradas de tres minutos en dos cajas: el
+     banco pasaba el 9-17 % del tiempo en un vértice, el 79-95 % de ese
+     rato con el cristal corrigiéndole la posición, en visitas de hasta
+     dos minutos y medio. Con esto, 0,4-5 % y visitas de 3 a 88 s.
+
+     No se arregla subiendo un peso —a `propio` 4,0 se queda en el 90 %—:
+     el problema no es quién gana la votación, es que la pared no es una
+     opinión. Se le QUITA al rumbo ya decidido su componente hacia
+     fuera, que es la parte imposible, y queda el resto: el pez se sigue
+     apartando de sus vecinos, pero a lo largo del cristal.
+
+     Y SE RESTA, NO SE ESCALA. Lo que se consume de aquí es un ÁNGULO
+     —`atan2(sy, sx)`—, así que multiplicar los dos componentes por el
+     mismo factor no cambia nada. Una versión por ejes («por la
+     izquierda no se pasa y por arriba tampoco», encogiendo cada
+     componente que apunte fuera) se lee mejor y en una esquina es
+     LITERALMENTE UN NO-OP, porque ahí los dos apuntan fuera y los dos
+     se encogen igual: medida, deja el 4-14 % contra el 0,4-5 % de ésta.
+
+     La fuerza sale de `bb[2]`, o sea de `ABISMO.borde.margen`: empieza a
+     obrar en toda la banda del margen y no sólo pegado al canto, que es
+     lo que hace que el pez se desvíe ANTES de llegar. Sin mando nuevo. */
+  const bb = M.borde(z.x, z.y);
+  const bh = Math.hypot(bb[0], bb[1]);
+  if (bb[2] > 0 && bh > 1e-6){
+    const nx = bb[0]/bh, ny = bb[1]/bh, d = sx*nx + sy*ny;
+    if (d < 0){ sx -= nx*d*bb[2]; sy -= ny*d*bb[2]; }
+    /* de frente contra el canto no queda tangente que conservar, y un
+       vector nulo dejaría el rumbo de antes —el que va contra el
+       cristal—: ahí se apunta hacia dentro y ya está */
+    if (Math.hypot(sx, sy) < 1e-4){ sx = nx; sy = ny; }
+  }
   if (sx || sy) z.angObj = Math.atan2(sy, sx);
 }
 

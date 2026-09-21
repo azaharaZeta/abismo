@@ -9,11 +9,88 @@ import { M } from '../motor.js';
 const {rgba, opt, TAU} = M;
 import { mancha, reparte } from './comun.js';
 
-/* Perfiles en unidades de largo. u=0 es el morro, u=1 la base de la cola.
-   La silueta es CABEZONA —un Melanocetus—: el máximo cae en el primer
-   cuarto y de ahí atrás se estrecha rápido hasta un pedúnculo fino. */
-const lomo  = u => 0.40*Math.pow(Math.sin(Math.PI*Math.pow(u,0.52)),1.25) + 0.030;
-const panza = u => 0.34*Math.pow(Math.sin(Math.PI*Math.pow(u,0.60)),1.20) + 0.028;
+/* ══════════════════════════════════════════════════════════════════
+   LAS DOS FORMAS
+   La ANATOMÍA de un rape, que no es lo mismo que sus mandos: una parada
+   de degradado o el sitio del ojo no son un deslizador, son el bicho. Lo
+   que la escena elige es CUÁL de las dos, con `forma`; los números de
+   cada una viven aquí.
+
+   El contrato, en unidades de LARGO y con u=0 en el morro y u=1 en la
+   base de la cola:
+
+     lomo · panza   los dos perfiles
+     N · sesgo      muestras del trazado; `sesgo`>1 las amontona en el
+                    morro, que es donde una forma puede tener detalle
+     caudal         {x, y, muesca, radios}
+     aletas         de dónde a dónde va cada una y cuánto levanta
+     brazo          la pectoral sobre un muñón carnoso; sin él, una pala
+     crestas        las púas del lomo, DENTRO de la silueta
+     espinulas      cuántas púas diminutas lleva la piel
+     ojo            [x, y, radio] · `hueco` no rellena el globo,
+                    `iris` pinta la cuenca y `pupila` la encoge
+     diente         largo · `dienteAncho` grueso · `colmillo` gancho ·
+                    `desigual` de dónde sale el largo (ver boca())
+     barbaU         de qué punto cuelga la barbilla
+     ilicioU        y de cuál arranca la caña
+
+   Lo que NO está aquí y sigue en la escena: el largo de la boca, lo que
+   abre, cuántos dientes, la barbilla y el color. Eso sí son mandos.
+
+   Campana asimétrica para los perfiles: los dos mandos que importan
+   quedan sueltos —`up` es dónde cae el canto máximo y `r` lo empinada
+   que va la subida, de donde sale la bajada y con ella el pedúnculo—. */
+function campana(A, up, r){
+  const s = r*(1-up)/up, mx = Math.pow(up,r)*Math.pow(1-up,s);
+  return u => (u<=0||u>=1) ? 0 : A*Math.pow(u,r)*Math.pow(1-u,s)/mx;
+}
+const bulto = (u,c,w,h) => h*Math.exp(-Math.pow((u-c)/w,2));
+
+/* EL DE GOTA. Apenas tiene frente: el lomo no sube en cúpula sobre el
+   ojo, sube despacio y su máximo cae a MEDIO cuerpo; quien baja es la
+   panza, y baja justo debajo de la boca. De ahí que la cara salga plana
+   y el bicho se lea como una bolsa con dientes. */
+const TI_LOMO = campana(0.345, 0.45, 1.20), TI_PANZA = campana(0.445, 0.32, 0.90);
+
+const FORMAS = {
+  /* el de siempre: cabezón, con el máximo en el primer cuarto */
+  clasico: {
+    lomo:  u => 0.40*Math.pow(Math.sin(Math.PI*Math.pow(u,0.52)),1.25) + 0.030,
+    panza: u => 0.34*Math.pow(Math.sin(Math.PI*Math.pow(u,0.60)),1.20) + 0.028,
+    N: 26, sesgo: 1,
+    caudal: {x:1.15, y:0.155, muesca:1.07, radios:5},
+    aletas: {d0:0.60, d1:0.94, dAlto:0.19, a0:0.64, a1:0.94, aAlto:0.15,
+             p0:0.42, pY:0.55},
+    ojo: [0.22, -0.20, 0.050],
+    diente: 1, dienteAncho: 1, colmillo: 0, desigual: 0,
+    barbaU: 0.32, ilicioU: 0.10,
+  },
+  tinta: {
+    /* el morro va ROMO —un bulto estrecho en el arranque de los dos
+       perfiles—: en punta parece un pico, y aquí es una pared */
+    lomo:  u => TI_LOMO(u)  + 0.028 + bulto(u, 0, 0.055, 0.042),
+    panza: u => TI_PANZA(u) + 0.028 + bulto(u, 0, 0.055, 0.042),
+    N: 34, sesgo: 1.15,
+    caudal: {x:1.20, y:0.180, muesca:1.17, radios:9},
+    aletas: {d0:0.66, d1:0.95, dAlto:0.13, a0:0.70, a1:0.95, aAlto:0.11,
+             p0:0.50, pY:0.58},
+    brazo: 0.12,
+    crestas: {n:5, u0:0.34, u1:0.56, alto:0.078, ancho:0.044},
+    espinulas: 95,
+    /* ── HASTA DÓNDE SALTA EL OJO ───────────────────────────────
+       Tiene un techo y un suelo, y ninguno es de gusto. ARRIBA: el borde
+       del ojo no puede pasar del lomo. A −0,175 caía en 0,270 y el lomo
+       a esa altura mide 0,219, o sea que asomaba 0,051 largos POR FUERA
+       de la silueta —y eso no se lee como un ojo saltón, se lee como un
+       ojo suelto—. A −0,152 asoma 0,021: se le nota el bulto y sigue
+       dentro. ABAJO: la quijada de arriba, que al abrirse barre hacia
+       atrás y se traga lo que pille; con la boca de esta forma su línea
+       pasa por −0,023 a esta altura, así que quedan 0,041 de margen. */
+    ojo: [0.165, -0.152, 0.088], hueco: true, iris: 1.0, pupila: 0.26,
+    diente: 2.00, dienteAncho: 1.50, colmillo: 0.12, desigual: 0.95,
+    barbaU: 0.32, ilicioU: 0.10,
+  },
+};
 /* Flexión al nadar: nada en el morro, todo en la cola. `congela` la apaga,
    y va aquí dentro porque la piden veinte sitios y una cola congelada con
    las aletas ondeando es un bicho roto. Se escala la AMPLITUD y no la
@@ -63,22 +140,43 @@ function adelante(f, gx){
 }
 
 function cuerpoPath(g, f, t){
-  const N = 26, Lg = f.Lg;
+  const F = f.F, N = F.N, Lg = f.Lg, C = F.crestas;
+  const uu = i => F.sesgo === 1 ? i/N : Math.pow(i/N, F.sesgo);
   g.beginPath();
+  let ini = true;
+  const pon = (x,y) => { if (ini){ g.moveTo(x,y); ini = false; } else g.lineTo(x,y); };
   for (let i=0;i<=N;i++){                       // lomo: morro → cola
-    const u = i/N, y = (flex(u,f,t) - lomo(u))*Lg;
-    i ? g.lineTo(u*Lg, y) : g.moveTo(u*Lg, y);
+    const u = uu(i);
+    pon(u*Lg, (flex(u,f,t) - F.lomo(u))*Lg);
+    /* ── LAS PÚAS DEL LOMO ──────────────────────────────────────
+       Van DENTRO de la silueta y no dibujadas encima: así las traza el
+       canto, que a oscuras es lo único que se ve de este bicho. Se
+       insertan al cruzar su `u`, en orden de x, o el trazado se cruza
+       consigo mismo; y se inclinan hacia la cola menos de medio ancho,
+       porque pasado eso la punta adelanta a su propia base. */
+    if (C && i < N){
+      const uf = uu(i+1);
+      for (let k=0;k<C.n;k++){
+        const uc = C.u0 + (C.u1-C.u0)*reparte(k, C.n);
+        if (uc < u || uc >= uf) continue;
+        const h = C.alto*(0.55 + 0.45*Math.abs(Math.sin(k*2.3 + 1.1)));
+        const yb = (flex(uc,f,t) - F.lomo(uc))*Lg;
+        pon((uc - C.ancho*0.5)*Lg, yb);
+        pon((uc + C.ancho*0.45)*Lg, yb - h*Lg);
+        pon((uc + C.ancho*0.5)*Lg, yb);
+      }
+    }
   }
-  /* caudal pequeña y poco horquillada, como la de un Melanocetus: con el
-     cuerpo ya estrechado, una cola grande se lleva la mirada justo al lado
-     contrario de donde está lo que hay que ver, que es la boca */
-  const yc = flex(1,f,t)*Lg;                    // aleta caudal
-  g.lineTo(Lg*1.15, yc - Lg*0.155);
-  g.lineTo(Lg*1.07, yc);
-  g.lineTo(Lg*1.15, yc + Lg*0.155);
+  /* la caudal, de la forma: pequeña y horquillada en el clásico, ancha y
+     redondeada en el de gota. Grande se lleva la mirada justo al lado
+     contrario de donde está lo que hay que ver, que es la boca. */
+  const cd = F.caudal, yc = flex(1,f,t)*Lg;
+  g.lineTo(Lg*cd.x, yc - Lg*cd.y);
+  g.lineTo(Lg*cd.muesca, yc);
+  g.lineTo(Lg*cd.x, yc + Lg*cd.y);
   for (let i=N;i>=0;i--){                       // panza: cola → morro
-    const u = i/N;
-    g.lineTo(u*Lg, (flex(u,f,t) + panza(u))*Lg);
+    const u = uu(i);
+    g.lineTo(u*Lg, (flex(u,f,t) + F.panza(u))*Lg);
   }
   g.closePath();
 }
@@ -124,7 +222,7 @@ function proaA(x, a){
 }
 
 function piel(g, f, gx, t, col, br, proa, ladoY){
-  const Lg = f.Lg, suelo = 1 - proa;
+  const F = f.F, Lg = f.Lg, suelo = 1 - proa;
   /* DE DÓNDE VIENE LA LUZ. `ladoY` es de qué lado —lomo o panza— y `lz`
      cuánto de frente. El término frontal no es un ajuste: sin él, con la
      luz en el eje del cuerpo el bicho entero se apagaría, porque ninguna
@@ -138,7 +236,7 @@ function piel(g, f, gx, t, col, br, proa, ladoY){
       const alfa = (0.40*suelo + proaA(u/1.15, pc)) * br;
       if (alfa < 0.004) continue;
       const fl = flex(u,f,t);
-      const yl = (fl - lomo(u))*Lg, yp = (fl + panza(u))*Lg;
+      const yl = (fl - F.lomo(u))*Lg, yp = (fl + F.panza(u))*Lg;
       const gr = g.createLinearGradient(0, yl, 0, yp);
       for (let k=0;k<=VSTOPS;k++){
         const v = k/VSTOPS*2 - 1;
@@ -163,7 +261,7 @@ function piel(g, f, gx, t, col, br, proa, ladoY){
    tiene dentro y no es una silueta. En aditivo, sumar poco a algo casi
    saturado no suma nada, así que las alfas van con la piel. */
 function visceras(g, f, gx, t, col, br, sh, proa){
-  const Lg = f.Lg;
+  const F = f.F, Lg = f.Lg;
   /* Se apagan hacia la cola con el mismo criterio que la piel: a alfa
      plana quedan dibujados sobre una cola ya apagada. El degradado va en
      coordenadas de MUNDO porque el trazo se pinta fuera de la
@@ -188,20 +286,42 @@ function visceras(g, f, gx, t, col, br, sh, proa){
       const u = 0.34 + 0.56*reparte(i, f.miomeros);
       enPez(g, f, gx, () => {
         g.beginPath();
-        g.moveTo(u*Lg, (flex(u,f,t) - lomo(u)*0.74)*Lg);
+        g.moveTo(u*Lg, (flex(u,f,t) - F.lomo(u)*0.74)*Lg);
         g.quadraticCurveTo((u - 0.05)*Lg, flex(u,f,t)*Lg,
-                           u*Lg, (flex(u,f,t) + panza(u)*0.74)*Lg);
+                           u*Lg, (flex(u,f,t) + F.panza(u)*0.74)*Lg);
       });
       g.stroke();
     }
+  }
+  /* ── LAS ESPÍNULAS ──────────────────────────────────────────────
+     La piel de un ceratioide está sembrada de púas diminutas, y a este
+     tamaño se leen como grano: es lo que separa «bolsa lisa» de «cosa».
+     Un solo trazado para todas, y con su propio sorteo determinista —si
+     se repartieran con Math.random() hervirían de un fotograma a otro. */
+  if (F.espinulas){
+    g.fillStyle = eje(0.28*br*sh);
+    enPez(g, f, gx, () => {
+      g.beginPath();
+      let sem = 1;
+      const az = () => (sem = (sem*16807) % 2147483647) / 2147483647;
+      for (let i=0;i<F.espinulas;i++){
+        const u = 0.04 + 0.92*az(), v = az()*2 - 1;
+        const fl = flex(u,f,t);
+        const y = fl + (v < 0 ? v*F.lomo(u) : v*F.panza(u))*0.88;
+        const r = Lg*0.0055*(0.6 + 0.8*az());
+        g.moveTo(u*Lg + r, y*Lg);
+        g.arc(u*Lg, y*Lg, r, 0, TAU);
+      }
+    });
+    g.fill();
   }
   g.strokeStyle = eje(0.20*br*sh);
   g.lineWidth = Math.max(0.5, Lg*0.011);
   enPez(g, f, gx, () => {
     g.beginPath();
-    g.moveTo(Lg*0.30, (flex(0.30,f,t)-lomo(0.30)*0.80)*Lg);
+    g.moveTo(Lg*0.30, (flex(0.30,f,t)-F.lomo(0.30)*0.80)*Lg);
     g.quadraticCurveTo(Lg*0.23, flex(0.30,f,t)*Lg,
-                       Lg*0.33, (flex(0.33,f,t)+panza(0.33)*0.82)*Lg);
+                       Lg*0.33, (flex(0.33,f,t)+F.panza(0.33)*0.82)*Lg);
   });
   g.stroke();
   enPez(g, f, gx, () => {
@@ -219,7 +339,7 @@ function visceras(g, f, gx, t, col, br, sh, proa){
    silueta de hoja más que ninguna otra cosa. `dl` es a qué distancia
    está la luz dominante. */
 function aletas(g, f, gx, t, col, br, dl){
-  const Lg = f.Lg;
+  const F = f.F, Lg = f.Lg, A = F.aletas;
   const gf = g.createRadialGradient(f.luzX, f.luzY, 0, f.luzX, f.luzY,
                                     Math.max(Lg*0.7, dl*1.5));
   gf.addColorStop(0.00, rgba(col, 0.42*br));
@@ -227,39 +347,71 @@ function aletas(g, f, gx, t, col, br, dl){
   gf.addColorStop(1.00, rgba(col, 0));
   g.fillStyle = gf;
   enPez(g, f, gx, () => {                 // dorsal
+    const um = (A.d0+A.d1)*0.5;
     g.beginPath();
-    g.moveTo(Lg*0.60, (flex(0.60,f,t)-lomo(0.60))*Lg);
-    g.quadraticCurveTo(Lg*0.76, (flex(0.76,f,t)-lomo(0.76)-0.19)*Lg,
-                       Lg*0.94, (flex(0.94,f,t)-lomo(0.94))*Lg);
+    g.moveTo(Lg*A.d0, (flex(A.d0,f,t)-F.lomo(A.d0))*Lg);
+    g.quadraticCurveTo(Lg*um, (flex(um,f,t)-F.lomo(um)-A.dAlto)*Lg,
+                       Lg*A.d1, (flex(A.d1,f,t)-F.lomo(A.d1))*Lg);
     g.closePath();
   });
   g.fill();
   enPez(g, f, gx, () => {                 // anal
+    const um = (A.a0+A.a1)*0.5;
     g.beginPath();
-    g.moveTo(Lg*0.64, (flex(0.64,f,t)+panza(0.64))*Lg);
-    g.quadraticCurveTo(Lg*0.78, (flex(0.78,f,t)+panza(0.78)+0.15)*Lg,
-                       Lg*0.94, (flex(0.94,f,t)+panza(0.94))*Lg);
+    g.moveTo(Lg*A.a0, (flex(A.a0,f,t)+F.panza(A.a0))*Lg);
+    g.quadraticCurveTo(Lg*um, (flex(um,f,t)+F.panza(um)+A.aAlto)*Lg,
+                       Lg*A.a1, (flex(A.a1,f,t)+F.panza(A.a1))*Lg);
     g.closePath();
   });
   g.fill();
-  enPez(g, f, gx, () => {                 // pectoral
-    const ax = Lg*0.42, ay = (flex(0.42,f,t)+panza(0.42)*0.55)*Lg;
-    const w = 0.14 + 0.05*Math.sin(t*1.1 + f.fase);
-    g.beginPath();
-    g.moveTo(ax, ay);
-    g.quadraticCurveTo(ax+Lg*0.20, ay+Lg*w, ax+Lg*0.30, ay+Lg*(w*0.35));
-    g.quadraticCurveTo(ax+Lg*0.18, ay+Lg*0.03, ax, ay);
-    g.closePath();
-  });
-  g.fill();
+  /* LA PECTORAL. Una pala pegada al costado, o —con `brazo`— en la punta
+     de un muñón carnoso, que es como la lleva un ceratioide de verdad y
+     lo que la convierte en una manita. */
+  const ax = Lg*A.p0, ay = (flex(A.p0,f,t)+F.panza(A.p0)*A.pY)*Lg;
+  const vai = 0.05*Math.sin(t*1.1 + f.fase);
+  if (F.brazo){
+    const bl = Lg*F.brazo, bg = Lg*0.042;
+    const bax = ax + bl*0.92, bay = ay + bl*(0.34 + vai*2);
+    enPez(g, f, gx, () => {
+      g.beginPath();
+      g.moveTo(ax, ay - bg);
+      g.quadraticCurveTo(ax + bl*0.6, ay + bl*0.05, bax, bay - bg*0.7);
+      g.lineTo(bax, bay + bg*0.7);
+      g.quadraticCurveTo(ax + bl*0.5, ay + bl*0.22, ax, ay + bg);
+      g.closePath();
+    });
+    g.fill();
+    g.strokeStyle = gf;
+    g.lineWidth = Math.max(0.5, Lg*0.009);
+    enPez(g, f, gx, () => {
+      g.beginPath();
+      for (let i=0;i<6;i++){
+        const a = -0.25 + 1.15*reparte(i, 6) + vai;
+        g.moveTo(bax, bay);
+        g.lineTo(bax + Math.cos(a)*Lg*0.17, bay + Math.sin(a)*Lg*0.17);
+      }
+    });
+    g.stroke();
+  } else {
+    enPez(g, f, gx, () => {
+      const w = 0.14 + vai;
+      g.beginPath();
+      g.moveTo(ax, ay);
+      g.quadraticCurveTo(ax+Lg*0.20, ay+Lg*w, ax+Lg*0.30, ay+Lg*(w*0.35));
+      g.quadraticCurveTo(ax+Lg*0.18, ay+Lg*0.03, ax, ay);
+      g.closePath();
+    });
+    g.fill();
+  }
   g.strokeStyle = gf;                     // radios de la caudal
   g.lineWidth = Math.max(0.5, Lg*0.010);
   enPez(g, f, gx, () => {
-    const yc = flex(1,f,t)*Lg;
+    const yc = flex(1,f,t)*Lg, cd = F.caudal, n = cd.radios;
     g.beginPath();
-    for (let i=-2;i<=2;i++){
-      g.moveTo(Lg*1.00, yc + i*Lg*0.025);
-      g.lineTo(Lg*1.14, yc + i*Lg*0.072);
+    for (let i=0;i<n;i++){
+      const sg = reparte(i,n)*2 - 1;
+      g.moveTo(Lg*1.00, yc + sg*Lg*0.050);
+      g.lineTo(Lg*(cd.x - 0.01), yc + sg*Lg*(cd.y*0.93));
     }
   });
   g.stroke();
@@ -269,20 +421,20 @@ function aletas(g, f, gx, t, col, br, dl){
      canto y no lo atraviesan. */
   if (f.radios){
     g.lineWidth = Math.max(0.4, Lg*0.0065);
-    const alto = (u, a, b) => 0.19*Math.sin(Math.PI*(u-a)/(b-a));
+    const alto = (u, a, b, h) => h*Math.sin(Math.PI*(u-a)/(b-a));
     enPez(g, f, gx, () => {
       g.beginPath();
       for (let i=1;i<=f.radios;i++){
-        const u = 0.60 + 0.34*i/(f.radios+1);
-        const y = (flex(u,f,t) - lomo(u))*Lg;
+        const u = A.d0 + (A.d1-A.d0)*i/(f.radios+1);
+        const y = (flex(u,f,t) - F.lomo(u))*Lg;
         g.moveTo(u*Lg, y);
-        g.lineTo(u*Lg, y - alto(u, 0.60, 0.94)*Lg);
+        g.lineTo(u*Lg, y - alto(u, A.d0, A.d1, A.dAlto)*Lg);
       }
       for (let i=1;i<=f.radios;i++){
-        const u = 0.64 + 0.30*i/(f.radios+1);
-        const y = (flex(u,f,t) + panza(u))*Lg;
+        const u = A.a0 + (A.a1-A.a0)*i/(f.radios+1);
+        const y = (flex(u,f,t) + F.panza(u))*Lg;
         g.moveTo(u*Lg, y);
-        g.lineTo(u*Lg, y + alto(u, 0.64, 0.94)*0.79*Lg);
+        g.lineTo(u*Lg, y + alto(u, A.a0, A.a1, A.aAlto)*Lg);
       }
     });
     g.stroke();
@@ -335,7 +487,7 @@ function volumen(g, f, col, nuc, br, bcx, bcy, dl, ladoY){
    tapetum, y un tapetum retrorrefleja. Así que cuando la mirada apunta a
    lo que lo alumbra, el ojo se enciende de golpe.                   */
 function ojo(g, f, gx, col, nuc, br, sh, p){
-  const Lg = f.Lg;
+  const F = f.F, Lg = f.Lg;
   /* ── DÓNDE VA, Y NO ES LIBRE ──────────────────────────────────────
      Atrás y arriba: un depredador lleva el ojo en el tercio alto del
      cráneo y no pegado al morro. Pero además hay una COTA DURA, y es la
@@ -351,12 +503,28 @@ function ojo(g, f, gx, col, nuc, br, sh, p){
      en 0,22/−0,20, queda LIBRE en todo el bocado con 0,175 de largo de
      margen hasta el lomo. Lo que NO se puede subir es `quijadaArriba`:
      a 0,34 vuelve a chocar, y a 0,42 choca esté el ojo donde esté. */
-  const ox = Lg*0.22, oy = -Lg*0.20, r = Math.max(0.8, Lg*0.050);
-  /* EL GLOBO sólo recoge: sin luz que le dé, no está. */
-  if (br > 0.004){
+  const ox = Lg*F.ojo[0], oy = Lg*F.ojo[1], r = Math.max(0.8, Lg*F.ojo[2]);
+  /* EL GLOBO sólo recoge: sin luz que le dé, no está. Y con `hueco` NO
+     se rellena: un disco lleno se lee como una bola de luz, y lo que da
+     miedo es lo contrario —un ojo oscuro con el borde claro—. En aditivo
+     no se puede pintar el hueco, así que se pinta su canto y el centro
+     se queda con lo que haya. */
+  if (br > 0.004 && !F.hueco){
     enPez(g, f, gx, () => { g.beginPath(); g.arc(ox, oy, r, 0, TAU); });
     g.fillStyle = rgba(col, Math.min(1, 0.55*br));
     g.fill();
+  }
+  /* LA CUENCA, y son DOS aros: la órbita fina y el iris gordo. Con uno
+     solo el ojo es un anillo; con los dos es una cuenca. */
+  if (F.iris && br > 0.004){
+    enPez(g, f, gx, () => { g.beginPath(); g.arc(ox, oy, r, 0, TAU); });
+    g.strokeStyle = rgba(col, Math.min(1, 0.55*F.iris*br));
+    g.lineWidth = Math.max(0.4, r*0.10);
+    g.stroke();
+    enPez(g, f, gx, () => { g.beginPath(); g.arc(ox, oy, r*0.74, 0, TAU); });
+    g.strokeStyle = rgba(nuc, Math.min(1, F.iris*br));
+    g.lineWidth = Math.max(0.5, r*0.20);
+    g.stroke();
   }
 
   /* el ojo en mundo, desde donde se mide todo lo de abajo. Se copia YA:
@@ -391,15 +559,19 @@ function ojo(g, f, gx, col, nuc, br, sh, p){
      oscuras. El halo es lo que la hace legible —la pupila mide medio píxel
      en el plano de delante. */
   const bp = Math.max(br, opt(p.ojoBrillo, 0));
+  /* EL HALO NO CRECE CON EL OJO. Iba a `r*6`, y con un ojo grande eso es
+     media cabeza de resplandor: la pupila deja de ser una pupila y el
+     bicho lleva un faro. Se ata al LARGO y no al radio del ojo. */
   if (bp > 0.004)
-    mancha(g, ex, ey, r*6, [
+    mancha(g, ex, ey, Math.min(r*6, Lg*0.30), [
       [0.00, nuc, Math.min(1, 0.30*bp*fog)],
       [0.30, f.c.mid, 0.12*bp*fog],
       [1.00, f.c.glow, 0],
     ]);
   enPez(g, f, gx, () => {
     g.beginPath();
-    g.arc(ox + px*k, oy + py*k, r*0.46*(1 + 0.22*dest), 0, TAU);
+    g.arc(ox + px*k, oy + py*k,
+          r*opt(F.pupila, 0.46)*(1 + 0.22*dest), 0, TAU);
   });
   g.fillStyle = rgba(nuc, Math.min(1, 1.25*bp*sh*fog));
   g.fill();
@@ -418,9 +590,13 @@ function ojo(g, f, gx, col, nuc, br, sh, p){
    un pez con dientes, y con una que se come media cabeza, una trampa. */
 function quijadas(f, p){
   const Lg = f.Lg;
-  const jx = Lg*p.bocaLargo, jy = Lg*0.10;
-  const hondo = Lg*p.bocaHondo;
-  const bocaY = u => u*u*jy + (1-u)*u*hondo;
+  /* LA LÍNEA DE LABIOS, tres puntos: el morro, la comba de en medio y la
+     charnela. `bocaHondo` es el punto de CONTROL, así que es cuánto
+     comba: la línea se hunde la mitad de él respecto de la recta que une
+     los extremos. Con la comba pequeña la mordida se lee recta. */
+  const jx = Lg*p.bocaLargo, jy = Lg*p.bocaCharnela;
+  const mY = Lg*p.bocaMorro, cY = Lg*p.bocaHondo;
+  const bocaY = u => (1-u)*(1-u)*mY + 2*u*(1-u)*cY + u*u*jy;
   /* Abre de golpe y cierra más despacio: la potencia bajo el seno adelanta
      el máximo casi al principio. Y nunca cierra del todo
      —`entreabierta`—: una rendija con dientes a los dos lados se lee como
@@ -506,7 +682,8 @@ function boca(g, f, gx, p, gb, q){
       }
   });
   g.stroke();
-  const nd = f.dientes;
+  const F = f.F, nd = f.dientes;
+  const dLar = F.diente, dAnc = F.dienteAncho, gan = F.colmillo;
   /* Las dos filas: la de fuera, que es la que se ve, y una interior más
      corta y metida hacia atrás —los dientes del paladar—. Lo que aporta es
      que la boca tenga FONDO: con una sola fila el morro es una sierra
@@ -523,8 +700,16 @@ function boca(g, f, gx, p, gb, q){
           const pt = q.punto(sg, u, _q), qx = pt[0], qy = pt[1];
           /* cada quijada apunta sus dientes hacia la otra, y de tamaños
              desiguales: una fila regular lee como cremallera */
-          let alto = Lg*largo*(0.055 + 0.075*Math.abs(Math.sin(i*2.7 + 1.1 + (sg>0?0.7:0))))*(1-u*0.35);
-          let anc = Lg*ancho*0.024*(1-u*0.3);
+          const irr = Math.abs(Math.sin(i*2.7 + 1.1 + (sg>0?0.7:0)));
+          /* ── LO DESIGUALES QUE VAN ──────────────────────────
+             A `desigual` 0, un largo base más un poco de variación: una
+             sierra pareja, que es lo que se lee como PEINE. A 1, casi
+             todo el largo sale de la variación ELEVADA, así que salen
+             tres o cuatro colmillos largos entre muchos cortos. */
+          const alt = (0.055 + 0.075*irr)*(1 - F.desigual)
+                    + (0.022 + 0.175*Math.pow(irr, 1.8))*F.desigual;
+          let alto = Lg*largo*alt*(1-u*0.35)*dLar;
+          let anc = Lg*ancho*0.024*(1-u*0.3)*dAnc;
           /* NINGÚN DIENTE MÁS LARGO QUE EL HUECO QUE TIENE DELANTE. El
              hueco entre quijadas no es el mismo a lo largo de la cara: en
              el morro es toda la abertura y en la charnela es cero. A su
@@ -543,11 +728,28 @@ function boca(g, f, gx, p, gb, q){
              las dos filas se cruzan, y con la regla nonzero dos triángulos de
              sentido contrario se RESTAN, o sea que el engranaje sale agujereado. */
           const b = sg*anc;
-          g.moveTo(qx - b*ca, qy - b*sa);
-          g.lineTo(qx + b*ca, qy + b*sa);
-          g.lineTo(qx + anc*0.3*ca - pta*sa,
-                   qy + anc*0.3*sa + pta*ca);
-          g.closePath();
+          if (!gan){
+            g.moveTo(qx - b*ca, qy - b*sa);
+            g.lineTo(qx + b*ca, qy + b*sa);
+            g.lineTo(qx + anc*0.3*ca - pta*sa,
+                     qy + anc*0.3*sa + pta*ca);
+            g.closePath();
+          } else {
+            /* EL GANCHO. La punta se corre hacia la charnela y los dos
+               costados son curvas —una cóncava y otra convexa—, que es lo
+               que da el colmillo curvado en vez de la cuña. */
+            const cur = gan*alto*0.55;
+            const tx = qx + anc*0.2*ca - pta*sa + cur*ca;
+            const ty = qy + anc*0.2*sa + pta*ca + cur*sa;
+            const b0x = qx - b*ca, b0y = qy - b*sa;
+            const b1x = qx + b*ca, b1y = qy + b*sa;
+            g.moveTo(b0x, b0y);
+            g.quadraticCurveTo(b0x - pta*sa*0.55 + cur*ca*0.15,
+                               b0y + pta*ca*0.55 + cur*sa*0.15, tx, ty);
+            g.quadraticCurveTo(b1x - pta*sa*0.40 + cur*ca*0.75,
+                               b1y + pta*ca*0.40 + cur*sa*0.75, b1x, b1y);
+            g.closePath();
+          }
         }
       }
     });
@@ -568,8 +770,8 @@ function barbilla(g, f, gx, p, t, ebr){
   if (!n) return;
   const br = ebr * p.barbaBrillo;
   if (br < 0.004) return;
-  const Lg = f.Lg, u0 = 0.32;
-  const bx = Lg*u0, by = (flex(u0,f,t) + panza(u0)*0.92)*Lg;
+  const Lg = f.Lg, u0 = f.F.barbaU;
+  const bx = Lg*u0, by = (flex(u0,f,t) + f.F.panza(u0)*0.92)*Lg;
   /* Las ramas primero, y de paso se guardan las puntas: el trazo y la luz
      son dos pasadas distintas, y repetir la trigonometría en las dos es la
      forma segura de que se despeguen al tocar un número. */
@@ -613,8 +815,8 @@ function barbilla(g, f, gx, p, t, ebr){
    diminuto se lea como intenso, y sin él hay que agrandarlo —y entonces
    deja de ser un señuelo y pasa a ser una farola. */
 function senuelo(g, f, gx, p, ebr){
-  const Lg = f.Lg;
-  const bi = aMundo(f, gx, Lg*0.10, -lomo(0.10)*Lg);
+  const Lg = f.Lg, u0 = f.F.ilicioU;
+  const bi = aMundo(f, gx, Lg*u0, -f.F.lomo(u0)*Lg);
   const bix = bi[0], biy = bi[1];
   const mx = (bix + f.x)/2;
   const my = (biy + f.y)/2 - Math.hypot(f.x-bix, f.y-biy)*0.34;
@@ -657,6 +859,6 @@ function senuelo(g, f, gx, p, ebr){
     g.beginPath(); g.arc(f.x, f.y, nu, 0, TAU); g.fill();
   }
 }
-export { enPez, aMundo, centro, adelante,
+export { FORMAS, enPez, aMundo, centro, adelante,
          cuerpoPath, piel, visceras, aletas, volumen, ojo, quijadas,
          bocaPath, boca, barbilla, senuelo };

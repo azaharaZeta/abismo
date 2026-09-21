@@ -124,21 +124,40 @@ const MANDOS = [
   {nombre:'rape · oscuro',     ruta:'bichos.@rape.oscuro',  min:0, max:1,   paso:0.05, aplica:null},
 ];
 
-/* Un tramo de ruta puede ser `@nombre`: busca en el array la entrada cuya
-   `especie` o `evento` se llame así. Por índice funcionaría igual hasta
-   que alguien reordene la lista, que en la escena es libre. */
+/* Un tramo de ruta puede ser `@nombre`: busca en el array las entradas
+   cuya `especie` o `evento` se llame así. Por índice funcionaría igual
+   hasta que alguien reordene la lista, que en la escena es libre.
+
+   Y PUEDEN SER VARIAS. El rape tiene dos entradas —una por forma— que
+   comparten todo menos la forma, el color y la boca, así que un mando
+   como «rape · oscuro» tiene que mover LAS DOS: escribiendo sólo en la
+   primera, el deslizador movería medio rape y nada lo diría. Se lee de
+   la primera y se escribe en todas. */
+const coinci = (o, n) => Array.isArray(o)
+  ? o.filter(e => e.especie === n || e.evento === n) : [];
 const baja = (o, k) => {
   if (!o) return undefined;
   if (k[0] !== '@') return o[k];
-  const n = k.slice(1);
-  return Array.isArray(o) ? o.find(e => e.especie === n || e.evento === n)
-                          : undefined;
+  return coinci(o, k.slice(1))[0];
 };
 const leer  = r => r.split('.').reduce(baja, P.escena);
+/* los objetos a los que apunta una ruta, abriéndose en cada `@` */
+function destinos(ks){
+  let o = [P.escena];
+  for (const k of ks){
+    const sig = [];
+    for (const x of o){
+      if (!x) continue;
+      if (k[0] === '@') sig.push(...coinci(x, k.slice(1)));
+      else if (x[k] !== undefined) sig.push(x[k]);
+    }
+    o = sig;
+  }
+  return o;
+}
 const poner = (r, v) => {
   const ks = r.split('.'), ult = ks.pop();
-  const o = ks.reduce(baja, P.escena);
-  if (o) o[ult] = v;
+  for (const o of destinos(ks)) o[ult] = v;
 };
 
 /* ── UN DESLIZADOR, UN ESCALAR O UN ARRAY ───────────────────────────

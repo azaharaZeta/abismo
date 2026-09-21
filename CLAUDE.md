@@ -82,6 +82,27 @@ Cuatro separaciones, y son el punto:
    números van CON él: un bloque partido por la mitad —la mitad en
    `ABISMO.dedo` y la mitad en `motor/dedo.js`— es la forma en que esto
    se deshace.
+
+   **¿Y CUANDO LO QUE CAMBIA ES LA ANATOMÍA ENTERA?** Entonces la escena
+   no lleva los números: lleva el NOMBRE. El rape tiene dos siluetas
+   —`clasico` y `tinta`— y las dos viven en `FORMAS`, en
+   [bichos/rape-cuerpo.js](bichos/rape-cuerpo.js), con sus perfiles, su
+   ojo, sus púas y sus dientes; la escena sólo dice `forma: 'tinta'`. Se
+   resuelve UNA VEZ al nacer (`f.F`) y de ahí abajo ninguna pieza del
+   dibujo vuelve a preguntar qué rape es. Así se cumplen las dos reglas
+   a la vez: una proporción sigue sin ser un mando, y elegir entre dos
+   anatomías sí lo es.
+
+   De ahí sale que **una misma especie puede tener varias entradas en
+   `ABISMO.bichos`**: son dos grupos distintos con los mismos
+   `def.crear`/`actualiza`/`dibuja`. Lo que compartan se escribe UNA vez
+   —`const RAPE` en la escena, y las entradas lo esparcen— porque lo que
+   importa de tener dos es en qué se diferencian. Dos avisos: el panel
+   de pruebas resuelve `@rape` a TODAS las entradas que coincidan y
+   escribe en todas (ver `destinos` en [pruebas.js](pruebas.js)), y un
+   parámetro que los dos NO puedan compartir tiene que salir del tronco
+   —`lado`, que es el canto al que tira cada uno: dejándolo al sorteo,
+   los dos se plantan en el mismo sitio.
 2. **motor ↔ criaturas.** Una criatura no tiene parámetros propios: los
    recibe de la escena, así que el mismo bicho puede ser pálido y lento o
    nervioso y quemado sin tocar una línea suya. Y el motor no conoce a

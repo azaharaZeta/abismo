@@ -13,7 +13,7 @@ import { M, especie } from '../motor.js';
 const {rgba, clamp, rnd, rango, rangoE, suave, opt, TAU} = M;
 import { porPlano, paso, reaccionBorde, hacia, gxSano,
          silencio } from './comun.js';
-import { enPez, aMundo, centro, adelante, cuerpoPath, piel,
+import { FORMAS, enPez, aMundo, centro, adelante, cuerpoPath, piel,
          visceras, aletas, volumen, ojo, quijadas, bocaPath, boca,
          barbilla, senuelo } from './rape-cuerpo.js';
 import { querencia, caza, camposRape, mirada,
@@ -29,15 +29,31 @@ especie('rape', {
 
   crear(M, L, p){
     const Lg = rango(p.largo) * M.U * L.scale;
+    /* ── QUÉ RAPE ES ─────────────────────────────────────────────
+       La ANATOMÍA se elige por nombre y se resuelve UNA VEZ, al nacer:
+       de ahí abajo nadie vuelve a preguntar de qué forma es, cada pieza
+       del dibujo lee `f.F`. La escena tiene dos entradas de esta misma
+       especie y sólo se diferencian en esto, el color y la boca.
+
+       Sin defecto a propósito: caer a `clasico` sería una segunda copia
+       del valor de escena, y quien se olvide de darlo se entera aquí. */
+    const F = FORMAS[p.forma];
+    if (!F) throw new Error('rape: forma desconocida: ' + p.forma);
     /* NACE YA EN SU SITIO si la escena le pide querencia de borde: con un
        crucero de centésimas de unidad por segundo tardaría minutos en llegar
        al canto, y ésos son justo los minutos que alguien está mirando. Un
        lateral, que es el único canto que la querencia sostiene, y la altura
        de `bandaY` —la misma que usa un rape sin querencia, así que la
        escena dice en un solo sitio a qué altura nace uno. */
+    /* SU LADO, y es de por vida: lo fija la escena con `lado` —−1 el
+       canto de la izquierda, +1 el de la derecha— o se sortea si no lo
+       dice. Con dos rapes en la pecera hay que decirlo: dejándolo al
+       sorteo, los dos caen en el mismo canto la mitad de las veces y
+       encima `querencia` los planta en el mismo punto. */
+    const lado = opt(p.lado, 0) || (Math.random() < 0.5 ? -1 : 1);
     let bx, by;
     if (p.querencia){
-      bx = (1 + (Math.random() < 0.5 ? -p.aro : p.aro))*0.5*M.W;
+      bx = (1 + lado*p.aro)*0.5*M.W;
       by = rango(p.bandaY)*M.H;
     } else {
       bx = rango(p.banda)*M.W; by = rango(p.bandaY)*M.H;
@@ -53,6 +69,7 @@ especie('rape', {
        esca; no hace falta una paleta por componente. */
     const f = {
       c: M.color(p.paleta),
+      F, lado,
       Lg, dir, gx: dir,
       bx, by,
       /* x,y son la esca: es lo que el motor reparte como luz, y no hay una

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<!-- ANDAMIO. No forma parte de la pieza: la carpeta _banco/ es borrable. -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Banco del rape</title>
+<style>
+  :root{ color-scheme: dark; }
+  body{ margin:0; background:#05080c; color:#7d93a8;
+        font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; }
+  header{ padding:12px 16px 4px; }
+  h1{ font-size:14px; margin:0 0 3px; color:#cfe0ee; letter-spacing:.06em; }
+  .nota{ max-width:96ch; margin:2px 0 0; color:#6b8095; }
+  .mandos{ padding:8px 16px 10px; display:flex; gap:16px; flex-wrap:wrap;
+           align-items:center; border-bottom:1px solid #16202b; }
+  label{ display:flex; gap:6px; align-items:center; white-space:nowrap; }
+  select, button{ background:#0d151d; color:#cfe0ee; border:1px solid #1d2b39;
+                  border-radius:3px; padding:2px 6px; font:inherit; }
+  button{ cursor:pointer; }
+  input[type=range]{ width:110px; }
+  #tira{ display:flex; gap:10px; padding:12px 16px; overflow-x:auto;
+         align-items:flex-start; }
+  figure{ margin:0; flex:0 0 auto; }
+  canvas{ display:block; background:#03060a; border:1px solid #101a24;
+          border-radius:3px; }
+  figcaption{ padding-top:4px; }
+  .rot{ color:#cfe0ee; letter-spacing:.05em; }
+  .rot b{ color:#ffb5d8; font-weight:600; }
+  .breve{ color:#5d7186; font-size:11px; line-height:1.45; }
+  /* la pila: un diseño por fila y con su ficha entera */
+  body.pila #tira{ display:block; }
+  body.pila figure{ padding:10px 0 14px; border-top:1px solid #16202b; }
+  body.pila .breve{ max-width:86ch; font-size:12px; }
+  .fichas{ padding:4px 16px 24px; color:#6b8095; }
+  .fichas p{ max-width:96ch; margin:0 0 10px; }
+  .fichas b{ color:#cfe0ee; }
+</style>
+<header>
+  <h1>BANCO DEL RAPE · alternativas de diseño</h1>
+  <div class="nota">Misma tubería que la pieza (piel por rebanadas, canto por
+  luz recibida, aditivo). Lo único que cambia entre columnas es la FORMA:
+  mismo color, misma luz, mismos parámetros de escena.</div>
+</header>
+<div class="mandos">
+  <label>escala <input id="esc" type="range" min="90" max="420" value="170"></label>
+  <button id="ajusta">ajustar al ancho</button>
+  <label>vista
+    <select id="vista">
+      <option value="cuerpo">cuerpo entero</option>
+      <option value="cara">la cara</option>
+    </select></label>
+  <label>luz
+    <select id="luz">
+      <option value="plana">plana (para ver la forma)</option>
+      <option value="real">la de la pieza</option>
+    </select></label>
+  <label>boca <input id="boca" type="range" min="0" max="100" value="55"></label>
+  <label><input id="muerde" type="checkbox"> morder en bucle</label>
+  <label><input id="actual" type="checkbox" checked> con el de hoy</label>
+  <label><input id="gira" type="checkbox"> mirando a la derecha</label>
+  <label><input id="quieto" type="checkbox"> congelar</label>
+</div>
+<div id="tira"></div>
+<div class="fichas" id="fichas"></div>
+
+<script type="module">
+import { pinta, llano } from './disenos.js';
+
+/* ── EL COLOR, uno solo para todos: lo que se compara es la FORMA ─── */
+function hsl(h,s,l){
+  h=(((h%360)+360)%360)/360; const a=s*Math.min(l,1-l);
+  const f=n=>{const k=(n+h*12)%12;
+    return l-a*Math.max(-1,Math.min(k-3,9-k,1));};
+  return [Math.round(f(0)*255),Math.round(f(8)*255),Math.round(f(4)*255)];
+}
+const COLOR = { core: hsl(338,1,0.86), mid: hsl(338,0.88,0.52),
+                glow: hsl(333,0.82,0.27) };
+
+/* ── PARÁMETROS DE ESCENA, los de ABISMO.bichos rape ───────────────── */
+const P = {
+  proa:0.90, cuerpo:0.62, techo:1.25, base:0.002, brillo:1.15,
+  esca:0.050, difusion:2.9, halo:0.45, nucleo:0.34,
+  pupila:0.40, destelloOjo:2.6, ojoBrillo:0.20,
+  dientes:[15,20], paladar:true, entreabierta:0.13,
+  bocaLargo:0.56, bocaHondo:0.34, quijadaArriba:0.30, abertura:0.70,
+  barba:0.50, barbaBrillo:0.42,
+};
+
+/* ── LOS DISEÑOS ────────────────────────────────────────────────────
+   Cada uno es FORMA y nada más. */
+const bulto = (u,c,w,h) => h*Math.exp(-Math.pow((u-c)/w,2));
+/* PERFIL EN CAMPANA ASIMÉTRICA. Los dos mandos que importan quedan
+   sueltos: `up` es dónde cae el canto máximo y `r` lo empinada que va la
+   subida —de ahí sale la bajada, que es lo que fija el pedúnculo—. */
+function campana(A, up, r){
+  const s = r*(1-up)/up, mx = Math.pow(up,r)*Math.pow(1-up,s);
+  return u => (u<=0||u>=1) ? 0 : A*Math.pow(u,r)*Math.pow(1-u,s)/mx;
+}
+/* el morro RETRANQUEADO: la muesca que deja la barbilla por delante */
+const muesca = (h,w) => u => u<w ? -h*Math.pow(1-u/w,1.5) : 0;
+
+const ACTUAL = {
+  rot:'0 · ACTUAL', mote:'lo que hay hoy',
+  breve:'un arco liso · morro en punta · boca en curva · dientes en cuña',
+  nota:'Perfil de un solo arco, morro en punta, boca que baja en curva '+
+       'lisa, dientes en cuña pareja, pectoral de pala, caudal '+
+       'horquillada de cinco radios. La quijada de abajo es una LÍNEA: al '+
+       'abrir la boca no baja una barbilla, se abre un agujero.',
+  lomo:  u => 0.40*Math.pow(Math.sin(Math.PI*Math.pow(u,0.52)),1.25)+0.030,
+  panza: u => 0.34*Math.pow(Math.sin(Math.PI*Math.pow(u,0.60)),1.20)+0.028,
+  caudal:{x:1.15,y:0.155,muesca:1.07,radios:5},
+  aletas:{d0:0.60,d1:0.94,dAlto:0.19,a0:0.64,a1:0.94,aAlto:0.15,
+          p0:0.42,pY:0.55},
+  ojo:[0.22,-0.20,0.050], barbaU:0.32, ilicioU:0.10,
+  barbas:[3,5],
+};
+
+/* ══════════════════════════════════════════════════════════════════
+   LA SEGUNDA TANDA, sobre las referencias que pediste
+
+   Lo que dicen los dos dibujos, y es casi lo contrario de la cabeza
+   abombada del Melanocetus:
+
+     · APENAS HAY FRENTE. El lomo no sube en cúpula sobre el ojo: sube
+       despacio y su punto más alto cae A MEDIO CUERPO. Lo que baja es la
+       PANZA, y baja justo debajo de la boca. Entre las dos cosas, la
+       cara se queda plana y el bicho se lee como una bolsa con dientes.
+     · LA MANDÍBULA VA CASI RECTA, y es larga: dos tercios del cuerpo.
+       Nada de una quijada que se descuelga —eso es lo que sobraba.
+     · COLMILLOS LARGOS QUE ENGRANAN, pocos y desiguales.
+     · EL OJO MIRA: grande, con un aro claro alrededor de la pupila.
+     · PÚAS EN EL LOMO, dentro de la silueta.
+
+   Las BARBAS se quedan exactamente como están hoy: mismo número, mismo
+   largo y mismo sitio.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── D · TODO BOCA ──────────────────────────────────────────────────
+   El punto medio de las dos referencias. */
+const TB_LOMO = campana(0.335, 0.47, 1.25), TB_PANZA = campana(0.415, 0.33, 0.95);
+const TODOBOCA = {
+  rot:'D · TODO BOCA', mote:'el punto medio de tus dos dibujos',
+  breve:'apenas frente · boca casi recta y de dos tercios de cuerpo · '+
+        'colmillos largos que engranan · ojo con iris · púas en el lomo',
+  nota:'El lomo deja de subir en cúpula sobre el ojo: su punto más alto '+
+       'se va a medio cuerpo y quien baja es la panza, justo debajo de la '+
+       'boca. Con eso la cara se queda plana y el bicho es una bolsa con '+
+       'dientes. La boca va casi recta y ocupa dos tercios del cuerpo, y '+
+       'la quijada abre POCO —la mandíbula que se descolgaba, fuera—. '+
+       'Diez colmillos largos y desiguales que engranan, ojo grande con '+
+       'aro de iris, siete púas en el lomo y las barbas tal cual están.',
+  /* el morro va ROMO —un bulto estrecho en el arranque de los dos
+     perfiles—: en punta parece un pico y en los dibujos es una pared */
+  lomo: u => TB_LOMO(u) + 0.028 + bulto(u,0,0.055,0.038),
+  panza:u => TB_PANZA(u) + 0.028 + bulto(u,0,0.055,0.038),
+  sesgo:1.15, N:34,
+  /* ── LA CURVA DE LA MORDIDA ─────────────────────────────────
+     `cY` es el punto de control de en medio, así que es LA COMBA: con
+     0,090 la línea de labios se hundía 0,021 largos respecto de la recta
+     morro-charnela y eso se lee como una boca recta. A 0,155 se hunde
+     0,054 y la mordida vuelve a ser una curva. La comban las DOS
+     quijadas, que giran sobre la misma línea. */
+  bocaLargo:0.66, gape:{mY:0.010, cY:0.155, jy:0.085},
+  quijadaArriba:0.16, abertura:0.50,
+  dientes:11, diente:1.65, colmillo:0.25, desigual:0.85,
+  ojoHueco:true, pupila:0.34,
+  crestas:{n:7, u0:0.30, u1:0.62, alto:0.055, ancho:0.030},
+  espinulas:95, brazo:0.12, iris:0.55,
+  caudal:{x:1.22,y:0.165,muesca:1.19,radios:9},
+  aletas:{d0:0.66,d1:0.95,dAlto:0.13,a0:0.70,a1:0.95,aAlto:0.11,
+          p0:0.50,pY:0.58},
+  /* ── HASTA DÓNDE SALTA EL OJO ───────────────────────────────
+     A −0,180 el borde de arriba caía en 0,248 y el LOMO a esa altura
+     mide 0,210: el ojo asomaba 0,038 largos POR FUERA de la silueta, y
+     eso no es un ojo saltón, es un ojo suelto. A −0,155 asoma 0,013 —se
+     le nota el bulto y sigue dentro—. La cota de abajo la pone la boca:
+     con la quijada de arriba abierta a tope su línea pasa por −0,026 a
+     esta altura, así que el ojo tiene 0,062 de margen. */
+  ojo:[0.175,-0.155,0.068],
+  barbaU:0.32, ilicioU:0.10, barbas:[3,5],
+};
+
+/* ── E · GRABADO ────────────────────────────────────────────────────
+   El primer dibujo: cuerpo algo más estirado, agujas en vez de cuñas y
+   muchas, púas por todo el lomo y el ojo pequeño pero con aro. */
+const GR_LOMO = campana(0.315, 0.50, 1.30), GR_PANZA = campana(0.385, 0.36, 1.00);
+const GRABADO = Object.assign({}, TODOBOCA, {
+  rot:'E · GRABADO', mote:'como el primer dibujo',
+  breve:'D, pero con AGUJAS en vez de cuñas y muchas · púas por todo el '+
+        'lomo · ojo pequeño y duro · cuerpo algo más estirado',
+  nota:'Sobre D, lo del primer dibujo: los dientes son AGUJAS —dieciséis, '+
+       'finas y largas, engranando— en vez de cuñas; las púas recorren el '+
+       'lomo entero desde la nuca; el ojo va pequeño pero con el aro muy '+
+       'marcado, que es como está ahí; y el cuerpo se estira un poco, con '+
+       'el canto más atrás.',
+  lomo: u => GR_LOMO(u) + 0.026 + bulto(u,0,0.055,0.034),
+  panza:u => GR_PANZA(u) + 0.026 + bulto(u,0,0.055,0.034),
+  dientes:17, diente:1.95, dienteAncho:0.55, colmillo:0.35, desigual:0.70,
+  crestas:{n:11, u0:0.16, u1:0.66, alto:0.040, ancho:0.022},
+  ojo:[0.180,-0.148,0.052], iris:0.80,
+  caudal:{x:1.24,y:0.150,muesca:1.20,radios:9},
+  ilicioU:0.08,
+});
+
+/* ── F · TINTA ──────────────────────────────────────────────────────
+   El segundo: cuerpo de gota, ojo enorme y pocos colmillos pero muy
+   gordos, con una corona de púas cortas a media espalda. */
+const TI_LOMO = campana(0.345, 0.45, 1.20), TI_PANZA = campana(0.445, 0.32, 0.90);
+const TINTA = Object.assign({}, TODOBOCA, {
+  rot:'F · TINTA', mote:'como el segundo dibujo',
+  breve:'D, pero con OJO ENORME · ocho colmillos gordos que engranan · '+
+        'corona de púas cortas · cuerpo de gota',
+  nota:'Sobre D, lo del segundo dibujo: el ojo es ENORME y con el aro muy '+
+       'claro —es lo que da miedo ahí—, los colmillos son ocho pero muy '+
+       'gordos y engranan como una trampa, las púas se juntan en una '+
+       'corona corta a media espalda y el cuerpo va de gota, con la panza '+
+       'más llena.',
+  lomo: u => TI_LOMO(u) + 0.028 + bulto(u,0,0.055,0.042),
+  panza:u => TI_PANZA(u) + 0.028 + bulto(u,0,0.055,0.042),
+  dientes:9, diente:2.00, dienteAncho:1.50, colmillo:0.12, desigual:0.95,
+  crestas:{n:5, u0:0.34, u1:0.56, alto:0.078, ancho:0.044},
+  gape:{mY:0.010, cY:0.175, jy:0.085},   // el de gota comba un poco más
+  ojo:[0.165,-0.152,0.088], iris:1.0, pupila:0.26,
+  caudal:{x:1.20,y:0.180,muesca:1.17,radios:9},
+});
+
+const TODOS = [ACTUAL, TODOBOCA, GRABADO, TINTA];
+
+/* ── PARA CAPTURAR DE FUERA ─────────────────────────────────────────
+   `?solo=N` deja un diseño, `?lg=` fija la escala, `?t=` clava el reloj y
+   `?pila=1` vuelve al apilado con la ficha entera: es lo que permite
+   sacar la misma postura de todos con un Chrome sin cabeza. */
+const Q = new URLSearchParams(location.search);
+const TFIJO = Q.has('t') ? +Q.get('t') : null;
+if (Q.has('pila')) document.body.classList.add('pila');
+if (Q.has('desnudo')){
+  document.querySelector('header').style.display = 'none';
+  document.querySelector('.mandos').style.display = 'none';
+}
+
+const esc    = document.getElementById('esc');
+const vista  = document.getElementById('vista');
+const luzSel = document.getElementById('luz');
+const boca   = document.getElementById('boca');
+const muerde = document.getElementById('muerde');
+const conAct = document.getElementById('actual');
+const gira   = document.getElementById('gira');
+const quieto = document.getElementById('quieto');
+const tira   = document.getElementById('tira');
+const fichas = document.getElementById('fichas');
+if (Q.has('lg')) esc.value = +Q.get('lg');
+/* la luz plana es la de arranque —lo que se compara es la forma—, así
+   que el parámetro que hace falta para capturar es el CONTRARIO */
+if (Q.has('real')) luzSel.value = 'real';
+if (Q.has('cabeza')) vista.value = 'cara';
+if (Q.has('boca')) boca.value = +Q.get('boca');
+
+/* ── EL BICHO DE PRUEBA ─────────────────────────────────────────────
+   Uno por celda, con su semilla, para que la cola y el vaivén no vayan
+   todos al unísono. */
+let SEM = 1;
+const az = () => (SEM = (SEM*48271) % 2147483647) / 2147483647;
+function crea(D, Lg){
+  return {
+    t:0, Lg, bx:0, by:0, ang:0, gx:-1, c:COLOR,
+    velCola:1.2, amplitudCola:0.055, fase:az()*6.28, congela:0,
+    miomeros:8, radios:6, dientes:D.dientes||18,
+    barbas:D.barbas?D.barbas[1]:4, sway:az()*6.28,
+    x:0,y:0, luzX:0, luzY:0, miraX:0, miraY:0,
+    ataque:0, masticaAb:0, respAb:0, brillo:0.9, chispa:0, ilum:0.3,
+  };
+}
+
+/* La esca, donde la pone el motor: delante del morro y un poco encima.
+   `ilicioCorto` la trae casi a la cara, que es lo de Caulophryne.
+
+   Y AL MORDER SE RECOGE (`retrae` 0,95 en la escena): el señuelo se viene
+   al morro justo cuando la boca se abre, que es lo que pone la luz encima
+   de la cara. Sin esto la mandíbula baja hacia la oscuridad y el bocado
+   no se ve —que es un fallo del banco, no del diseño. */
+function colocaEsca(f, D){
+  const rec = 1 - 0.95*f.ataque;
+  const d = (D.ilicioCorto ? 0.20 : 0.46)*rec, e = (D.ilicioCorto ? 0.30 : 0.26)*rec;
+  f.x = f.bx + d*f.Lg*(-f.gx) + Math.sin(f.t*0.5+f.fase)*f.Lg*0.05*(-f.gx);
+  f.y = f.by - e*f.Lg + Math.sin(f.t*0.37+f.sway)*f.Lg*0.07;
+  f.luzX = f.x; f.luzY = f.y;
+  f.miraX = f.x; f.miraY = f.y;
+}
+
+/* ── LA TIRA ────────────────────────────────────────────────────────
+   Se rehace entera al cambiar qué diseños hay; el tamaño va aparte
+   porque el deslizador de escala se mueve mucho más. */
+let celdas = [];
+function lista(){
+  if (Q.has('solo')) return [TODOS[+Q.get('solo')]];
+  return conAct.checked ? TODOS : TODOS.slice(1);
+}
+function arma(){
+  tira.textContent = ''; fichas.textContent = ''; celdas = [];
+  SEM = 1;
+  const pila = document.body.classList.contains('pila');
+  for (const D of lista()){
+    const fig = document.createElement('figure');
+    const cv = document.createElement('canvas');
+    const cap = document.createElement('figcaption');
+    cap.innerHTML = '<div class="rot">' + D.rot + ' &middot; <b>' + D.mote +
+                    '</b></div><div class="breve">' +
+                    (pila ? D.nota : D.breve) + '</div>';
+    fig.append(cv, cap);
+    tira.append(fig);
+    celdas.push({ D, cv, fig, g: cv.getContext('2d'), f: null });
+  }
+  if (!pila)
+    for (const D of lista()){
+      const p = document.createElement('p');
+      p.innerHTML = '<b>' + D.rot + '</b> — ' + D.nota;
+      fichas.append(p);
+    }
+  dimensiona();
+}
+
+function dimensiona(){
+  const Lg = +esc.value, cara = vista.value === 'cara';
+  const W = Math.round(Lg*(cara?1.70:2.05));
+  /* la cara va más alta de lo que ocupa una cabeza: con la boca abierta
+     la mandíbula baja más de medio largo y si no se sale del cuadro */
+  const H = Math.round(Lg*(cara?1.45:2.10));
+  const dpr = Math.min(2, devicePixelRatio||1);
+  for (const c of celdas){
+    c.cv.width = W*dpr; c.cv.height = H*dpr;
+    c.cv.style.width = W+'px'; c.cv.style.height = H+'px';
+    /* la COLUMNA la mide el lienzo y no el pie: sin esto el `flex:0 0
+       auto` la estira hasta el max-content del texto y la última se sale
+       del cuadro */
+    if (!document.body.classList.contains('pila')) c.fig.style.width = W+'px';
+    c.W = W; c.H = H; c.dpr = dpr;
+    c.f = crea(c.D, Lg);
+    c.f.gx = gira.checked ? 1 : -1;
+    c.f.bx = W*(gira.checked ? (cara?0.28:0.30) : (cara?0.72:0.70));
+    c.f.by = H*(cara?0.38:0.30);
+  }
+}
+/* «ajustar al ancho»: la escala más grande con la que caben todas sin
+   barra horizontal. Es lo que se quiere casi siempre —comparar es verlas
+   a la vez— y por eso corre también al cargar. */
+function ajusta(){
+  const n = celdas.length || 1, cara = vista.value === 'cara';
+  /* `clientWidth` INCLUYE el relleno, así que hay que descontarlo o la
+     última columna se sale por cuatro píxeles y aparece la barra */
+  const cs = getComputedStyle(tira);
+  const hueco = tira.clientWidth - parseFloat(cs.paddingLeft)
+              - parseFloat(cs.paddingRight) - 10*(n-1) - 2*n;
+  /* con el panel plegado el ancho sale 0 y esto dejaría la escala en el
+     mínimo para siempre: mejor no tocar nada y esperar al `resize` */
+  if (hueco < 120){ dimensiona(); return; }
+  const Lg = Math.floor(hueco/n/(cara?1.70:2.05));
+  esc.value = Math.max(+esc.min, Math.min(+esc.max, Lg));
+  dimensiona();
+}
+
+/* UNA ESCALA PEDIDA MANDA SOBRE EL AJUSTE. El `resize` de la carga
+   dispara `ajusta()`, así que sin esto un `?lg=` de la URL —o el
+   deslizador movido a mano— se pierde al primer reflujo y la captura
+   sale a otro tamaño del que se pidió, sin decirlo. */
+let fijada = Q.has('lg');
+esc.oninput = () => { fijada = true; dimensiona(); };
+vista.onchange = () => { fijada ? dimensiona() : ajusta(); };
+gira.onchange = dimensiona;
+conAct.onchange = () => { arma(); if (!fijada) ajusta(); };
+document.getElementById('ajusta').onclick = () => { fijada = false; ajusta(); };
+addEventListener('resize', () => { fijada ? dimensiona() : ajusta(); });
+arma();
+if (!fijada) ajusta();
+
+let ult = performance.now();
+function marco(ahora){
+  const dt = quieto.checked ? 0 : Math.min(0.05, (ahora-ult)/1000);
+  ult = ahora;
+  /* ── LA POSTURA, Y LA MISMA PARA TODOS ────────────────────────
+     Es lo que permite comparar: `v` va de 0 —en reposo, boca
+     entreabierta— a 1 —el fogonazo del bocado con la boca a tope—, y
+     mueve a la vez la abertura, la luz recibida y la ráfaga, porque en
+     la pieza las tres van juntas.
+
+     `ataque` es una CUENTA ATRÁS y su abertura máxima cae en 0,717, no
+     en 1: por eso `v` no es `ataque`, lo escala. */
+  let v = +boca.value/100;
+  if (muerde.checked){
+    const ci = (ahora/1000*0.5) % 1;
+    v = ci < 0.62 ? Math.sin(ci/0.62*Math.PI) : 0;
+    boca.value = Math.round(v*100);
+  }
+  for (const c of celdas){
+    const f = c.f, g = c.g;
+    if (TFIJO !== null) f.t = TFIJO; else f.t += dt;
+    f.ataque = v*0.717;
+    f.ilum   = 0.34 + v*1.26;
+    f.brillo = 0.72 + v*0.28;
+    f.chispa = v*0.8;
+    f.masticaAb = 0;
+    f.respAb = (1-v)*0.055*Math.pow(0.5+0.5*Math.sin(f.t*2.1+f.fase),2.2);
+    colocaEsca(f, c.D);
+    g.setTransform(1,0,0,1,0,0);
+    g.clearRect(0,0,c.cv.width,c.cv.height);
+    g.setTransform(c.dpr,0,0,c.dpr,0,0);
+    g.fillStyle = '#03060a';
+    g.fillRect(0,0,c.W,c.H);
+    g.globalCompositeOperation = 'lighter';
+    const p = Object.assign({}, P);
+    for (const k of ['barba','barbaBrillo','bocaLargo','bocaHondo','abertura'])
+      if (c.D[k] !== undefined) p[k] = c.D[k];
+    llano(luzSel.value === 'plana');
+    pinta(g, f, p, c.D, c.W, c.H);
+    llano(false);
+    g.globalCompositeOperation = 'source-over';
+  }
+  requestAnimationFrame(marco);
+}
+requestAnimationFrame(marco);
+</script>
