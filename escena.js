@@ -22,330 +22,6 @@ const ROJO    = {core:[255,226,220], mid:[228, 74, 62], glow:[120, 16, 14]};
    visible desde aquí de dónde sale el color de esos dos. */
 const PALETA  = [AZUL, CIAN, HIELO, VERDOSO, PLATA];
 
-/* ══════════════════════════════════════════════════════════════════
-   EL RAPE, y son DOS
-   Todo lo que comparten, que es TODO menos cuatro cosas: la FORMA, el
-   COLOR, la BOCA y cuántos dientes. Va escrito una vez porque lo que
-   importa de tener dos es EN QUÉ SE DIFERENCIAN, y con las dos entradas
-   copiadas eso se pierde de vista al primer ajuste. Las dos están
-   abajo, en `bichos`.
-   ══════════════════════════════════════════════════════════════════ */
-const RAPE = {
-  especie: 'rape',
-    /* Uno, y dos en pantalla grande. Ninguno al fondo: un rape lejano es
-       una mancha sin dientes, barbilla ni ojo. Números sueltos porque
-       por área esto no se puede decir. */
-    por: [0, 0, 1],
-    /* ── EL TAMAÑO ─────────────────────────────────────────────
-       Se sortea POR BICHO y en cada repoblado, así que los dos rapes de
-       una pecera casi nunca miden lo mismo y al reiniciar cambian.
-
-       Con dos en el cuadro, el que valía para uno se lo come: a 6,7 el
-       grande medía el 72 % del ancho de un móvil de pie. Y el rango va
-       ANCHO —×1,6 de un extremo a otro, contra el ×1,25 de antes—
-       porque con dos a la vista lo que se compara es uno con otro: con
-       el rango estrecho parecían el mismo bicho dos veces.
-
-       EL SUELO ESTÁ MEDIDO, y es lo único que acota por abajo. La caja
-       apretada es el móvil (U≈32), donde el `scale` 1,32 del plano de
-       delante deja el largo en 42 px por unidad: a 3,2 son 134 px y
-       aguantan los colmillos, el aro del iris, las púas del lomo y la
-       barbilla; a 2,5 (105 px) los dientes se emborronan en una línea,
-       el aro del ojo desaparece y las púas se funden con el canto. Por
-       debajo de 3 deja de merecer la pena tener dos formas. */
-    largo: [3.2, 5.0],
-    /* GRANDE: es lo que sostiene el detalle —miómeros, cristalino,
-       dientes y barbilla no existen por debajo de cierto tamaño—. Pero
-       la caja que manda es el MÓVIL DE PIE: `largo` va en U y además lo
-       multiplica el `scale` 1,32 del plano de delante, así que a 7,4 el
-       bicho medía el 80 % del ancho de esa pantalla. A 6,7, el 72 %.
-       El mínimo baja poco: por debajo de 5 se le empieza a caer el
-       detalle, que es lo que lo sostiene. */
-    brillo: 1.15,               // el del señuelo: éste sí quema
-    /* El cuerpo casi no se ve, y aquí se decide: `cuerpo` escala la luz
-       recibida y `techo` la recorta ANTES de escalarla. */
-    cuerpo: 0.62, techo: 1.25,  // el del animal: un susurro
-    /* `proa` reparte la piel entre un suelo uniforme y un término que cae
-       hacia la cola: alto, del fogonazo se ve sobre todo la boca. No
-       llega a 1 para dejar suelo —sin él el cuarto de atrás es un
-       agujero. */
-    proa: 0.90,
-    /* ── EL COLOR DEL RAPE ─────────────────────────────────────
-       Un arco, un color por bicho y ninguna excepción: morado →
-       magenta → rojo → vino. Corta en 364 (4°) porque de ahí para
-       arriba el rojo se va al salmón —el tramo de 12° sale (251,86,45)
-       y en pantalla lee cobre, no sangre. Se sortea al nacer y lo usan
-       la esca, el cuerpo, la barbilla y la pupila: no hay un color por
-       componente, y la posición de la luz decide por dónde se enciende,
-       no de qué color es.
-
-       La diferencia entre EL FOCO y EL SUSURRO la sostienen sólo el
-       alfa —`brillo` 1,15 contra `cuerpo` 0,62— y el núcleo blanco de
-       la esca, así que `luz` y `luzGlow` van a media altura: sirven
-       para los dos usos. `giroGlow` NEGATIVO, contra el +5 de la casa:
-       con el halo tirando al azul un rape rojo sale magenta y deja de
-       ser sangre. */
-    /* punto pequeño y quemado, no mancha grande y suave */
-    esca: 0.050,                // radio del señuelo, en largos
-    difusion: 2.9,              // cuánto se derrama alrededor
-    /* En largos, así que el radio crece con el bicho. Chica e intensa: a
-       1,05 el halo se come un tercio del cuadro y eso no es una lámpara
-       con corona, es el agua teñida. */
-    halo: 0.45,                 // corona de la lámpara, en largos
-    nucleo: 0.34,               // el corazón blanco: deja ver el tono
-    /* Nunca se apaga del todo: la esca es el único punto de referencia
-       que hay aquí abajo. El techo pasa de 1 porque es lo ÚNICO que
-       tiene que quemar. */
-    intensidad: [0.42, 1.00],
-    /* ── Y CUANDO ESTÁ SACIADO ─────────────────────────────────
-       El parpadeo sigue, pero aquí abajo: mientras dura `reposo` la esca
-       queda CASI apagada, a un décimo de lo que da normalmente. No a
-       cero, porque es el único punto de referencia del cuadro —lo que
-       tiene que leerse es una brasa, no un hueco. El suelo de verdad no
-       es este número sino `rLuz`: a 0,04 la esca todavía prende motas a
-       15 px en caja de móvil, y por debajo deja de alumbrar nada y el
-       punto se queda solo sobre negro.
-
-       DE AQUÍ SALEN TRES COSAS, no una, porque las tres cuelgan del
-       brillo de ahora normalizado contra `intensidad[0]`: lo que se ve,
-       lo que TIRA (`senuelo`, que la presa multiplica por su
-       `atraccion`) y hasta dónde enciende plancton (`rLuz`). Bajar sólo
-       lo que se ve sería cosmético: el banco seguiría acudiendo a un
-       señuelo negro y quedaría una nube de motas prendidas alrededor.
-
-       MEDIDO en pantalla —cuadro de 90 px alrededor de la esca, el grano
-       apagado y el bicho clavado, que sin las tres cosas la medida es
-       ruido—: lo que se derrumba es la CORONA, no el punto. De encendida
-       a saciada, los píxeles por encima de 120 pasan de 1.492 a NINGUNO
-       y los de más de 60, de 3.518 a 148. O sea que deja de ser una
-       lámpara y sigue siendo una brasa, que es lo que se le pide: sin
-       ella el cuadro se queda sin ancla.
-
-       Y ES EL SUELO DE LO QUE TIRA. `escaSaciada[1]` no sólo dice lo
-       apagada que se queda: es el punto en el que `senuelo` llega a
-       CERO, así que de este número depende que una esca apagada deje de
-       atraer del todo (ver `senuelo` en bichos/rape.js). Subirlo apaga
-       la trampa antes; bajarlo la deja tirando más rato.
-
-       MEDIDO sobre diez minutos y dos semillas, con el rape saciado el
-       60-71 % del tiempo: el cebado del banco sobre una esca APAGADA
-       cae de 47-49 pez·segundo a 6-8, o sea del 42-49 % de todo el
-       cebado al 9-11 %. Lo que queda es el segundo que tarda el brillo
-       en bajar al tragar, que es justo lo que hay que ver.
-
-       Y la trampa no pierde: el cebado con la esca encendida SUBE
-       (50→52 y 64→86 pez·segundo), porque el banco deja de gastar la
-       mitad del rato en un señuelo que no responde. */
-    escaSaciada: [0.04, 0.11],
-
-    /* Delante del morro, no encima del lomo: es para lo que sirve, y es
-       lo que mantiene al pez a oscuras —cuanto más separada está la luz
-       de la boca, más grande es lo que no se ve. En LARGOS. */
-    delante: 0.46, encima: 0.26,
-    muelle: 34, freno: 7.0,     // baja el muelle y se retrasa más al girar
-
-    /* ── LO QUE TAPA ───────────────────────────────────────────
-       Todo se pinta sumando, así que por defecto ningún cuerpo puede
-       taparle a otro. `tapa` es la oclusión por el único camino que un
-       aditivo permite: no se añade negro, se le quita la luz al que
-       estaba detrás. Es contra los DEMÁS bichos —que el rape se vea a
-       través de sí mismo es el diseño, explicado en bichos.js.
-
-       Tapa SIEMPRE, también negro sobre negro: aunque no se dibuje un
-       píxel de él, se le encuentra por la AUSENCIA de motas.
-
-       `tapaFilo` es lo que lo hace leer macizo: entra como
-       pow(1 - d/r, 1/filo), así que a `filo` bajo el apagado se
-       desvanece antes del canto y se cuela luz por dentro de la silueta
-       —29,6 % con filo 5, 4,8 % con filo 28. */
-    tapa: 1, tapaFilo: 28,
-    /* ── Y LO OSCURO QUE SE PONE CUANDO NO LO MIRA NADIE ───────
-       `tapa` le quita las motas a lo de detrás, pero el hueco que deja
-       es del color del agua y el agua aquí abajo ya es casi negra: a
-       oscuras el rape no se lee, se INTUYE. `oscuro` le quita luz
-       también al AGUA —el mecanismo del leviatán, ver `pintaSombras` en
-       motor/agua.js— y sólo mientras `ilum` está por debajo de medio
-       `techo`, así que es un agujero con forma de pez hasta que algo lo
-       alumbra y entonces se disuelve y aparece el cuerpo.
-
-       A 1 es tan negro como el leviatán, que es una bestia a treinta
-       metros; éste está en el plano de delante y a esa altura tapa el
-       velo entero. Lo que se le pide es que se INSINÚE. */
-    oscuro: 0.7,
-
-    /* `vigila` son los largos en los que algo le llama la atención;
-       `velMira` lo que tarda el ojo en llegar; `pupila`, cuánto se
-       desplaza dentro del ojo. `destelloOjo` es el tapetum, y sólo se ve
-       en la penumbra. */
-    vigila: 1.9, velMira: 2.4, pupila: 0.40, destelloOjo: 2.6,
-    /* La pupila NUNCA se apaga: emite por su cuenta, así que al rape se
-       le encuentra siempre si se le busca. Es la única excepción
-       declarada a la regla de la casa, y va baja —a 0,45 deja de ser un
-       pez a oscuras con los ojos encendidos y pasa a ser dos ojos
-       flotando. */
-    ojoBrillo: 0.20,
-
-    /* Radianes que abre la quijada al bombear las branquias. El ritmo va
-       por bicho, o los rapes respirarían a la vez. */
-    respira: 0.055, ritmoRespira: [1.7, 2.7],
-
-    /* Se congela al ser alumbrado: 0 lo deja como estaba, 1 lo clava. A
-       0,85 lo único que se mueve cuando algo lo descubre es la pupila. */
-    congela: 0.85,
-
-    /* Quién ve a quién: `alcanceLuz` es a qué distancia enciende plancton
-       —el aspecto— y `alcanceCuerpo` a qué distancia una esca REVELA a
-       otro pez —el mecanismo. */
-    alcanceLuz: 0.62,           // largos en los que enciende plancton
-    /* El rape vive a oscuras y estos cuatro lo sostienen. Deciden cuándo
-       se ENCIENDE, no cuándo está: apagado tapa igual. */
-    alcanceCuerpo: 0.88,        // largos en los que alumbra a otro pez
-    caida: 3.2,                 // exponente: alto = alcance corto
-    ganancia: 2.0,              // pero mucha luz dentro de ese alcance
-    autoLuz: 0.08,              // su propia esca apunta al frente, no a él
-    base: 0.002,                // lo que se intuye sin que nada lo alumbre
-
-    parpadeo: [1.6, 9],
-    cola: 0.055, velCola: [0.8, 1.8],
-    /* LA CARA. Dientes largos y desiguales en dos filas, la boca nunca
-       cerrada del todo y una barbilla ramificada (Linophryne). La
-       barbilla pone una SEGUNDA luz separada de la esca, y entre las dos
-       no se dibuja nada: el tamaño de la cabeza lo declara su
-       distancia. */
-    paladar: true,              // la fila interior, la del paladar
-    entreabierta: 0.13,         // la quijada nunca acaba de cerrar
-    /* ── EL REPARTO DE LA ABERTURA, Y ES UN TOPE MEDIDO ──────────
-       0,30 la quijada de arriba y el resto la de abajo, que es como abre
-       un rape. Y NO SE PUEDE SUBIR: la de arriba gira sobre la charnela
-       y el hueco que abre se le RESTA al cuerpo (ver `bocaPath`), así
-       que barriendo de más se traga el ojo y lo deja flotando fuera de
-       la silueta.
-
-       MEDIDO punto en polígono contra el hueco, en veinticinco posturas
-       de `ataque` y con la boca de aquí arriba: a 0,30 el ojo queda
-       libre en todo el bocado; a 0,34 ya choca a `ataque` 0,60 y a 0,42
-       choca esté el ojo DONDE ESTÉ —subirlo no se arregla moviendo el
-       ojo, se arregla no subiéndolo—. Si algún día se quiere una boca
-       aún mayor, el que crece es `bocaLargo`, no esto. */
-    barba: 0.50, barbas: [3, 5], barbaBrillo: 0.42,
-    /* y el detalle del cuerpo, que sólo existe a este tamaño */
-    miomeros: [7, 10], radios: [5, 7],
-    /* Se arrima al LATERAL y mira hacia dentro: `querencia` es el empuje
-       hacia el lado y `aro` a qué distancia del centro se planta, ya sólo
-       en x. El `borde` de la casa empuja al revés, así que va bajo. Las
-       escas quedan a un lado apuntando al centro y el centro se vacía.
-
-       `altura` es lo que le falta al aro, que no mira la vertical: un
-       tirón flojo y permanente hacia la media altura. Sin él el rape
-       acababa contra el techo o el suelo —medido, ocho semillas de
-       600 s en caja de móvil: el 84-97 % del tiempo por encima de 0,70
-       de altura, y NUNCA en el tercio central—, que es donde peor se le
-       ve la cara y donde menos tiene sentido una trampa. Con él se pone
-       al revés: el 81 % del tiempo en el tercio central y excursiones de
-       hasta 0,69, o sea que arriba se visita y no se vive.
-
-       Y HAY QUE ELEGIRLO POR LA VARIANZA, no por la media: a 0,08 la
-       media sale bien y sin embargo una semilla de cada cuatro se queda
-       pegada al techo el 28 % del tiempo, que es el fallo otra vez
-       escondido en el promedio. A 0,16 empieza a pincharlo en el centro
-       y a 0,45 lo clava. Con UN rape por pecera, una tirada no dice
-       nada.
-
-       `bandaY` es a qué altura nace, con querencia o sin ella. Estrecha,
-       porque el tirón es lento a propósito: naciendo en el techo lo que
-       se ve es el minuto que tarda en bajar. */
-    /* ── Y HAY QUE SUBIRLO AL DARLE UN LADO PROPIO ──────────────
-       `querencia` valía 0,55 cuando el lado se recalculaba cada
-       fotograma: entonces el empuje sólo tenía que decir «apártate del
-       centro», que se cumple solo. Ahora dice «vete a TU lado y
-       quédate», que es otro trabajo, y a 0,55 no llega: MEDIDO, el rape
-       se pasaba el 57-95 % del tiempo en el tercio central y su |x|
-       medio era 0,16-0,46 contra el 0,84 del aro. O sea que ni con uno
-       solo cumplía lo que este bloque dice que hace.
-
-       A 1,4 el |x| medio sube a 0,64-0,66, los dos rapes no comparten
-       lado NUNCA y están a menos de 1,4 largos uno de otro sólo el
-       4-7 % del tiempo, contra el 50-88 % de antes. Y no se pega al
-       cristal: pasado 0,92 el 0 % del tiempo, y todavía visita el
-       tercio central el 15-22 %, que es lo que impide que parezca
-       decorado.
-
-       `lado` NO va aquí: es lo único de la querencia que los dos no
-       pueden compartir, así que lo pone cada entrada. −1 el canto de la
-       izquierda, +1 el de la derecha; sin él se sortea, que es lo que
-       vale con un solo rape y lo que los apila cuando son dos. */
-    querencia: 1.4, aro: 0.84, altura: 0.10, miraAlCentro: true,
-    banda: [0.08, 0.92], bandaY: [0.30, 0.70],
-    borde: 0.30,
-    /* ACECHO: crucero mínimo y ratos largos clavado entre embestidas. Un
-       rape que patrulla es un pez que pasa; uno quieto veinte segundos
-       con la esca colgando es una trampa esperando. */
-    crucero: 0.055,             // empuje constante, en U/s
-    acecho: [7, 22],            // quieto entre embestidas
-    embestida: [0.5, 1.7],
-    arrastre: 0.26,             // más alto = frena menos = planea más
-    /* la inclinación del cuerpo, que es por donde empuja. Positiva es
-       hacia abajo, mire el pez donde mire. */
-    inclina: [-0.34, 0.34],     // unos 20° arriba o abajo
-    cadaInclina: [9, 24],
-    velInclina: 0.4,            // vira despacio, como un submarino
-    topeInclina: 0.55,          // sólo al huir puede pasar de ahí
-    giro: [14, 38], velGiro: 5, // el giro pasa por el perfil, no salta
-    /* LA CAZA. No persigue: espera a que algo llegue a la esca. */
-    alcanceBoca: 0.16,          // a qué distancia de la esca muerde
-    /* cuánto tarda en volver a tirar: es lo que separa un cazador al
-       acecho de una trituradora. Tras acertar, más: está tragando. */
-    reposo: [10, 24], reposoFallo: [3, 7],
-    bocado: 0.55,               // lo que dura el ¡ÑACA!, en segundos
-    acometida: [5, 8],          // el tirón del bocado
-    acierto: 0.72,              // falla una de cada cuatro
-    trasComer: [7, 16],         // la esca se apaga DESPUÉS de tragar
-    /* ── LA RÁFAGA, Y UNA SOLA ─────────────────────────────────
-       No es una luz aparte: la esca emite once veces más durante un
-       instante y a la vez se recoge hacia la boca, así que el cuerpo se
-       enciende por el modelo de siempre. El tope está en `techo`.
-
-       `fogonazoCaida` es lo que la convierte en RÁFAGA: la luz sale de
-       elevar la fase a este exponente, así que por encima de 1 el
-       ataque es instantáneo y la caída violenta —a 1,8 queda en el 60 %
-       al primer quinto y en el 8 % a tres cuartos. Con exponente 1 baja
-       a ritmo constante y se lee como un foco que se enciende.
-
-       `fogonazoDura` cubre el bocado MÁS la masticación (0,75-0,93 s):
-       es la única luz que hay, y tiene que llegar viva —de cola— hasta
-       que acaba de tragar. */
-    fogonazo: 11, fogonazoDura: 0.9, fogonazoCaida: 1.8, retrae: 0.95,
-
-    /* ── MASTICAR ──────────────────────────────────────────────
-       El bocado dura medio segundo y tiene que seguir durándolo: un
-       cazador de emboscada es un tirón. Lo que se alarga es lo de
-       después —con la presa dentro trabaja la quijada y lleva el ilicio
-       recogido junto a la boca—, y no pone luz: pone movimiento, que se
-       ve con la cola de la ráfaga. Por encima del segundo deja de ser un
-       vistazo y se convierte en un rape al que da tiempo a mirarse. */
-    mastica: [0.20, 0.38],      // segundos con la presa dentro
-    masticaRitmo: 4.6,          // dentelladas por segundo, en rad/s
-    masticaAbre: 0.13,          // cuánto trabaja la quijada, en rad
-    masticaRetrae: 0.82,        // lo recogido que se queda el ilicio
-
-    /* ── Y EL BANCO SE ENTERA ──────────────────────────────────
-       Un campo `asusta` en la boca al morder. `espanta` es el radio en
-       LARGOS del rape, así que espanta más lejos cuanto más grande es el
-       animal y la escala se mantiene en cualquier pantalla.
-
-       NO puede ir generoso: a 4,2 —el 61 % del ancho— entraban en
-       pánico los 68 peces a la vez y el susto dejaba de ser local. A
-       2,0 el radio es el 29 % del ancho y se asustan 34 de 68: huye el
-       que está cerca.
-
-       `espantaDura` es más largo que la ráfaga a propósito: si el susto
-       se apagara con la luz, cuando el ojo vuelve a ver al banco ya
-       está rehecho y el pánico no se ha visto. `espantaFilo` por debajo
-       de 1 entra como pow(u, 1,25), así que el peso cae rápido en el
-       canto y los del borde no llegan al umbral: el miedo no tiene
-       borde duro. */
-    espanta: 2.0, espantaDura: 2.2, espantaFilo: 0.8,
-};
 
 export const ABISMO = {
   nombre: 'Abismo',
@@ -1231,67 +907,370 @@ export const ABISMO = {
       espera: [0.9, 3.4], tiron: [1.8, 4.4], frena: 0.02, borde: 0.5,
     },
 
-    /* ── LOS DOS RAPES ──────────────────────────────────────────────
-       La misma especie y el mismo comportamiento —uno solo, arriba en
-       `RAPE`— con dos ANATOMÍAS. `forma` elige cuál, y las dos viven en
-       `FORMAS`, en bichos/rape-cuerpo.js: una proporción no es un mando,
-       es el bicho, así que sus números están allí y aquí sólo el nombre.
-       No hay defecto: quien se olvide de poner `forma` se entera al
-       nacer el primero.
+    /* ── EL RAPE ────────────────────────────────────────────────────
+       Uno, y de la forma `tinta`. Su ANATOMÍA —perfiles, ojo, púas,
+       dientes, aletas— no está aquí sino en `FORMAS`, en
+       bichos/rape-cuerpo.js: una proporción no es un mando, es el
+       bicho, así que aquí sólo va el nombre. Sin defecto: quien se
+       olvide de `forma` se entera al nacer el primero.
 
-       LA BOCA SÍ ES DE AQUÍ, y es lo que más los separa. Cuatro números
-       en las dos entradas: la línea de labios es una curva de tres
+       LA BOCA SÍ ES DE AQUÍ. La línea de labios es una curva de tres
        puntos —morro, comba y charnela— y `bocaLargo` dice cuánto del
        cuerpo es boca. `bocaHondo` es el punto de CONTROL de en medio, o
        sea la comba: la línea se hunde la mitad de él respecto de la
-       recta que une los extremos. */
-
-    /* EL CLÁSICO. Cabezón, morro en punta y boca corta. `bocaHondo` 0,17
-       es el trazo de siempre, escrito ahora como el punto de control que
-       ya era. */
-    { ...RAPE, forma: 'clasico', lado: -1,
-      bocaLargo: 0.56, bocaMorro: 0, bocaHondo: 0.17, bocaCharnela: 0.10,
-      quijadaArriba: 0.30, abertura: 0.70, dientes: [15, 20],
-      /* ── EL COLOR DEL CLÁSICO ──────────────────────────────────
-         Un arco, un color por bicho y ninguna excepción: morado →
-         magenta → rojo → vino. Corta en 364 (4°) porque de ahí para
-         arriba el rojo se va al salmón —el tramo de 12° sale (251,86,45)
-         y en pantalla lee cobre, no sangre. Lo usan la esca, el cuerpo,
-         la barbilla y la pupila: no hay un color por componente, y la
-         posición de la luz decide por dónde se enciende, no de qué color
-         es.
-
-         La diferencia entre EL FOCO y EL SUSURRO la sostienen sólo el
-         alfa —`brillo` 1,15 contra `cuerpo` 0,62— y el núcleo blanco de
-         la esca, así que `luz` y `luzGlow` van a media altura: sirven
-         para los dos usos. `giroGlow` NEGATIVO, contra el +5 de la casa:
-         con el halo tirando al azul un rape rojo sale magenta y deja de
-         ser sangre. */
-      espectro: { tono: [268, 364], tramos: 18,
-                  sat: [0.66, 0.96], luz: [0.44, 0.58],
-                  satGlow: [0.66, 0.92], luzGlow: [0.22, 0.32],
-                  luzCore: [0.80, 0.90], giroGlow: -5 } },
-
-    /* EL DE GOTA. Apenas frente, la boca casi de dos tercios de cuerpo y
-       nueve colmillos gordos que engranan. Abre MENOS que el clásico
-       —0,50 contra 0,70— y su charnela va más alta: con una boca tan
-       larga el mismo ángulo barre mucho más, y lo que se quiere no es
-       una quijada dislocada sino una trampa que se cierra. */
-    { ...RAPE, forma: 'tinta', lado: 1,
+       recta que une los extremos. Apenas frente, boca de casi dos
+       tercios de cuerpo y nueve colmillos gordos que engranan; abre
+       POCO —0,50— y la charnela va alta, porque con una boca tan larga
+       el mismo ángulo barre mucho más y lo que se quiere no es una
+       quijada dislocada sino una trampa que se cierra. */
+    { especie: 'rape', forma: 'tinta',
       bocaLargo: 0.66, bocaMorro: 0.010, bocaHondo: 0.175, bocaCharnela: 0.085,
       quijadaArriba: 0.16, abertura: 0.50, dientes: 9,
-      /* ── Y SU COLOR, QUE NO ES EL DEL OTRO ─────────────────────
-         Dos rapes del mismo rojo se leen como el mismo bicho repetido.
-         Éste va al ámbar: del oro al naranja quemado, sin llegar al rojo
-         del otro —corta en 44° y el clásico empieza en 268, así que no
-         se tocan—. Sigue siendo CÁLIDO, que es lo que en esta pecera
-         significa «esto caza»: el frío es de las medusas y del banco.
-         `giroGlow` POSITIVO aquí, al revés que en el clásico: un ámbar
-         con el halo tirando al rojo es una brasa, y es lo que se pide. */
-      espectro: { tono: [14, 44], tramos: 16,
-                  sat: [0.72, 1.00], luz: [0.46, 0.60],
-                  satGlow: [0.70, 0.95], luzGlow: [0.20, 0.30],
-                  luzCore: [0.82, 0.92], giroGlow: 6 } },
+      /* Uno, y dos en pantalla grande. Ninguno al fondo: un rape lejano es
+         una mancha sin dientes, barbilla ni ojo. Números sueltos porque
+         por área esto no se puede decir. */
+      por: [0, 0, 1],
+      /* ── EL TAMAÑO ─────────────────────────────────────────────
+         Se sortea POR BICHO y en cada repoblado, así que al reiniciar
+         cambia. El rango va ANCHO —×1,6 de un extremo a otro— porque es
+         lo único que hace que dos peceras seguidas no se vean iguales.
+
+         Por arriba lo acota la pantalla: a 6,7 medía el 72 % del ancho
+         de un móvil de pie.
+
+         EL SUELO ESTÁ MEDIDO, y es lo único que acota por abajo. La caja
+         apretada es el móvil (U≈32), donde el `scale` 1,32 del plano de
+         delante deja el largo en 42 px por unidad: a 3,2 son 134 px y
+         aguantan los colmillos, el aro del iris, las púas del lomo y la
+         barbilla; a 2,5 (105 px) los dientes se emborronan en una línea,
+         el aro del ojo desaparece y las púas se funden con el canto. Por
+         debajo de 3 deja de merecer la pena tener dos formas. */
+      largo: [3.2, 5.0],
+      /* GRANDE: es lo que sostiene el detalle —miómeros, cristalino,
+         dientes y barbilla no existen por debajo de cierto tamaño—. Pero
+         la caja que manda es el MÓVIL DE PIE: `largo` va en U y además lo
+         multiplica el `scale` 1,32 del plano de delante, así que a 7,4 el
+         bicho medía el 80 % del ancho de esa pantalla. A 6,7, el 72 %.
+         El mínimo baja poco: por debajo de 5 se le empieza a caer el
+         detalle, que es lo que lo sostiene. */
+      brillo: 1.15,               // el del señuelo: éste sí quema
+      /* El cuerpo casi no se ve, y aquí se decide: `cuerpo` escala la luz
+         recibida y `techo` la recorta ANTES de escalarla. */
+      cuerpo: 0.62, techo: 1.25,  // el del animal: un susurro
+      /* `proa` reparte la piel entre un suelo uniforme y un término que cae
+         hacia la cola: alto, del fogonazo se ve sobre todo la boca. No
+         llega a 1 para dejar suelo —sin él el cuarto de atrás es un
+         agujero. */
+      proa: 0.90,
+      /* ── EL COLOR ──────────────────────────────────────────────
+         Un arco, un color por bicho sorteado al nacer y ninguna excepción.
+         Lo usan la esca, el cuerpo, la barbilla y la pupila: no hay un
+         color por componente, y la posición de la luz decide por dónde se
+         enciende, no de qué color es.
+
+         EL ARCO ES EL DE LO SINIESTRO, y dónde acaba está medido: magenta
+         (300°) → carmesí → sangre (0°) → naranja → ámbar (40°). Pasado
+         eso el amarillo y el verde se DISPARAN de luminancia aunque la
+         `luz` del HSL no cambie —a 60° sale 223 contra los 140 del
+         naranja—, y eso es lo que se lee como color claro. Por abajo se
+         corta en 300 y no en 268 para no entrar en el azul-violeta, que
+         es el de las medusas: aquí el calor es lo que caza.
+
+         LO QUE IMPIDE QUE SALGA PASTEL no es el tono sino estos dos:
+         `sat` alta y `luz` a media altura. Con ellos el canal más flojo
+         se queda en 17-40 en todo el arco, así que no hay rosa ni celeste
+         ni verde claro posibles. El blanco sale sólo del `luzCore`, que
+         es el corazón de la esca y tiene que quemar.
+
+         Y EL ARCO ANCHO ES LA MITAD DEL SORTEO. Esto tuvo 30° en
+         dieciséis tramos y salía siempre naranja: los dieciséis con el
+         canal rojo clavado en 238 y el azul en 32, o sea dieciséis
+         matices de lo mismo. Un arco estrecho no es un sorteo por muchos
+         tramos que se le pongan.
+
+         `giroGlow` +5, el de la casa: el halo tira un poco hacia el rojo,
+         que en este arco siempre calienta. */
+      espectro: { tono: [300, 400], tramos: 20,
+                  sat: [0.78, 1.00], luz: [0.42, 0.56],
+                  satGlow: [0.72, 0.95], luzGlow: [0.18, 0.30],
+                  luzCore: [0.80, 0.92], giroGlow: 5 },
+
+      /* punto pequeño y quemado, no mancha grande y suave */
+      esca: 0.050,                // radio del señuelo, en largos
+      difusion: 2.9,              // cuánto se derrama alrededor
+      /* En largos, así que el radio crece con el bicho. Chica e intensa: a
+         1,05 el halo se come un tercio del cuadro y eso no es una lámpara
+         con corona, es el agua teñida. */
+      halo: 0.45,                 // corona de la lámpara, en largos
+      nucleo: 0.34,               // el corazón blanco: deja ver el tono
+      /* Nunca se apaga del todo: la esca es el único punto de referencia
+         que hay aquí abajo. El techo pasa de 1 porque es lo ÚNICO que
+         tiene que quemar. */
+      intensidad: [0.42, 1.00],
+      /* ── Y CUANDO ESTÁ SACIADO ─────────────────────────────────
+         El parpadeo sigue, pero aquí abajo: mientras dura `reposo` la esca
+         queda CASI apagada, a un décimo de lo que da normalmente. No a
+         cero, porque es el único punto de referencia del cuadro —lo que
+         tiene que leerse es una brasa, no un hueco. El suelo de verdad no
+         es este número sino `rLuz`: a 0,04 la esca todavía prende motas a
+         15 px en caja de móvil, y por debajo deja de alumbrar nada y el
+         punto se queda solo sobre negro.
+
+         DE AQUÍ SALEN TRES COSAS, no una, porque las tres cuelgan del
+         brillo de ahora normalizado contra `intensidad[0]`: lo que se ve,
+         lo que TIRA (`senuelo`, que la presa multiplica por su
+         `atraccion`) y hasta dónde enciende plancton (`rLuz`). Bajar sólo
+         lo que se ve sería cosmético: el banco seguiría acudiendo a un
+         señuelo negro y quedaría una nube de motas prendidas alrededor.
+
+         MEDIDO en pantalla —cuadro de 90 px alrededor de la esca, el grano
+         apagado y el bicho clavado, que sin las tres cosas la medida es
+         ruido—: lo que se derrumba es la CORONA, no el punto. De encendida
+         a saciada, los píxeles por encima de 120 pasan de 1.492 a NINGUNO
+         y los de más de 60, de 3.518 a 148. O sea que deja de ser una
+         lámpara y sigue siendo una brasa, que es lo que se le pide: sin
+         ella el cuadro se queda sin ancla.
+
+         Y ES EL SUELO DE LO QUE TIRA. `escaSaciada[1]` no sólo dice lo
+         apagada que se queda: es el punto en el que `senuelo` llega a
+         CERO, así que de este número depende que una esca apagada deje de
+         atraer del todo (ver `senuelo` en bichos/rape.js). Subirlo apaga
+         la trampa antes; bajarlo la deja tirando más rato.
+
+         MEDIDO sobre diez minutos y dos semillas, con el rape saciado el
+         60-71 % del tiempo: el cebado del banco sobre una esca APAGADA
+         cae de 47-49 pez·segundo a 6-8, o sea del 42-49 % de todo el
+         cebado al 9-11 %. Lo que queda es el segundo que tarda el brillo
+         en bajar al tragar, que es justo lo que hay que ver.
+
+         Y la trampa no pierde: el cebado con la esca encendida SUBE
+         (50→52 y 64→86 pez·segundo), porque el banco deja de gastar la
+         mitad del rato en un señuelo que no responde. */
+      escaSaciada: [0.04, 0.11],
+
+      /* Delante del morro, no encima del lomo: es para lo que sirve, y es
+         lo que mantiene al pez a oscuras —cuanto más separada está la luz
+         de la boca, más grande es lo que no se ve. En LARGOS. */
+      delante: 0.46, encima: 0.26,
+      muelle: 34, freno: 7.0,     // baja el muelle y se retrasa más al girar
+
+      /* ── LO QUE TAPA ───────────────────────────────────────────
+         Todo se pinta sumando, así que por defecto ningún cuerpo puede
+         taparle a otro. `tapa` es la oclusión por el único camino que un
+         aditivo permite: no se añade negro, se le quita la luz al que
+         estaba detrás. Es contra los DEMÁS bichos —que el rape se vea a
+         través de sí mismo es el diseño, explicado en bichos.js.
+
+         Tapa SIEMPRE, también negro sobre negro: aunque no se dibuje un
+         píxel de él, se le encuentra por la AUSENCIA de motas.
+
+         `tapaFilo` es lo que lo hace leer macizo: entra como
+         pow(1 - d/r, 1/filo), así que a `filo` bajo el apagado se
+         desvanece antes del canto y se cuela luz por dentro de la silueta
+         —29,6 % con filo 5, 4,8 % con filo 28. */
+      tapa: 1, tapaFilo: 28,
+      /* ── Y LO OSCURO QUE SE PONE CUANDO NO LO MIRA NADIE ───────
+         `tapa` le quita las motas a lo de detrás, pero el hueco que deja
+         es del color del agua y el agua aquí abajo ya es casi negra: a
+         oscuras el rape no se lee, se INTUYE. `oscuro` le quita luz
+         también al AGUA —el mecanismo del leviatán, ver `pintaSombras` en
+         motor/agua.js— y sólo mientras `ilum` está por debajo de medio
+         `techo`, así que es un agujero con forma de pez hasta que algo lo
+         alumbra y entonces se disuelve y aparece el cuerpo.
+
+         A 1 es tan negro como el leviatán, que es una bestia a treinta
+         metros; éste está en el plano de delante y a esa altura tapa el
+         velo entero. Lo que se le pide es que se INSINÚE. */
+      oscuro: 0.7,
+
+      /* `vigila` son los largos en los que algo le llama la atención;
+         `velMira` lo que tarda el ojo en llegar; `pupila`, cuánto se
+         desplaza dentro del ojo. `destelloOjo` es el tapetum, y sólo se ve
+         en la penumbra. */
+      vigila: 1.9, velMira: 2.4, pupila: 0.40, destelloOjo: 2.6,
+      /* La pupila NUNCA se apaga: emite por su cuenta, así que al rape se
+         le encuentra siempre si se le busca. Es la única excepción
+         declarada a la regla de la casa, y va baja —a 0,45 deja de ser un
+         pez a oscuras con los ojos encendidos y pasa a ser dos ojos
+         flotando. */
+      ojoBrillo: 0.20,
+
+      /* Radianes que abre la quijada al bombear las branquias. El ritmo va
+         por bicho, o los rapes respirarían a la vez. */
+      respira: 0.055, ritmoRespira: [1.7, 2.7],
+
+      /* Se congela al ser alumbrado: 0 lo deja como estaba, 1 lo clava. A
+         0,85 lo único que se mueve cuando algo lo descubre es la pupila. */
+      congela: 0.85,
+
+      /* Quién ve a quién: `alcanceLuz` es a qué distancia enciende plancton
+         —el aspecto— y `alcanceCuerpo` a qué distancia una esca REVELA a
+         otro pez —el mecanismo. */
+      alcanceLuz: 0.62,           // largos en los que enciende plancton
+      /* El rape vive a oscuras y estos cuatro lo sostienen. Deciden cuándo
+         se ENCIENDE, no cuándo está: apagado tapa igual. */
+      alcanceCuerpo: 0.88,        // largos en los que alumbra a otro pez
+      caida: 3.2,                 // exponente: alto = alcance corto
+      ganancia: 2.0,              // pero mucha luz dentro de ese alcance
+      autoLuz: 0.08,              // su propia esca apunta al frente, no a él
+      base: 0.002,                // lo que se intuye sin que nada lo alumbre
+
+      parpadeo: [1.6, 9],
+      cola: 0.055, velCola: [0.8, 1.8],
+      /* LA CARA. Dientes largos y desiguales en dos filas, la boca nunca
+         cerrada del todo y una barbilla ramificada (Linophryne). La
+         barbilla pone una SEGUNDA luz separada de la esca, y entre las dos
+         no se dibuja nada: el tamaño de la cabeza lo declara su
+         distancia. */
+      paladar: true,              // la fila interior, la del paladar
+      entreabierta: 0.13,         // la quijada nunca acaba de cerrar
+      /* ── EL REPARTO DE LA ABERTURA, Y ES UN TOPE MEDIDO ──────────
+         0,30 la quijada de arriba y el resto la de abajo, que es como abre
+         un rape. Y NO SE PUEDE SUBIR: la de arriba gira sobre la charnela
+         y el hueco que abre se le RESTA al cuerpo (ver `bocaPath`), así
+         que barriendo de más se traga el ojo y lo deja flotando fuera de
+         la silueta.
+
+         MEDIDO punto en polígono contra el hueco, en veinticinco posturas
+         de `ataque` y con la boca de aquí arriba: a 0,30 el ojo queda
+         libre en todo el bocado; a 0,34 ya choca a `ataque` 0,60 y a 0,42
+         choca esté el ojo DONDE ESTÉ —subirlo no se arregla moviendo el
+         ojo, se arregla no subiéndolo—. Si algún día se quiere una boca
+         aún mayor, el que crece es `bocaLargo`, no esto. */
+      barba: 0.50, barbas: [3, 5], barbaBrillo: 0.42,
+      /* y el detalle del cuerpo, que sólo existe a este tamaño */
+      miomeros: [7, 10], radios: [5, 7],
+      /* Se arrima al LATERAL y mira hacia dentro: `querencia` es el empuje
+         hacia el lado y `aro` a qué distancia del centro se planta, ya sólo
+         en x. El `borde` de la casa empuja al revés, así que va bajo. Las
+         escas quedan a un lado apuntando al centro y el centro se vacía.
+
+         `altura` es lo que le falta al aro, que no mira la vertical: un
+         tirón flojo y permanente hacia la media altura. Sin él el rape
+         acababa contra el techo o el suelo —medido, ocho semillas de
+         600 s en caja de móvil: el 84-97 % del tiempo por encima de 0,70
+         de altura, y NUNCA en el tercio central—, que es donde peor se le
+         ve la cara y donde menos tiene sentido una trampa. Con él se pone
+         al revés: el 81 % del tiempo en el tercio central y excursiones de
+         hasta 0,69, o sea que arriba se visita y no se vive.
+
+         Y HAY QUE ELEGIRLO POR LA VARIANZA, no por la media: a 0,08 la
+         media sale bien y sin embargo una semilla de cada cuatro se queda
+         pegada al techo el 28 % del tiempo, que es el fallo otra vez
+         escondido en el promedio. A 0,16 empieza a pincharlo en el centro
+         y a 0,45 lo clava. Con UN rape por pecera, una tirada no dice
+         nada.
+
+         `bandaY` es a qué altura nace, con querencia o sin ella. Estrecha,
+         porque el tirón es lento a propósito: naciendo en el techo lo que
+         se ve es el minuto que tarda en bajar. */
+      /* ── Y HAY QUE SUBIRLO AL DARLE UN LADO PROPIO ──────────────
+         `querencia` valía 0,55 cuando el lado se recalculaba cada
+         fotograma: entonces el empuje sólo tenía que decir «apártate del
+         centro», que se cumple solo. Ahora dice «vete a TU lado y
+         quédate», que es otro trabajo, y a 0,55 no llega: MEDIDO, el rape
+         se pasaba el 57-95 % del tiempo en el tercio central y su |x|
+         medio era 0,16-0,46 contra el 0,84 del aro. O sea que ni con uno
+         solo cumplía lo que este bloque dice que hace.
+
+         A 1,4 el |x| medio sube a 0,64-0,66 sin pegarse al cristal
+         —pasado 0,92 el 0 % del tiempo— y todavía visita el tercio
+         central el 15-22 %, que es lo que impide que parezca decorado.
+
+         `lado` no se pone aquí: se sortea al nacer, en bichos/rape.js.
+         Se puede clavar con `lado` si alguna vez hace falta. */
+      querencia: 1.4, aro: 0.84, altura: 0.10, miraAlCentro: true,
+      /* ── Y A QUÉ ALTURA VIVE CADA UNO ──────────────────────────
+         `aroY` separa de la media altura el sitio del rape según la
+         banda que le tocó al nacer: a 0,12 vive por el 38 % del alto o
+         por el 62 %, así que el cuadrante es un SITIO y no sólo un
+         punto de partida.
+
+         Y ES EL VALOR QUE HAY QUE VIGILAR, porque es el que puede
+         deshacer lo que `altura` arregló: que el rape no se instale
+         contra el techo, que es donde peor se le ve la cara. MEDIDO,
+         cuatro semillas de 200 s: a 0 pasan el 0-12 % del tiempo en el
+         quinto de arriba o de abajo, a 0,12 el 0-16 % y a 0,16 ya el
+         0-26 %. A 0,12 la casa de cada uno se distingue y el techo sigue
+         siendo una excursión. */
+      aroY: 0.12,
+      /* `banda` es dónde nace uno SIN querencia, en fracción de ancho.
+         `bandaY` ya no es una altura absoluta sino lo que se APARTA de la
+         media altura, hacia arriba o hacia abajo según la banda que le
+         tocó: 0,12-0,32 son nacimientos entre el 18 % y el 38 % del alto,
+         o entre el 62 % y el 82 %. Simétrico, y un solo rango para los
+         dos lados. */
+      banda: [0.08, 0.92], bandaY: [0.12, 0.32],
+      borde: 0.30,
+      /* ACECHO: crucero mínimo y ratos largos clavado entre embestidas. Un
+         rape que patrulla es un pez que pasa; uno quieto veinte segundos
+         con la esca colgando es una trampa esperando. */
+      crucero: 0.055,             // empuje constante, en U/s
+      acecho: [7, 22],            // quieto entre embestidas
+      embestida: [0.5, 1.7],
+      arrastre: 0.26,             // más alto = frena menos = planea más
+      /* la inclinación del cuerpo, que es por donde empuja. Positiva es
+         hacia abajo, mire el pez donde mire. */
+      inclina: [-0.34, 0.34],     // unos 20° arriba o abajo
+      cadaInclina: [9, 24],
+      velInclina: 0.4,            // vira despacio, como un submarino
+      topeInclina: 0.55,          // sólo al huir puede pasar de ahí
+      giro: [14, 38], velGiro: 5, // el giro pasa por el perfil, no salta
+      /* LA CAZA. No persigue: espera a que algo llegue a la esca. */
+      alcanceBoca: 0.16,          // a qué distancia de la esca muerde
+      /* cuánto tarda en volver a tirar: es lo que separa un cazador al
+         acecho de una trituradora. Tras acertar, más: está tragando. */
+      reposo: [10, 24], reposoFallo: [3, 7],
+      bocado: 0.55,               // lo que dura el ¡ÑACA!, en segundos
+      acometida: [5, 8],          // el tirón del bocado
+      acierto: 0.72,              // falla una de cada cuatro
+      trasComer: [7, 16],         // la esca se apaga DESPUÉS de tragar
+      /* ── LA RÁFAGA, Y UNA SOLA ─────────────────────────────────
+         No es una luz aparte: la esca emite once veces más durante un
+         instante y a la vez se recoge hacia la boca, así que el cuerpo se
+         enciende por el modelo de siempre. El tope está en `techo`.
+
+         `fogonazoCaida` es lo que la convierte en RÁFAGA: la luz sale de
+         elevar la fase a este exponente, así que por encima de 1 el
+         ataque es instantáneo y la caída violenta —a 1,8 queda en el 60 %
+         al primer quinto y en el 8 % a tres cuartos. Con exponente 1 baja
+         a ritmo constante y se lee como un foco que se enciende.
+
+         `fogonazoDura` cubre el bocado MÁS la masticación (0,75-0,93 s):
+         es la única luz que hay, y tiene que llegar viva —de cola— hasta
+         que acaba de tragar. */
+      fogonazo: 11, fogonazoDura: 0.9, fogonazoCaida: 1.8, retrae: 0.95,
+
+      /* ── MASTICAR ──────────────────────────────────────────────
+         El bocado dura medio segundo y tiene que seguir durándolo: un
+         cazador de emboscada es un tirón. Lo que se alarga es lo de
+         después —con la presa dentro trabaja la quijada y lleva el ilicio
+         recogido junto a la boca—, y no pone luz: pone movimiento, que se
+         ve con la cola de la ráfaga. Por encima del segundo deja de ser un
+         vistazo y se convierte en un rape al que da tiempo a mirarse. */
+      mastica: [0.20, 0.38],      // segundos con la presa dentro
+      masticaRitmo: 4.6,          // dentelladas por segundo, en rad/s
+      masticaAbre: 0.13,          // cuánto trabaja la quijada, en rad
+      masticaRetrae: 0.82,        // lo recogido que se queda el ilicio
+
+      /* ── Y EL BANCO SE ENTERA ──────────────────────────────────
+         Un campo `asusta` en la boca al morder. `espanta` es el radio en
+         LARGOS del rape, así que espanta más lejos cuanto más grande es el
+         animal y la escala se mantiene en cualquier pantalla.
+
+         NO puede ir generoso: a 4,2 —el 61 % del ancho— entraban en
+         pánico los 68 peces a la vez y el susto dejaba de ser local. A
+         2,0 el radio es el 29 % del ancho y se asustan 34 de 68: huye el
+         que está cerca.
+
+         `espantaDura` es más largo que la ráfaga a propósito: si el susto
+         se apagara con la luz, cuando el ojo vuelve a ver al banco ya
+         está rehecho y el pánico no se ha visto. `espantaFilo` por debajo
+         de 1 entra como pow(u, 1,25), así que el peso cae rápido en el
+         canto y los del borde no llegan al umbral: el miedo no tiene
+         borde duro. */
+      espanta: 2.0, espantaDura: 2.2, espantaFilo: 0.8,
+    },
 
     /* LA PRESA, y a la vez el foco que se mueve. En cardumen son las dos
        cosas: de lejos, la única cosa viva y de colores que cruza el

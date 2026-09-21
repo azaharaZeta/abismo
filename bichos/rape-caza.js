@@ -32,8 +32,19 @@ import { hacia } from './comun.js';
    techo, lo hace raro.                                              */
 function querencia(f, M, p, dt){
   if (!p.querencia) return;
-  const cx = M.W*0.5, cy = M.H*0.5;
-  const ex = (f.bx - cx)/cx, ey = (f.by - cy)/cy;   // -1..1 por eje
+  const cx = M.W*0.5;
+  /* ── LA ALTURA A LA QUE VIVE, Y ES LA DE SU BANDA ──────────────
+     `aroY` es lo que se separa de la media altura el sitio de cada uno,
+     en fracción de alto: a 0 los dos van al centro —lo de siempre— y a
+     0,16 uno vive en el 34 % y el otro en el 66 %. Es lo que convierte
+     el cuadrante de nacimiento en un SITIO en vez de en un punto de
+     partida que se deshace en medio minuto.
+
+     Y no puede subir mucho: el tirón al centro estaba medido y es lo
+     que impide que el rape se instale contra el techo, que es donde
+     peor se le ve la cara. `aroY` mueve su casa, no le quita el tirón. */
+  const cy = M.H*(0.5 + f.banda*opt(p.aroY, 0));
+  const ex = (f.bx - cx)/cx, ey = (f.by - cy)/(M.H*0.5);
   f.vy -= ey * opt(p.altura, 0) * M.U * dt;
   /* ── Y TIRA HACIA SU LADO, NO HACIA EL MÁS CERCANO ─────────────
      `f.lado` se sortea al nacer —o lo fija la escena con `lado`— y ya no

@@ -27,6 +27,9 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 
 ## Ideas de usuario (pendientes de procesar)
 > Solo un humano edita esta sección. Texto breve; el detalle se desarrolla al crear la ficha.
+- anglerfish: hacer el ojo del anglefish primero (el original) un poquito más grande.
+- anglerfish: mejorar la caza del pez, que se vea un poco mejor que lo atrapa con la boca y se lo come. no es necesario cambiar el anglerfish, solo mejorar el movimiento del pez: debería seguir atraido por el cebo, hasta que le muerda el pez, y la boca se cierre sobre él. por encima de él. ahora parece que vuela como atraido con un imán hacia el pez. como tenemos dos formas de anglefish, mira algo que funcione para los dos mas o menos
+- evento cuerpos: suelen caer siempre con la cabeza arriba. mira si es viable, sin cambios mayores, que puedan caer cabeza abajo, o girar a veces. 
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos de las ideas procesadas el 2026-09-17, el 2026-09-18 y el 2026-09-19.
 - `M.mod.agua` / `M.mod.ritmo`: la maquinaria está viva y la lee el motor, pero no la escribe ningún evento. O se usa en alguno, o se quita como se quitó `M.cardumen()`.

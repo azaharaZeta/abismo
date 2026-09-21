@@ -1,9 +1,10 @@
 # Idea: el diseño del rape
 
-**Estado: ELEGIDA «F · TINTA» Y PUESTA EN LA PIEZA** el 2026-09-21, junto
-al diseño de siempre: ahora hay DOS rapes, uno de cada forma, algo más
-pequeños y de colores distintos. Queda el visto bueno visual y decidir si
-`_banco/` se borra. La primera tanda se descartó entera; abajo está por
+**Estado: ELEGIDA «F · TINTA» Y PUESTA EN LA PIEZA** el 2026-09-21. Hubo
+un rato con DOS rapes, uno de cada forma, y se descartó: la pieza se
+queda con UNO y de la forma nueva. La cabezona de siempre ya no se
+dibuja —su anatomía está en git—. Queda el visto bueno visual y decidir
+si `_banco/` se borra. La primera tanda se descartó entera; abajo está por
 qué, que es lo que había que anotar.
 **Empezada:** 2026-09-20
 
@@ -234,6 +235,41 @@ Van con cualquiera de las tres y se pueden dejar para después.
   lado», que no. A 0,55 los dos acababan encima: a menos de 1,4 largos
   uno de otro el 50-88 % del tiempo. A 1,4, el 4-7 % y nunca en el mismo
   lado. Medido en escena.js.
+
+### Y dos ajustes más, ya con los dos en la pecera
+
+- **El color no era un sorteo.** Cada rape tenía su espectro y el del de
+  gota abarcaba 30° en 16 tramos: los dieciséis salían con el rojo
+  clavado en 238 y el azul en 32, o sea dieciséis matices del mismo
+  naranja. Ahora hay UN arco compartido de 100° —magenta → carmesí →
+  sangre → naranja → ámbar— y cada uno saca el suyo. El tope de 40° no
+  es de gusto: pasado eso el amarillo y el verde se van a luma 200+
+  aunque la `luz` del HSL no cambie, y eso es lo que se lee como claro.
+- **El sitio tampoco.** El lado estaba clavado en la escena (−1 y +1)
+  para que no se apilaran. Ahora lo reparte un mazo de dos cartas en
+  rape.js —lo único que sabe que hay dos— así que salen en cantos
+  opuestos pero cuál le toca cambia en cada repoblado; y `banda` (±1)
+  más `aroY` les dan los cuatro cuadrantes como SITIO y no sólo como
+  punto de partida.
+
+### Y al quedarse en uno solo
+
+Se quitó la anatomía `clasico` de `FORMAS`, su entrada de escena, el
+`const RAPE` compartido —con un consumidor ya no era un tronco— y el
+mazo que repartía cantos opuestos. Lo que queda SIN EJERCITAR y habría
+que decidir si se colapsa también:
+
+- la rama de dientes en cuña de `boca()` (`colmillo` 0), que la forma
+  que hay no usa —va a 0,12, el gancho—;
+- la del globo del ojo relleno en `ojo()`, que ahora va siempre `hueco`;
+- el atajo de muestreo uniforme de `cuerpoPath()` (`sesgo === 1`);
+- que `destinos()` en pruebas.js escriba en varias entradas a la vez, que
+  hacía falta con dos rapes;
+- `FORMAS` con una sola entrada y el `forma` de la escena que la nombra.
+
+Lo último NO es lo mismo que lo demás: la tabla es DÓNDE VIVE la
+anatomía, no una rama muerta. Las otras cuatro sí son código que nadie
+ejecuta.
 
 ## Lo que queda por decidir
 

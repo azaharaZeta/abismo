@@ -32,11 +32,11 @@ especie('rape', {
     /* ── QUÉ RAPE ES ─────────────────────────────────────────────
        La ANATOMÍA se elige por nombre y se resuelve UNA VEZ, al nacer:
        de ahí abajo nadie vuelve a preguntar de qué forma es, cada pieza
-       del dibujo lee `f.F`. La escena tiene dos entradas de esta misma
-       especie y sólo se diferencian en esto, el color y la boca.
+       del dibujo lee `f.F`.
 
-       Sin defecto a propósito: caer a `clasico` sería una segunda copia
-       del valor de escena, y quien se olvide de darlo se entera aquí. */
+       Sin defecto a propósito: caer a una forma concreta sería una
+       segunda copia del valor de escena, y quien se olvide de darlo se
+       entera aquí. */
     const F = FORMAS[p.forma];
     if (!F) throw new Error('rape: forma desconocida: ' + p.forma);
     /* NACE YA EN SU SITIO si la escena le pide querencia de borde: con un
@@ -45,18 +45,27 @@ especie('rape', {
        lateral, que es el único canto que la querencia sostiene, y la altura
        de `bandaY` —la misma que usa un rape sin querencia, así que la
        escena dice en un solo sitio a qué altura nace uno. */
-    /* SU LADO, y es de por vida: lo fija la escena con `lado` —−1 el
-       canto de la izquierda, +1 el de la derecha— o se sortea si no lo
-       dice. Con dos rapes en la pecera hay que decirlo: dejándolo al
-       sorteo, los dos caen en el mismo canto la mitad de las veces y
-       encima `querencia` los planta en el mismo punto. */
+    /* SU CUADRANTE, y es de por vida: el LADO —−1 izquierda, +1
+       derecha— y la BANDA —−1 arriba, +1 abajo—. Entre los dos, los
+       cuatro cuadrantes, y cuál le toca cambia en cada repoblado. La
+       escena puede clavar el lado con `lado` si hace falta.
+
+       OJO SI ALGÚN DÍA HAY MÁS DE UNO: esto es un sorteo por bicho y
+       `crear` no sabe de los demás, así que dos rapes caen en el mismo
+       canto la mitad de las veces y `querencia` los planta en el mismo
+       punto. Hubo un mazo que repartía cantos opuestos; está en git. */
     const lado = opt(p.lado, 0) || (Math.random() < 0.5 ? -1 : 1);
+    const banda = Math.random() < 0.5 ? -1 : 1;
+    /* `bandaY` es lo que se aparta de la media altura, no una altura
+       absoluta: así el sorteo es simétrico y un solo rango sirve para
+       arriba y para abajo. */
+    const alto = (0.5 + banda*rango(p.bandaY))*M.H;
     let bx, by;
     if (p.querencia){
       bx = (1 + lado*p.aro)*0.5*M.W;
-      by = rango(p.bandaY)*M.H;
+      by = alto;
     } else {
-      bx = rango(p.banda)*M.W; by = rango(p.bandaY)*M.H;
+      bx = rango(p.banda)*M.W; by = alto;
     }
     /* de cara al centro: dir=1 mira a −x */
     const dir = p.miraAlCentro ? (bx > M.W*0.5 ? 1 : -1)
@@ -69,7 +78,7 @@ especie('rape', {
        esca; no hace falta una paleta por componente. */
     const f = {
       c: M.color(p.paleta),
-      F, lado,
+      F, lado, banda,
       Lg, dir, gx: dir,
       bx, by,
       /* x,y son la esca: es lo que el motor reparte como luz, y no hay una

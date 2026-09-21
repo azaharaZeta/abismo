@@ -37,6 +37,10 @@ import { mancha, reparte } from './comun.js';
    Lo que NO está aquí y sigue en la escena: el largo de la boca, lo que
    abre, cuántos dientes, la barbilla y el color. Eso sí son mandos.
 
+   Hoy hay UNA forma. Hubo dos —la cabezona de siempre y ésta— y la
+   tabla se queda porque es donde va la anatomía, no por si vuelve la
+   otra: la otra está en git.
+
    Campana asimétrica para los perfiles: los dos mandos que importan
    quedan sueltos —`up` es dónde cae el canto máximo y `r` lo empinada
    que va la subida, de donde sale la bajada y con ella el pedúnculo—. */
@@ -53,18 +57,6 @@ const bulto = (u,c,w,h) => h*Math.exp(-Math.pow((u-c)/w,2));
 const TI_LOMO = campana(0.345, 0.45, 1.20), TI_PANZA = campana(0.445, 0.32, 0.90);
 
 const FORMAS = {
-  /* el de siempre: cabezón, con el máximo en el primer cuarto */
-  clasico: {
-    lomo:  u => 0.40*Math.pow(Math.sin(Math.PI*Math.pow(u,0.52)),1.25) + 0.030,
-    panza: u => 0.34*Math.pow(Math.sin(Math.PI*Math.pow(u,0.60)),1.20) + 0.028,
-    N: 26, sesgo: 1,
-    caudal: {x:1.15, y:0.155, muesca:1.07, radios:5},
-    aletas: {d0:0.60, d1:0.94, dAlto:0.19, a0:0.64, a1:0.94, aAlto:0.15,
-             p0:0.42, pY:0.55},
-    ojo: [0.22, -0.20, 0.050],
-    diente: 1, dienteAncho: 1, colmillo: 0, desigual: 0,
-    barbaU: 0.32, ilicioU: 0.10,
-  },
   tinta: {
     /* el morro va ROMO —un bulto estrecho en el arranque de los dos
        perfiles—: en punta parece un pico, y aquí es una pared */
