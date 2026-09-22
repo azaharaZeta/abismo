@@ -34,8 +34,10 @@ import { mancha } from '../bichos/comun.js';
    punto, que NO sea un sorteo por toda la paleta. Por eso el espectro de
    la escena va sin `peso`, que aquí no lo miraría nadie.            */
 
-/* el radio, la subida y el tamaño del destello de una burbuja */
-function nace(M, p, x, y, pal, i0, tramo){
+/* el radio, la subida y el tamaño del destello de una burbuja. `y0` es
+   la altura de SU erupción y no la del evento: con varias, medir lo
+   subido contra un origen común revienta las de arriba nada más nacer. */
+function nace(M, p, x, y, pal, i0, tramo, espera){
   const r = rango(p.radio) * M.U;
   /* la grande sube más: es la única física que se le pide, y sin ella el
      racimo asciende en bloque y se lee como una cortina */
@@ -50,7 +52,14 @@ function nace(M, p, x, y, pal, i0, tramo){
     amp:  rango(p.serpentea) * M.U,
     frec: rango(p.ritmo),
     fase: Math.random()*TAU,
-    espera: rnd(0, rango(p.soltar)),
+    y0: y,
+    espera: espera + rnd(0, rango(p.soltar)),
+    /* ── Y ALGUNAS REFLEJAN MÁS ──────────────────────────────────
+       No es que emitan —una pompa no emite, y ésa es la regla de la
+       casa—: es que la película está limpia y devuelve casi toda la luz
+       que le llega. A oscuras siguen sin estar, que es lo que lo
+       distingue de subirle el brillo al evento. */
+    refl: Math.random() < opt(p.raras, 0) ? rango(p.brillaRara) : 1,
     c: pal[Math.min(pal.length - 1, i0 + ((Math.random()*tramo)|0))],
     /* revienta o no, y se sortea AL NACER: decidirlo por el camino obliga
        a un reloj más y no se ve distinto */
@@ -66,12 +75,26 @@ evento('burbujas', {
     const pal = p.paleta;
     const tramo = Math.max(1, Math.min(pal.length, rangoE(p.tramo)|0));
     const i0 = (Math.random()*(pal.length - tramo + 1))|0;
-    const bx = opt(x, rango(p.banda)*M.W);
-    const by = opt(y, rango(p.hondo)*M.H);
-    const n = Math.max(2, rangoE(p.cuantas)|0);
+    /* ── VARIAS ERUPCIONES, NO UNA ───────────────────────────────
+       El fondo no suelta el aire de golpe ni por un solo agujero. Cada
+       erupción tiene su sitio y su momento; la PRIMERA va siempre a
+       tiempo cero, o el evento arranca con el cuadro vacío.
+
+       Se reparten alrededor de un punto y no por todo el ancho: lo que
+       se lee entonces es una zona del fondo ventilando, que es lo que
+       es. Si el evento se lanza a mano con (x,y), ése es el punto. */
+    const cx = opt(x, rango(p.banda)*M.W);
+    const ne = Math.max(1, rangoE(p.erupciones)|0);
     const bs = [];
-    for (let i=0;i<n;i++) bs.push(nace(M, p, bx, by, pal, i0, tramo));
-    return { bs, y0: by };
+    let espera = 0;
+    for (let k=0;k<ne;k++){
+      const bx = cx + (k ? rnd(-1, 1)*M.U*opt(p.separa, 0) : 0);
+      const by = opt(y, rango(p.hondo)*M.H);
+      const n = Math.max(2, rangoE(p.cuantas)|0);
+      for (let i=0;i<n;i++) bs.push(nace(M, p, bx, by, pal, i0, tramo, espera));
+      espera += rango(p.escalona);
+    }
+    return { bs };
   },
 
   actualiza(e, M, p, dt){
@@ -94,7 +117,7 @@ evento('burbujas', {
               + M.flujoX(b.x, b.y, t) * arr) * dt;
       b.y += M.flujoY(b.x, b.y, t) * arr * dt;
       /* revienta al llegar a su altura, o cuando se sale por arriba */
-      const subido = (e.y0 - b.y) / Math.max(1, e.y0);
+      const subido = (b.y0 - b.y) / Math.max(1, b.y0);
       if (b.revienta > 0 && subido >= b.revienta) b.rota = 1e-4;
       else if (b.y + b.r < 0) b.rota = 1;
     }
@@ -110,7 +133,7 @@ evento('burbujas', {
       /* CUÁNTA LE LLEGA Y DE DÓNDE. `vx,vy` es la suma de las direcciones
          hacia los focos, ponderada: de ahí sale el lado que se enciende. */
       const luz = M.luzEn(b.x, b.y, luces, {alcance: alc, caida, umbral: 0.003});
-      let br = (base + luz.total) * brillo;
+      let br = (base + luz.total) * brillo * b.refl;
       let R = b.r;
       if (b.rota > 0){
         /* reventada: crece y se apaga al cuadrado, que es lo que se lee

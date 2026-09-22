@@ -45,10 +45,14 @@ especie('rape', {
        lateral, que es el único canto que la querencia sostiene, y la altura
        de `bandaY` —la misma que usa un rape sin querencia, así que la
        escena dice en un solo sitio a qué altura nace uno. */
-    /* SU CUADRANTE, y es de por vida: el LADO —−1 izquierda, +1
-       derecha— y la BANDA —−1 arriba, +1 abajo—. Entre los dos, los
-       cuatro cuadrantes, y cuál le toca cambia en cada repoblado. La
-       escena puede clavar el lado con `lado` si hace falta.
+    /* SU CUADRANTE AL NACER: el LADO —−1 izquierda, +1 derecha— y la
+       BANDA —−1 arriba, +1 abajo—. Entre los dos, los cuatro cuadrantes,
+       y cuál le toca cambia en cada repoblado. La escena puede clavar el
+       lado con `lado` si hace falta.
+
+       Y NO ES DE POR VIDA: los dos se mueven al terminar de comer (ver
+       `apagaTrasComer`). La banda no sobrevive como tal —se convierte en
+       `casaY`, que ya es un número y no un signo—.
 
        OJO SI ALGÚN DÍA HAY MÁS DE UNO: esto es un sorteo por bicho y
        `crear` no sabe de los demás, así que dos rapes caen en el mismo
@@ -78,7 +82,10 @@ especie('rape', {
        esca; no hace falta una paleta por componente. */
     const f = {
       c: M.color(p.paleta),
-      F, lado, banda,
+      F, lado,
+      /* DÓNDE VIVE, en fracción de medio alto desde la media altura.
+         Nace en su banda y de ahí se va mudando. */
+      casaY: banda * opt(p.aroY, 0),
       Lg, dir, gx: dir,
       bx, by,
       /* x,y son la esca: es lo que el motor reparte como luz, y no hay una

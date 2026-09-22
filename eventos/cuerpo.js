@@ -13,6 +13,10 @@ const {rnd, rango, rangoE, opt, TAU} = M;
    en el agua y lo que hace que se reconozca de perfil, de frente y
    girado: va volteando muy despacio.
 
+   Y NO TIENE ARRIBA. Una parte nace boca abajo (`bocaAbajo`): lo que se
+   lee si todos entran de pie es una postura sostenida, o sea alguien
+   flotando, y no un cuerpo a la deriva.
+
    Va MÁS LENTO que la carroña y con menos volteo: tiene que tardar tanto
    en cruzar que dé tiempo a dudar de lo que se está viendo. Cuatro cosas
    lo hacen BLANDO, y sin ellas se reconoce el cuerpo pero no se cree:
@@ -216,7 +220,14 @@ function cuerpoNuevo(M, p, x, y, espera){
     y: opt(y, -h*0.75),
     h, espera,
     vel:   rango(p.vel) * M.U,
-    ang:   rnd(-0.25, 0.25),
+    /* ── Y A VECES ENTRA DE CABEZA ───────────────────────────────
+       Sin esto el ángulo de entrada es ±0,25 rad y SIEMPRE de pie, y lo
+       que se lee entonces es una postura sostenida —alguien flotando— y
+       no un cuerpo a la deriva. El volteo de `giro` no lo cubre: depende
+       de lo que dure la caída y en pantalla ancha no da tiempo. Los
+       números están en la escena, con `bocaAbajo`. */
+    ang:   rnd(-0.25, 0.25)
+           + (Math.random() < opt(p.bocaAbajo, 0) ? Math.PI : 0),
     vGiro: rango(opt(p.giro, 0)),
     fase:  Math.random()*TAU,
     hondura: rango(p.hondura),

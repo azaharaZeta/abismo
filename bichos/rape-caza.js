@@ -4,7 +4,7 @@
    campos con los que tapa y asusta, la mirada y la luz que le llega.
    ══════════════════════════════════════════════════════════════════ */
 import { M } from '../motor.js';
-const {clamp, rango, suave, opt} = M;
+const {clamp, rnd, rango, suave, opt} = M;
 import { centro, aMundo } from './rape-cuerpo.js';
 import { hacia } from './comun.js';
 
@@ -33,24 +33,27 @@ import { hacia } from './comun.js';
 function querencia(f, M, p, dt){
   if (!p.querencia) return;
   const cx = M.W*0.5;
-  /* ── LA ALTURA A LA QUE VIVE, Y ES LA DE SU BANDA ──────────────
-     `aroY` es lo que se separa de la media altura el sitio de cada uno,
-     en fracción de alto: a 0 los dos van al centro —lo de siempre— y a
-     0,16 uno vive en el 34 % y el otro en el 66 %. Es lo que convierte
+  /* ── LA ALTURA A LA QUE VIVE, Y SE MUEVE ───────────────────────
+     `f.casaY` es SU casa, en fracción de medio alto desde la media
+     altura: nace en su banda y se va desplazando cada vez que termina de
+     comer (ver `apagaTrasComer`). Aquí sólo se lee. Es lo que convierte
      el cuadrante de nacimiento en un SITIO en vez de en un punto de
      partida que se deshace en medio minuto.
 
-     Y no puede subir mucho: el tirón al centro estaba medido y es lo
-     que impide que el rape se instale contra el techo, que es donde
-     peor se le ve la cara. `aroY` mueve su casa, no le quita el tirón. */
-  const cy = M.H*(0.5 + f.banda*opt(p.aroY, 0));
+     El tope lo pone `aroY` y no puede subir mucho: el tirón al centro
+     estaba medido y es lo que impide que el rape se instale contra el
+     techo, que es donde peor se le ve la cara. Mueve su casa, no le
+     quita el tirón. */
+  const cy = M.H*(0.5 + f.casaY);
   const ex = (f.bx - cx)/cx, ey = (f.by - cy)/(M.H*0.5);
   f.vy -= ey * opt(p.altura, 0) * M.U * dt;
   /* ── Y TIRA HACIA SU LADO, NO HACIA EL MÁS CERCANO ─────────────
-     `f.lado` se sortea al nacer —o lo fija la escena con `lado`— y ya no
-     cambia. Mirando `Math.sign(ex)`, el lado era el que tocara en cada
-     fotograma: un rape que cruzaba el centro se quedaba en el otro
-     canto, y con DOS en la pecera los dos acababan en el mismo. MEDIDO,
+     `f.lado` se sortea al nacer —o lo fija la escena con `lado`— y sólo
+     cambia al cruzar (`apagaTrasComer`), o sea a propósito y de tarde en
+     tarde. Sacándolo de `Math.sign(ex)`, en cambio, sería el que tocara
+     en cada fotograma: un rape que cruzaba el centro se quedaba en el
+     otro canto, y con DOS en la pecera los dos acababan en el mismo.
+     MEDIDO,
      cuatro semillas de 200 s: compartían lado entre el 23 % y el 83 %
      del tiempo y pasaban el 41-86 % a menos de 1,4 largos uno de otro,
      o sea encima. Con el lado propio, cada uno se planta en el suyo.
@@ -87,11 +90,29 @@ function querencia(f, M, p, dt){
                           el pánico no se llega a ver.
      `masticaTotal`       la escala de `mastica`, para su envolvente.
      `masticaPend`        lo ganado al acertar, esperando turno. Ver abajo. */
-/* la esca se apaga después de tragar, o sea después de masticar */
+/* ── SE APAGA, Y ADEMÁS SE MUDA ─────────────────────────────────────
+   La esca se apaga después de TRAGAR, o sea después de masticar.
+   Terminar de comer es el único momento del ciclo en que el bicho no
+   está haciendo nada, así que es donde cabe lo que lo saca de su rincón:
+   un rape que vuelve siempre al mismo punto se lee como un adorno.
+
+   Y LO QUE SE MUEVE ES SU CASA, NO ÉL. `querencia` ya sabe llevarlo
+   hasta el punto al que tira, y con el signo bien puesto, así que sabe
+   traerlo también desde el canto contrario. Cambiar ese punto es todo lo
+   que hace falta: ni un reloj más, ni una máquina de estados.
+
+     `vagaY`  cuánto se desplaza en vertical de una vez, en fracción de
+              medio alto, topado por `aroY` —su casa más alta—.
+     `cruza`  con qué probabilidad se planta en el OTRO lateral. Va por
+              COMIDA y no por segundo, que es lo que lo ata al ritmo del
+              bicho en vez de al del reloj.                          */
 function apagaTrasComer(f, p){
   f.objBrillo = rango(p.escaSaciada);
   f.proxBrillo = f.digiere;
   f.digiere = 0;
+  const tope = opt(p.aroY, 0);
+  f.casaY = clamp(f.casaY + rnd(-1, 1)*opt(p.vagaY, 0), -tope, tope);
+  if (Math.random() < opt(p.cruza, 0)) f.lado = -f.lado;
 }
 
 function caza(f, M, L, p, dt){

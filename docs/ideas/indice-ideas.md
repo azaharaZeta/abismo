@@ -27,9 +27,9 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 
 ## Ideas de usuario (pendientes de procesar)
 > Solo un humano edita esta sección. Texto breve; el detalle se desarrolla al crear la ficha.
-- mejorar el movimiento del pez siendo cazado por el anglefish, que se vea un poco mejor que el anglerfish lo atrapa con la boca y se lo come. no cambies el anglerfish, solo mejora el movimiento del pez: debería seguir atraido por el cebo, hasta que le muerda el pez, y la boca se cierre sobre él. ahora parece que vuela como atraido con un imán hacia el pez. como tenemos dos formas de anglefish, mira algo que funcione para los dos mas o menos
-- evento cuerpos: suelen caer siempre manteniendo la postura con la cabeza hacia arriba. mira si es viable, sin cambios mayores, que pueda ocurrir que a vces caigan boca abajo o lleguen a estarlo mientras caen
-- anglerfish: tiende a mantenerse siempre en su zona original, asomándose a cazar y volviendo. haz que no siempre esté en el mismo sitio, que se mueva un poco en la vertical tras cazar, y que muy de vez en cuando decida cruzar la pantalla... algo así, para que  eventualmente vaya cambiando de ubicación. plantear una solución sencilla de implementar, no meter un espagueti de código, quiero una implementación sencilla.
+
+_(vacío: las tres del 2026-09-22 están procesadas)_
+
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos de las ideas procesadas entre el 2026-09-17 y el 2026-09-21.
 - rape: al morder, la boca abierta se sale del foco y se dibuja negra. El radio del degradado del cuerpo cae con la esca, que se recoge al morro. Medido y con arreglo propuesto en `archivo/historico.md`, 2026-09-21.

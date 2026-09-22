@@ -536,7 +536,16 @@ export const ABISMO = {
          Con estos, un cuerpo tarda 48-80 s en cruzar un móvil de pie y
          27-43 s tumbado, contra los 62-106 y 36-59 de antes. */
       alto: [4.0, 6.2], vel: [0.36, 0.66],
-      giro: [-0.055, 0.055], deriva: 0.22,
+      /* ── QUÉ FRACCIÓN NACE VOLTEADA ─────────────────────────────
+         Y hace falta porque EL VOLTEO POR EL CAMINO NO BASTA: depende de
+         lo que dure la caída, y en pantalla ancha cruzar cuesta la mitad
+         de tiempo. Medido, cincuenta cuerpos por caja: sólo con `giro`
+         llega a estar boca abajo alguna vez el 42 % en móvil de pie pero
+         el 4 % en portátil, y ninguno ENTRA volteado en ninguna de las
+         dos. Con el arranque sorteado son el 53 % y el 49 %, que es lo
+         que se pide: que pase en las dos cajas. A un tercio, la postura
+         del ahogado sigue siendo la que manda. */
+      giro: [-0.055, 0.055], bocaAbajo: 0.32, deriva: 0.22,
       /* `cuantos` es cuántos caen en una tirada y `retraso` los segundos
          que tarda cada uno en asomar detrás del anterior. El retraso es
          LARGO —10-30 s, y el cuerpo tarda 48-80 en bajar— porque no son
@@ -710,7 +719,15 @@ export const ABISMO = {
        despegan del agua. */
     { evento: 'burbujas', plano: 1,
       banda: [0.12, 0.88], hondo: [0.99, 1.06],
-      cuantas: [6, 13], radio: [0.09, 0.28], racimo: 0.55,
+      /* ── CUÁNTAS ERUPCIONES, Y POR QUÉ NO UNA MÁS GORDA ─────────
+         Treinta burbujas saliendo del mismo agujero se leen como una
+         cortina; tres tandas de ocho, escalonadas y separadas, se leen
+         como un trozo de fondo que ventila, que es lo que son. `separa`
+         va en U y `escalona` es lo que tarda en abrirse la siguiente; la
+         primera sale siempre a tiempo cero, o el evento arranca con el
+         cuadro vacío. */
+      erupciones: [2, 4], separa: 3.0, escalona: [0.8, 2.6],
+      cuantas: [5, 10], radio: [0.09, 0.28], racimo: 0.55,
       sube: [1.8, 3.2], serpentea: [0.10, 0.28], ritmo: [0.9, 2.2],
       soltar: [0, 0.9], arrastra: 0.5,
       /* cuántas revientan y qué dura el estallido: el aro se abre y se va
@@ -722,6 +739,12 @@ export const ABISMO = {
          especular, en fracción del radio: a 1 se come el aro y la burbuja
          vuelve a ser un disco. */
       brillo: 1.0, base: 0.06, alcance: 3.5, caida: 1.6, destello: 0.5,
+      /* Y UNA DE CADA CINCO REFLEJA EL DOBLE. No emite más —una pompa no
+         emite, y ésa es la regla de la casa—: es la película limpia
+         devolviendo casi toda la luz que le llega, así que a oscuras
+         sigue sin estar. Es lo que impide que un racimo se lea como una
+         textura uniforme. */
+      raras: 0.20, brillaRara: [1.8, 2.8],
       /* EL COLOR VA POR RACIMO. El círculo entero de tono y muchos tramos,
          porque lo que se sortea es DÓNDE empieza el trozo; `tramo` es
          cuántas entradas seguidas se reparten las burbujas de una tanda.
@@ -1190,8 +1213,32 @@ export const ABISMO = {
          cuatro semillas de 200 s: a 0 pasan el 0-12 % del tiempo en el
          quinto de arriba o de abajo, a 0,12 el 0-16 % y a 0,16 ya el
          0-26 %. A 0,12 la casa de cada uno se distingue y el techo sigue
-         siendo una excursión. */
+         siendo una excursión. Y ahora es además el TOPE de lo que se
+         puede alejar su casa de la media altura, que ya no es fija. */
       aroY: 0.12,
+      /* ── Y NO VIVE SIEMPRE EN EL MISMO SITIO ────────────────────
+         Las dos se gastan al TERMINAR DE COMER, que es el único momento
+         del ciclo en que el bicho no hace nada (ver `apagaTrasComer`):
+         `vagaY` es el paso vertical de cada mudanza —en fracción de
+         medio alto, topado por `aroY`— y `cruza` con qué probabilidad
+         se planta en el OTRO lateral, o sea cruza el cuadro entero.
+
+         Van POR BOCADO y no por segundo, que es lo que las ata al ritmo
+         del bicho en vez de al del reloj. Y EL RITMO ESTÁ MEDIDO, que es
+         de donde salen los dos números: DOS COMIDAS POR MINUTO, no las
+         siete u ocho cada diez que cuenta el histórico —aquello medía
+         otra cosa, presas tragadas y no veces que se apaga—. Con eso,
+         `cruza` 0,035 sale a una travesía cada quince o veinte minutos,
+         que es lo que se pidió: muy de vez en cuando.
+
+         `vagaY` 0,05 mueve la casa unos veinte píxeles por comida en caja
+         de móvil: se nota sin ser un salto. El paseo satura contra el
+         tope en un par de minutos y eso está BIEN —lo que hace entonces
+         es rondar entre las dos bandas—; lo que había que vigilar es el
+         techo, y no sólo sigue en su sitio, mejora: 2-4 % del tiempo en
+         el quinto de arriba o de abajo, contra el 0-16 % que daba la
+         casa fija, porque una casa que se mueve pasa por el medio. */
+      vagaY: 0.05, cruza: 0.035,
       /* `banda` es dónde nace uno SIN querencia, en fracción de ancho.
          `bandaY` ya no es una altura absoluta sino lo que se APARTA de la
          media altura, hacia arriba o hacia abajo según la banda que le
