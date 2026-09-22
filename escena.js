@@ -926,33 +926,30 @@ export const ABISMO = {
     { especie: 'rape', forma: 'tinta',
       bocaLargo: 0.66, bocaMorro: 0.010, bocaHondo: 0.175, bocaCharnela: 0.085,
       quijadaArriba: 0.16, abertura: 0.50, dientes: 9,
-      /* Uno, y dos en pantalla grande. Ninguno al fondo: un rape lejano es
-         una mancha sin dientes, barbilla ni ojo. Números sueltos porque
-         por área esto no se puede decir. */
+      /* Uno, y siempre uno: `porPlano` no mira el área, así que esto es
+         el número y no una densidad. Ninguno al fondo: un rape lejano es
+         una mancha sin dientes, barbilla ni ojo. */
       por: [0, 0, 1],
       /* ── EL TAMAÑO ─────────────────────────────────────────────
          Se sortea POR BICHO y en cada repoblado, así que al reiniciar
-         cambia. El rango va ANCHO —×1,6 de un extremo a otro— porque es
+         cambia. El rango va ANCHO —×1,55 de un extremo a otro— porque es
          lo único que hace que dos peceras seguidas no se vean iguales.
 
-         Por arriba lo acota la pantalla: a 6,7 medía el 72 % del ancho
-         de un móvil de pie.
+         LA CAJA QUE MANDA ES EL MÓVIL PEQUEÑO, y ahí está medido: en
+         375×812 el lienzo se queda en 359×750 —el marco se lleva el
+         resto—, U sale 28,8 y el `scale` 1,32 del plano de delante deja
+         38 px por unidad. Ojo al medirlo en un móvil grande: allí U pasa
+         de 33 y todo parece caber.
 
-         EL SUELO ESTÁ MEDIDO, y es lo único que acota por abajo. La caja
-         apretada es el móvil (U≈32), donde el `scale` 1,32 del plano de
-         delante deja el largo en 42 px por unidad: a 3,2 son 134 px y
-         aguantan los colmillos, el aro del iris, las púas del lomo y la
-         barbilla; a 2,5 (105 px) los dientes se emborronan en una línea,
-         el aro del ojo desaparece y las púas se funden con el canto. Por
-         debajo de 3 deja de merecer la pena tener dos formas. */
-      largo: [3.2, 5.0],
-      /* GRANDE: es lo que sostiene el detalle —miómeros, cristalino,
-         dientes y barbilla no existen por debajo de cierto tamaño—. Pero
-         la caja que manda es el MÓVIL DE PIE: `largo` va en U y además lo
-         multiplica el `scale` 1,32 del plano de delante, así que a 7,4 el
-         bicho medía el 80 % del ancho de esa pantalla. A 6,7, el 72 %.
-         El mínimo baja poco: por debajo de 5 se le empieza a caer el
-         detalle, que es lo que lo sostiene. */
+         Por arriba lo acota la pantalla: 5,9 son 225 px, el 63 % del
+         ancho de esa caja; a 6,7 el bicho medía el 71 %.
+
+         Y POR ABAJO MANDA EL DETALLE, con un suelo que va en PÍXELES y
+         no en U: a 134 px aguantan los colmillos, el aro del iris, las
+         púas del lomo y la barbilla; a 105 px los dientes se emborronan
+         en una línea, el aro del ojo desaparece y las púas se funden con
+         el canto. 3,8 deja 145 px en la caja apretada. */
+      largo: [3.8, 5.9],
       brillo: 1.15,               // el del señuelo: éste sí quema
       /* El cuerpo casi no se ve, y aquí se decide: `cuerpo` escala la luz
          recibida y `techo` la recorta ANTES de escalarla. */
@@ -1125,18 +1122,19 @@ export const ABISMO = {
       paladar: true,              // la fila interior, la del paladar
       entreabierta: 0.13,         // la quijada nunca acaba de cerrar
       /* ── EL REPARTO DE LA ABERTURA, Y ES UN TOPE MEDIDO ──────────
-         0,30 la quijada de arriba y el resto la de abajo, que es como abre
-         un rape. Y NO SE PUEDE SUBIR: la de arriba gira sobre la charnela
-         y el hueco que abre se le RESTA al cuerpo (ver `bocaPath`), así
-         que barriendo de más se traga el ojo y lo deja flotando fuera de
-         la silueta.
+         0,16 la quijada de arriba y el resto la de abajo. Y NO SE PUEDE
+         SUBIR: la de arriba gira sobre la charnela y el hueco que abre se
+         le RESTA al cuerpo (ver `bocaPath`), así que barriendo de más se
+         traga el ojo y lo deja flotando fuera de la silueta.
 
          MEDIDO punto en polígono contra el hueco, en veinticinco posturas
-         de `ataque` y con la boca de aquí arriba: a 0,30 el ojo queda
-         libre en todo el bocado; a 0,34 ya choca a `ataque` 0,60 y a 0,42
-         choca esté el ojo DONDE ESTÉ —subirlo no se arregla moviendo el
-         ojo, se arregla no subiéndolo—. Si algún día se quiere una boca
-         aún mayor, el que crece es `bocaLargo`, no esto. */
+         de `ataque` y con la boca de aquí arriba: 0,16 queda LIBRE en todo
+         el bocado y es lo último que lo está —0,20 ya choca a `ataque`
+         0,48; 0,30, a 0,24; 0,42, a 0,12—. Y no se arregla moviendo el
+         ojo: a 0,34 sólo 24 de 420 sitios probados quedan libres y a 0,42
+         no queda ninguno. El margen es estrecho porque la boca es LARGA:
+         con `bocaLargo` 0,66 el mismo ángulo barre mucho más. Si se quiere
+         más boca, el que crece es `bocaLargo`, no esto. */
       barba: 0.50, barbas: [3, 5], barbaBrillo: 0.42,
       /* y el detalle del cuerpo, que sólo existe a este tamaño */
       miomeros: [7, 10], radios: [5, 7],

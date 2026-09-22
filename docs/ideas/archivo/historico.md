@@ -967,3 +967,53 @@ documentación.
   tres semillas (82,6→93,4, 65,9→73,4 y 51,0→74,7 pez·segundo), porque el rape que
   deja de comer a oscuras pasa menos tiempo saciado y más tiempo encendido. Los
   bocados totales apenas se mueven: 24 contra 22.
+
+## 2026-09-21 · el rape: cara nueva, y uno solo
+
+- **«El diseño del anglerfish es demasiado sencillo: que siga siendo cartoon,
+  pero con más detalle, proporciones más correctas y más creepy»** · se eligió
+  «F · TINTA» —apenas frente, boca de casi dos tercios de cuerpo, nueve
+  colmillos ganchudos que engranan, ojo hueco y saltón, púas en el lomo y
+  espínulas en la piel—. La anatomía vive en `FORMAS`, en `rape-cuerpo.js`, y
+  la escena sólo dice el NOMBRE (`forma`). Hubo un rato con DOS rapes, uno de
+  cada forma; se descartó y la pieza se queda con uno.
+
+- **RESULTADO NEGATIVO, y es lo más caro que deja la idea: LA FICHA DEL BICHO
+  REAL LLEVA AL DISEÑO EQUIVOCADO.** La primera tanda —tres alternativas
+  construidas sobre las medidas de *Melanocetus johnsonii*— se descartó entera
+  al verla. Las medidas reales dan una cabeza ABOMBADA (canto máximo al 87 %
+  del largo estándar, y en el primer cuarto) y una boca que abre noventa
+  grados. Las dos cosas están bien documentadas y las dos están MAL aquí:
+
+  - **la cúpula de la frente COMPITE con la boca.** Si el lomo sube sobre el
+    ojo, lo que se lee es «una cabeza grande con una boca dentro»; lo que se
+    pide es lo contrario, que el bicho SEA la boca.
+  - **la mandíbula articulada sobra**, aunque arreglase un defecto real —al
+    morder se abre un agujero donde estaba la cara, porque de la quijada de
+    abajo no se dibuja nada más que la línea de labios y sus dientes—. Una
+    quijada que baja medio cuerpo se lee DISLOCADA, no hambrienta. La boca
+    mínima del diseño viejo era la buena, y ésa es la que se conservó.
+
+  Lo que sí valió de esa tanda: los colmillos ganchudos y desiguales, las
+  espínulas de la piel, la pectoral sobre un muñón y la caudal redondeada. Y
+  la referencia que funcionó no fue la ficha del animal sino dos dibujos que
+  pasó la usuaria, que dicen casi lo contrario: el lomo sube despacio y su
+  máximo cae a MEDIO cuerpo, quien baja es la panza, y la cara sale plana.
+
+- **QUEDA PENDIENTE, y está medido: el foco se encoge justo en el fotograma
+  del bocado.** Los degradados del cuerpo tienen radio `max(Lg*0.6, dl*1.45)`,
+  donde `dl` es lo lejos que está la esca del centro del cuerpo; al morder, la
+  esca se recoge al morro (`retrae: 0.95`), `dl` se derrumba y con él el
+  radio, así que la boca abierta de par en par —lo único que el bocado existe
+  para enseñar— cae fuera del foco y se dibuja negra. Medido: la punta de la
+  quijada queda a 0,85 largos de la esca y el radio se queda en 0,87, o sea
+  alfa cero. Lo que falta es SUELO y no ganancia: multiplicar el `Lg*0.6` por
+  ~1,75 lo arregla. Probado en el banco de diseños; nunca llevado a la pieza.
+
+- **Y cómo se comprueba que quitar una rama muerta no cambia un píxel** · la
+  firma del ESTADO no sirve cuando lo que cambia es el DIBUJO: dos árboles con
+  la misma semilla tienen el mismo estado aunque pinten otra cosa. Se graban
+  las LLAMADAS AL CONTEXTO envolviendo `ESPECIES.rape.dibuja`. Y hace falta
+  además un BARRIDO DE POSTURAS con la luz forzada, porque el rape vive a
+  oscuras y `br > 0.012` le cierra el cuerpo entero: en una tirada normal se
+  traza el señuelo y poco más, o sea que un diff vacío no demostraría nada.

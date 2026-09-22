@@ -92,14 +92,17 @@ Cuatro separaciones, y son el punto:
    cumplen las dos reglas a la vez: una proporción sigue sin ser un
    mando, y elegir entre anatomías sí lo es.
 
-   Hubo dos formas y una temporada con dos rapes a la vez, uno de cada.
-   De ahí quedan dos cosas que conviene saber si se vuelve a poner más
-   de un bicho de la MISMA especie en `ABISMO.bichos` —que se puede, son
-   dos grupos con el mismo `def`—: el panel resuelve `@rape` a TODAS las
-   entradas que coincidan y escribe en todas (ver `destinos` en
-   [pruebas.js](pruebas.js)), y hay parámetros que no se pueden sortear
-   por bicho porque `crear` no sabe de los demás —el `lado` al que tira
-   la querencia: a cara o cruz, dos rapes se plantan en el mismo sitio.
+   Hoy `FORMAS` tiene UNA entrada, y la tabla no sobra por eso: es dónde
+   vive la anatomía, no un interruptor esperando una segunda.
+
+   Y PONER DOS BICHOS DE LA MISMA ESPECIE en `ABISMO.bichos` se puede
+   —son dos grupos con el mismo `def`—, pero hoy no lo sostiene nada, y
+   son dos cosas: el panel resuelve `@rape` a la PRIMERA entrada que
+   coincida y escribe sólo en ella, así que un deslizador movería media
+   especie sin decirlo; y hay parámetros que no se pueden sortear por
+   bicho porque `crear` no sabe de los demás —el `lado` al que tira la
+   querencia: a cara o cruz, dos rapes se plantan en el mismo sitio—.
+   Las dos cosas tuvieron arreglo cuando hubo dos rapes, y está en git.
 2. **motor ↔ criaturas.** Una criatura no tiene parámetros propios: los
    recibe de la escena, así que el mismo bicho puede ser pálido y lento o
    nervioso y quemado sin tocar una línea suya. Y el motor no conoce a

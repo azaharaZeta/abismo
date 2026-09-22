@@ -128,11 +128,11 @@ const MANDOS = [
    cuya `especie` o `evento` se llame así. Por índice funcionaría igual
    hasta que alguien reordene la lista, que en la escena es libre.
 
-   Y PUEDEN SER VARIAS. El rape tiene dos entradas —una por forma— que
-   comparten todo menos la forma, el color y la boca, así que un mando
-   como «rape · oscuro» tiene que mover LAS DOS: escribiendo sólo en la
-   primera, el deslizador movería medio rape y nada lo diría. Se lee de
-   la primera y se escribe en todas. */
+   SE QUEDA CON LA PRIMERA que coincida, y hoy no hay ninguna repetida.
+   Si alguna vez se ponen DOS entradas de la misma especie —que se
+   puede, son dos grupos con el mismo `def`—, un mando movería sólo una
+   y nada lo diría; entonces hay que abrir la ruta en todas las que
+   coincidan (hubo una versión así, está en git). */
 const coinci = (o, n) => Array.isArray(o)
   ? o.filter(e => e.especie === n || e.evento === n) : [];
 const baja = (o, k) => {
@@ -141,23 +141,10 @@ const baja = (o, k) => {
   return coinci(o, k.slice(1))[0];
 };
 const leer  = r => r.split('.').reduce(baja, P.escena);
-/* los objetos a los que apunta una ruta, abriéndose en cada `@` */
-function destinos(ks){
-  let o = [P.escena];
-  for (const k of ks){
-    const sig = [];
-    for (const x of o){
-      if (!x) continue;
-      if (k[0] === '@') sig.push(...coinci(x, k.slice(1)));
-      else if (x[k] !== undefined) sig.push(x[k]);
-    }
-    o = sig;
-  }
-  return o;
-}
 const poner = (r, v) => {
   const ks = r.split('.'), ult = ks.pop();
-  for (const o of destinos(ks)) o[ult] = v;
+  const o = ks.reduce(baja, P.escena);
+  if (o) o[ult] = v;
 };
 
 /* ── UN DESLIZADOR, UN ESCALAR O UN ARRAY ───────────────────────────

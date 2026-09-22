@@ -10,11 +10,12 @@ const {rgba, opt, TAU} = M;
 import { mancha, reparte } from './comun.js';
 
 /* ══════════════════════════════════════════════════════════════════
-   LAS DOS FORMAS
+   LA FORMA
    La ANATOMÍA de un rape, que no es lo mismo que sus mandos: una parada
-   de degradado o el sitio del ojo no son un deslizador, son el bicho. Lo
-   que la escena elige es CUÁL de las dos, con `forma`; los números de
-   cada una viven aquí.
+   de degradado o el sitio del ojo no son un deslizador, son el bicho. La
+   escena no trae esos números, trae el NOMBRE —`forma`— y aquí está la
+   tabla. Hoy tiene UNA entrada, y no sobra por eso: es dónde vive la
+   anatomía, no un interruptor esperando una segunda.
 
    El contrato, en unidades de LARGO y con u=0 en el morro y u=1 en la
    base de la cola:
@@ -24,22 +25,19 @@ import { mancha, reparte } from './comun.js';
                     morro, que es donde una forma puede tener detalle
      caudal         {x, y, muesca, radios}
      aletas         de dónde a dónde va cada una y cuánto levanta
-     brazo          la pectoral sobre un muñón carnoso; sin él, una pala
+     brazo          lo que mide el muñón que lleva la pectoral en la punta
      crestas        las púas del lomo, DENTRO de la silueta
      espinulas      cuántas púas diminutas lleva la piel
-     ojo            [x, y, radio] · `hueco` no rellena el globo,
-                    `iris` pinta la cuenca y `pupila` la encoge
-     diente         largo · `dienteAncho` grueso · `colmillo` gancho ·
-                    `desigual` de dónde sale el largo (ver boca())
+     ojo            [x, y, radio], y el globo va hueco · `iris` pinta la
+                    cuenca y `pupila` la encoge
+     diente         largo · `dienteAncho` grueso · `colmillo` cuánto se
+                    curva el gancho · `desigual` de dónde sale el largo
+                    (ver boca())
      barbaU         de qué punto cuelga la barbilla
      ilicioU        y de cuál arranca la caña
 
    Lo que NO está aquí y sigue en la escena: el largo de la boca, lo que
    abre, cuántos dientes, la barbilla y el color. Eso sí son mandos.
-
-   Hoy hay UNA forma. Hubo dos —la cabezona de siempre y ésta— y la
-   tabla se queda porque es donde va la anatomía, no por si vuelve la
-   otra: la otra está en git.
 
    Campana asimétrica para los perfiles: los dos mandos que importan
    quedan sueltos —`up` es dónde cae el canto máximo y `r` lo empinada
@@ -78,7 +76,7 @@ const FORMAS = {
        dentro. ABAJO: la quijada de arriba, que al abrirse barre hacia
        atrás y se traga lo que pille; con la boca de esta forma su línea
        pasa por −0,023 a esta altura, así que quedan 0,041 de margen. */
-    ojo: [0.165, -0.152, 0.088], hueco: true, iris: 1.0, pupila: 0.26,
+    ojo: [0.165, -0.152, 0.088], iris: 1.0, pupila: 0.26,
     diente: 2.00, dienteAncho: 1.50, colmillo: 0.12, desigual: 0.95,
     barbaU: 0.32, ilicioU: 0.10,
   },
@@ -133,7 +131,7 @@ function adelante(f, gx){
 
 function cuerpoPath(g, f, t){
   const F = f.F, N = F.N, Lg = f.Lg, C = F.crestas;
-  const uu = i => F.sesgo === 1 ? i/N : Math.pow(i/N, F.sesgo);
+  const uu = i => Math.pow(i/N, F.sesgo);
   g.beginPath();
   let ini = true;
   const pon = (x,y) => { if (ini){ g.moveTo(x,y); ini = false; } else g.lineTo(x,y); };
@@ -159,9 +157,9 @@ function cuerpoPath(g, f, t){
       }
     }
   }
-  /* la caudal, de la forma: pequeña y horquillada en el clásico, ancha y
-     redondeada en el de gota. Grande se lleva la mirada justo al lado
-     contrario de donde está lo que hay que ver, que es la boca. */
+  /* la caudal, de la forma: ancha y redondeada, y a propósito no grande.
+     Una cola grande se lleva la mirada justo al lado contrario de donde
+     está lo que hay que ver, que es la boca. */
   const cd = F.caudal, yc = flex(1,f,t)*Lg;
   g.lineTo(Lg*cd.x, yc - Lg*cd.y);
   g.lineTo(Lg*cd.muesca, yc);
@@ -356,45 +354,33 @@ function aletas(g, f, gx, t, col, br, dl){
     g.closePath();
   });
   g.fill();
-  /* LA PECTORAL. Una pala pegada al costado, o —con `brazo`— en la punta
-     de un muñón carnoso, que es como la lleva un ceratioide de verdad y
-     lo que la convierte en una manita. */
+  /* LA PECTORAL, y no va pegada al costado: va en la punta de un MUÑÓN
+     carnoso —`brazo` es lo que mide—, que es como la lleva un ceratioide
+     de verdad y lo que la convierte en una manita. */
   const ax = Lg*A.p0, ay = (flex(A.p0,f,t)+F.panza(A.p0)*A.pY)*Lg;
   const vai = 0.05*Math.sin(t*1.1 + f.fase);
-  if (F.brazo){
-    const bl = Lg*F.brazo, bg = Lg*0.042;
-    const bax = ax + bl*0.92, bay = ay + bl*(0.34 + vai*2);
-    enPez(g, f, gx, () => {
-      g.beginPath();
-      g.moveTo(ax, ay - bg);
-      g.quadraticCurveTo(ax + bl*0.6, ay + bl*0.05, bax, bay - bg*0.7);
-      g.lineTo(bax, bay + bg*0.7);
-      g.quadraticCurveTo(ax + bl*0.5, ay + bl*0.22, ax, ay + bg);
-      g.closePath();
-    });
-    g.fill();
-    g.strokeStyle = gf;
-    g.lineWidth = Math.max(0.5, Lg*0.009);
-    enPez(g, f, gx, () => {
-      g.beginPath();
-      for (let i=0;i<6;i++){
-        const a = -0.25 + 1.15*reparte(i, 6) + vai;
-        g.moveTo(bax, bay);
-        g.lineTo(bax + Math.cos(a)*Lg*0.17, bay + Math.sin(a)*Lg*0.17);
-      }
-    });
-    g.stroke();
-  } else {
-    enPez(g, f, gx, () => {
-      const w = 0.14 + vai;
-      g.beginPath();
-      g.moveTo(ax, ay);
-      g.quadraticCurveTo(ax+Lg*0.20, ay+Lg*w, ax+Lg*0.30, ay+Lg*(w*0.35));
-      g.quadraticCurveTo(ax+Lg*0.18, ay+Lg*0.03, ax, ay);
-      g.closePath();
-    });
-    g.fill();
-  }
+  const bl = Lg*F.brazo, bg = Lg*0.042;
+  const bax = ax + bl*0.92, bay = ay + bl*(0.34 + vai*2);
+  enPez(g, f, gx, () => {
+    g.beginPath();
+    g.moveTo(ax, ay - bg);
+    g.quadraticCurveTo(ax + bl*0.6, ay + bl*0.05, bax, bay - bg*0.7);
+    g.lineTo(bax, bay + bg*0.7);
+    g.quadraticCurveTo(ax + bl*0.5, ay + bl*0.22, ax, ay + bg);
+    g.closePath();
+  });
+  g.fill();
+  g.strokeStyle = gf;
+  g.lineWidth = Math.max(0.5, Lg*0.009);
+  enPez(g, f, gx, () => {
+    g.beginPath();
+    for (let i=0;i<6;i++){
+      const a = -0.25 + 1.15*reparte(i, 6) + vai;
+      g.moveTo(bax, bay);
+      g.lineTo(bax + Math.cos(a)*Lg*0.17, bay + Math.sin(a)*Lg*0.17);
+    }
+  });
+  g.stroke();
   g.strokeStyle = gf;                     // radios de la caudal
   g.lineWidth = Math.max(0.5, Lg*0.010);
   enPez(g, f, gx, () => {
@@ -486,28 +472,18 @@ function ojo(g, f, gx, col, nuc, br, sh, p){
      boca: la quijada de arriba gira sobre la charnela y al abrirse barre
      hacia atrás, y el hueco que abre se le RESTA al cuerpo (ver
      `bocaPath`), así que un ojo dentro de ese barrido se queda flotando
-     fuera de la silueta.
-
-     MEDIDO punto en polígono contra el hueco, en veinticinco posturas de
-     `ataque`: con la boca de hoy (`bocaLargo` 0,47 · `abertura` 0,52)
-     cualquier sitio vale. Con una boca mayor —0,56 y 0,70— el ojo en
-     0,175/−0,155 se lo traga la boca a partir de `ataque` 0,44, y aquí,
-     en 0,22/−0,20, queda LIBRE en todo el bocado con 0,175 de largo de
-     margen hasta el lomo. Lo que NO se puede subir es `quijadaArriba`:
-     a 0,34 vuelve a chocar, y a 0,42 choca esté el ojo donde esté. */
+     fuera de la silueta. Mover el ojo y subir `quijadaArriba` son por eso
+     el mismo ajuste hecho desde dos ficheros, y los dos están medidos: el
+     sitio, arriba en `FORMAS`; el tope de la quijada, en la escena. */
   const ox = Lg*F.ojo[0], oy = Lg*F.ojo[1], r = Math.max(0.8, Lg*F.ojo[2]);
-  /* EL GLOBO sólo recoge: sin luz que le dé, no está. Y con `hueco` NO
-     se rellena: un disco lleno se lee como una bola de luz, y lo que da
-     miedo es lo contrario —un ojo oscuro con el borde claro—. En aditivo
-     no se puede pintar el hueco, así que se pinta su canto y el centro
-     se queda con lo que haya. */
-  if (br > 0.004 && !F.hueco){
-    enPez(g, f, gx, () => { g.beginPath(); g.arc(ox, oy, r, 0, TAU); });
-    g.fillStyle = rgba(col, Math.min(1, 0.55*br));
-    g.fill();
-  }
-  /* LA CUENCA, y son DOS aros: la órbita fina y el iris gordo. Con uno
-     solo el ojo es un anillo; con los dos es una cuenca. */
+  /* EL GLOBO NO SE RELLENA, y es lo que da el miedo: un disco lleno se
+     lee como una bola de luz, y lo que asusta es lo contrario —un ojo
+     oscuro con el borde claro—. En aditivo el hueco no se puede pintar,
+     así que se pinta su canto y el centro se queda con lo que haya.
+
+     Y SON DOS AROS: la órbita fina y el iris gordo. Con uno solo el ojo
+     es un anillo; con los dos es una cuenca. Sólo recogen: sin luz que
+     les dé, el ojo no está. */
   if (F.iris && br > 0.004){
     enPez(g, f, gx, () => { g.beginPath(); g.arc(ox, oy, r, 0, TAU); });
     g.strokeStyle = rgba(col, Math.min(1, 0.55*F.iris*br));
@@ -563,7 +539,7 @@ function ojo(g, f, gx, col, nuc, br, sh, p){
   enPez(g, f, gx, () => {
     g.beginPath();
     g.arc(ox + px*k, oy + py*k,
-          r*opt(F.pupila, 0.46)*(1 + 0.22*dest), 0, TAU);
+          r*F.pupila*(1 + 0.22*dest), 0, TAU);
   });
   g.fillStyle = rgba(nuc, Math.min(1, 1.25*bp*sh*fog));
   g.fill();
@@ -720,28 +696,21 @@ function boca(g, f, gx, p, gb, q){
              las dos filas se cruzan, y con la regla nonzero dos triángulos de
              sentido contrario se RESTAN, o sea que el engranaje sale agujereado. */
           const b = sg*anc;
-          if (!gan){
-            g.moveTo(qx - b*ca, qy - b*sa);
-            g.lineTo(qx + b*ca, qy + b*sa);
-            g.lineTo(qx + anc*0.3*ca - pta*sa,
-                     qy + anc*0.3*sa + pta*ca);
-            g.closePath();
-          } else {
-            /* EL GANCHO. La punta se corre hacia la charnela y los dos
-               costados son curvas —una cóncava y otra convexa—, que es lo
-               que da el colmillo curvado en vez de la cuña. */
-            const cur = gan*alto*0.55;
-            const tx = qx + anc*0.2*ca - pta*sa + cur*ca;
-            const ty = qy + anc*0.2*sa + pta*ca + cur*sa;
-            const b0x = qx - b*ca, b0y = qy - b*sa;
-            const b1x = qx + b*ca, b1y = qy + b*sa;
-            g.moveTo(b0x, b0y);
-            g.quadraticCurveTo(b0x - pta*sa*0.55 + cur*ca*0.15,
-                               b0y + pta*ca*0.55 + cur*sa*0.15, tx, ty);
-            g.quadraticCurveTo(b1x - pta*sa*0.40 + cur*ca*0.75,
-                               b1y + pta*ca*0.40 + cur*sa*0.75, b1x, b1y);
-            g.closePath();
-          }
+          /* Y NO ES UNA CUÑA, ES UN GANCHO: la punta se corre hacia la
+             charnela y los dos costados son curvas —una cóncava y otra
+             convexa—, que es lo que da el colmillo curvado. `colmillo`
+             es cuánto se curva. */
+          const cur = gan*alto*0.55;
+          const tx = qx + anc*0.2*ca - pta*sa + cur*ca;
+          const ty = qy + anc*0.2*sa + pta*ca + cur*sa;
+          const b0x = qx - b*ca, b0y = qy - b*sa;
+          const b1x = qx + b*ca, b1y = qy + b*sa;
+          g.moveTo(b0x, b0y);
+          g.quadraticCurveTo(b0x - pta*sa*0.55 + cur*ca*0.15,
+                             b0y + pta*ca*0.55 + cur*sa*0.15, tx, ty);
+          g.quadraticCurveTo(b1x - pta*sa*0.40 + cur*ca*0.75,
+                             b1y + pta*ca*0.40 + cur*sa*0.75, b1x, b1y);
+          g.closePath();
         }
       }
     });
