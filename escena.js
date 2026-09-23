@@ -677,17 +677,23 @@ export const ABISMO = {
       alcance: [0.6, 1.1], filo: 1.4, banda: [0.12, 0.88] },
 
     /* ── LA GEMACIÓN ────────────────────────────────────────────────
-       Una medusa echa una cría por el costado y la cría se va haciéndose
-       pequeña. El evento no dibuja nada y no elige a nadie: empuja una
-       orden en el agua con cupo para UNA, y la primera medusa que la lee se
-       la queda (ver eventos/gemacion.js). Lo que dura la maniobra y lo
-       grande que sale la cría son de ella, no de aquí: están en su entrada,
-       abajo.
+       Una de las medusas mayores se hincha y suelta una horda de crías en
+       todas direcciones. El evento no dibuja nada y no elige a nadie:
+       empuja una orden en el agua con cupo para UNA, y se la lleva una de
+       las que la leen (ver eventos/gemacion.js). Todo lo demás —cuántas
+       crías, de qué tamaño, cuánto se hincha ella— es de la medusa y no de
+       aquí: está en su entrada, abajo.
+
+       `entre` es entre cuántas de las MAYORES se sortea, y no es capricho:
+       los radios se echan una vez al poblar y de ahí no se mueven, así que
+       a 1 gema siempre el mismo bicho toda la sesión. A 2, la pecera tiene
+       dos sitios donde puede pasar y sigue pasando siempre cerca, que es
+       donde se ve. Subirlo mete a la del fondo, que es una mancha.
 
        `espera` es lo que el evento aguanta sin que nadie lo coja —con las
        medusas de la pecera siempre hay alguna, así que es una red por si un
        día no hay—. */
-    { evento: 'gemacion', espera: 6 },
+    { evento: 'gemacion', espera: 6, entre: 2 },
 
     /* ── LAS BURBUJAS ───────────────────────────────────────────────
        Algún organismo ha soltado aire ahí abajo: un racimo sube, se
@@ -857,21 +863,62 @@ export const ABISMO = {
       faldon: [0.22, 0.48], mEnv: [0.7, 1.3], mBase: [0.45, 0.80],
       lobulos: [5, 9], ensancha: [0.10, 0.26], achata: [0.10, 0.26],
       cuelga: 2.6, alcanceLuz: 3.4, alcanceCuerpo: 2.2, emision: 0.55,
-      /* ── LA CRÍA, CUANDO LE TOCA GEMAR ─────────────────────────
-         `gemaVida` es lo que dura la maniobra entera, en segundos, y va
-         LARGA: su pulso tarda de 2,6 a 4,8 s, así que por debajo de diez
-         segundos la cría sale y se va sin que haya latido tres veces y eso
-         se lee como un salto, no como que ha brotado. Dentro de esa vida el
-         reparto es fijo —brota el 30 %, se suelta el 20 % y se va el 50 %:
-         ver `pasoCria`—.
+      /* ── LA HORDA, CUANDO LE TOCA GEMAR ────────────────────────
+         `gemaCuantas` es el tamaño de la horda, y el tope no es de gusto:
+         cada cría se dibuja VOLVIENDO A ENTRAR en el dibujo de la medusa
+         entera, y tres medusas ya son el 52 % de las llamadas al lienzo de
+         un fotograma. Medido en caja de móvil: catorce crías con la nube
+         recogida ponen el fotograma en ×2,3 de llamadas, y son sólo los
+         segundos que dura el evento.
 
-         `gemaEsc` es lo grande que sale respecto a su madre: a la mitad se
-         lee como cría; por encima de 0,7 se lee como que hay dos medusas y
-         una se va, que es otra cosa. `gemaLejos` es hasta dónde llega,
-         medido en radios de su madre: lo que se ve es que se aleja, así que
-         tiene que salir del sitio donde ha nacido —a menos de cinco radios
-         parece que se apaga en el mismo punto. */
-      gemaVida: [15, 24], gemaEsc: [0.42, 0.58], gemaLejos: [7, 11],
+         `gemaVida` es lo que dura CADA cría, en segundos, y dentro de ella
+         el reparto es fijo —brota el 30 %, se suelta el 20 % y se va el
+         50 %: ver `pasoCrias`—. Más corta que cuando salía una sola (eran
+         15-24): con una horda no hace falta que a cada una le dé tiempo a
+         latir tres veces, porque lo que se mira es el conjunto.
+
+         `gemaEscalona` es lo que tarda en salir la siguiente, y va LARGO:
+         lo que se quiere ver es cada parto, no un estallido. El rango es
+         ancho a propósito —de 0,8 a 3,2 s— para que a veces salgan dos
+         casi juntas y a veces haya que esperar; escalonadas por igual se
+         lee como un goteo de reloj. El evento se va a los tres cuartos de
+         minuto y no pasa nada: no hay prisa y el reloj de la pieza deja
+         que se le solape otro.
+
+         `gemaEsc` es lo grandes que salen respecto a su madre, y ahora
+         salen GRANDES: por debajo de un cuarto no se ve de dónde se
+         despegan, que es lo que hay que ver. El techo lo pone que sigan
+         leyéndose como crías —por encima de la mitad son otra medusa que
+         se va—. `gemaLejos` es hasta dónde llegan, en radios de su madre:
+         lo que se ve es que se alejan, así que tienen que salir del sitio
+         donde han nacido —a menos de cinco radios parece que se apagan en
+         el mismo punto—.
+
+         `gemaDesorden` es el temblor del ángulo, en fracción del hueco
+         entre dos crías: a 0 salen en corona perfecta y se lee como un
+         engranaje, a 1 se apelotonan y dejan un cuarto de cielo vacío.
+
+         `gemaTono` es de cuántas entradas de su paleta se pueden apartar,
+         y `gemaNube` cuánta melena conservan —sale de multiplicar la de su
+         madre por lo pequeñas que son, así que a 1 una cría de un sexto
+         lleva un sexto de tentáculos: los que se le verían—.
+
+         `gemaHincha` es lo llena que llega a estar ella, y va CORTO por
+         dos razones: a 1,6 no parece que se hinche, parece que se ha
+         acercado; y el tope de `radio` está puesto porque a 1,10 la
+         campana del plano de delante mide el 28 % del ancho de un móvil
+         de pie —llena se va al 37 %, que es más de lo que se aceptó en
+         reposo y sólo pasa mientras dura el parto—.
+
+         Y NO LLEVA RELOJ: se desinfla un escalón por cada cría que acaba
+         de brotar, así que se vacía al ritmo al que pare pase lo que pase
+         con `gemaCuantas` o `gemaEscalona` (ver `pasoHincha`).
+         `gemaHinchaVel` es sólo lo deprisa que persigue ese escalón, para
+         que baje y no salte. */
+      gemaCuantas: [12, 16], gemaVida: [11, 18], gemaEscalona: [0.8, 3.2],
+      gemaEsc: [0.26, 0.40], gemaLejos: [7, 11], gemaDesorden: 0.7,
+      gemaTono: 2, gemaNube: 1.0,
+      gemaHincha: 1.32, gemaHinchaVel: 0.85,
       /* ── SE LADEA AL PASAR EL DEDO ─────────────────────────────
          El mismo mecanismo y los mismos tres números que el banco, con
          dos diferencias:

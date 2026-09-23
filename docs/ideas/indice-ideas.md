@@ -32,6 +32,7 @@ _(vacío: las tres del 2026-09-22 están procesadas)_
 
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos de las ideas procesadas entre el 2026-09-17 y el 2026-09-21.
+- peces linterna: el arreglo de las esquinas dejó COLA. Medido, ocho semillas de 180 s en caja de móvil: en dos o tres de las ocho un pez se queda 37-74 s en un vértice con el cristal corrigiéndole el 88-93 % de esos fotogramas. La media bajó mucho (1,5 % del tiempo en vértice) pero el caso malo sigue viéndose.
 - rape: al morder, la boca abierta se sale del foco y se dibuja negra. El radio del degradado del cuerpo cae con la esca, que se recoge al morro. Medido y con arreglo propuesto en `archivo/historico.md`, 2026-09-21.
 - `M.mod.agua` / `M.mod.ritmo`: la maquinaria está viva y la lee el motor, pero no la escribe ningún evento. O se usa en alguno, o se quita como se quitó `M.cardumen()`.
 - Que `pintaSombras` respete el `filo` del campo: hoy la sombra es siempre blanda y no puede leerse una silueta con canto. Toca al leviatán y al cuerpo, no sólo al rape (ver idea-rape-oscuro.md).

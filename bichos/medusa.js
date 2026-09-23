@@ -149,54 +149,138 @@ function topa(j, M, p){
   }
 }
 
-/* ── LA CRÍA DE LA GEMACIÓN ─────────────────────────────────────────
-   Tres tramos y una sola `u` de 0 a 1, que es todo lo que hace falta para
-   que se lea la historia: BROTA pegada al costado, SE SUELTA y SE VA
-   haciéndose pequeña. No hay medusa nueva en ningún momento: `esc` es su
-   tamaño respecto a su madre y `dx,dy` lo lejos que está, y con eso la
-   pinta `dibuja` llamándose a sí misma dentro de una transformación.
+/* ── LA HORDA DE LA GEMACIÓN ────────────────────────────────────────
+   Cada cría lleva tres tramos y una sola `u` de 0 a 1, que es todo lo que
+   hace falta para que se lea la historia: BROTA pegada al costado, SE
+   SUELTA y SE VA haciéndose pequeña. No hay medusa nueva en ningún
+   momento: `esc` es su tamaño respecto a su madre y `dx,dy` lo lejos que
+   está, y con eso la pinta `dibuja` llamándose a sí misma dentro de una
+   transformación.
 
-   Lo de encogerse mientras se aleja no es para taparla: en esta pieza
+   Lo de encogerse mientras se aleja no es para taparlas: en esta pieza
    pequeño ES lejos —así codifican la distancia los tres planos—, así que
-   se está yendo al fondo y no desapareciendo.
+   se están yendo al fondo y no desapareciendo.
 
-   El reparto de la `u` importa: si el brote es corto no se lee que ha
-   salido de ella, y si la marcha es corta se lee como que se apaga. Con
-   30/20/50 sobre unos dieciocho segundos, brota en cinco, se suelta en
-   tres y tarda nueve en irse. */
+   El reparto de la `u` importa, y con las crías saliendo DE UNA EN UNA
+   cambia respecto a cuando salían todas juntas: cada parto se mira
+   entero, así que el brote y el desprendimiento se llevan más reloj
+   —35 % y 25 %— y la marcha menos. Aun así la marcha no baja del 40 %:
+   más corta se lee como que la cría se apaga, no como que se aleja.
+
+   ── LO QUE HACE QUE SEAN UNA HORDA Y NO UNA FILA ───────────────────
+   Cuatro sorteos, y ninguno es adorno:
+
+     el ÁNGULO   en CORONA y no al azar: repartidas a `i/n` de la vuelta
+                 con un temblor de menos de medio hueco. A ángulo
+                 puramente aleatorio se apelotonan tres y dejan un cuarto
+                 de cielo vacío, y eso se lee como un fallo.
+     el RETARDO  negativo en `t`: la cría no existe hasta que su reloj
+                 llega a cero. Saliendo todas a la vez se lee como una
+                 explosión, y esto es un desove.
+     el COLOR    una entrada VECINA de la paleta de su madre.
+                 `generaPaleta` reparte el tono por el rango en orden, así
+                 que vecina es el mismo color un poco corrido. Es el mismo
+                 truco que el racimo de burbujas y por lo mismo: una
+                 familia, no confeti.
+     la NUBE     cuántos tentáculos lleva, y se recoge CON EL TAMAÑO. A un
+                 sexto de su madre las cintas miden tres píxeles: cuestan
+                 lo mismo que las de ella y no se ven. Medido, una cría
+                 con la nube entera son 455 llamadas al lienzo y la
+                 campana sola 266, y tres medusas ya son el 52 % del
+                 fotograma. Se fija AL NACER y no por fotograma, o los
+                 tentáculos aparecerían y desaparecerían al encoger. */
 function gemar(j, p){
-  j.cria = { t: 0, vida: rango(p.gemaVida),
-             escMax: rango(p.gemaEsc),
-             lejos: rango(p.gemaLejos) * j.r,
-             /* por el costado —perpendicular a su eje— y de ahí derecha:
-                una cría que cambia de rumbo no se lee como que se aleja */
-             ang: j.tilt + (Math.random() < 0.5 ? 1 : -1)*Math.PI*0.5
-                  + rnd(-0.4, 0.4),
-             d: 0, dx: 0, dy: 0, esc: 0 };
-}
-function pasoCria(j, dt){
-  const q = j.cria;
-  q.t += dt;
-  const u = q.t/q.vida;
-  if (u >= 1){ j.cria = null; return; }
-  const pegada = j.r*0.85, soltada = j.r*2.2;
-  if (u < 0.30){
-    const w = u/0.30;
-    q.esc = 0.10 + (q.escMax - 0.10)*w;
-    q.d = pegada*(0.55 + 0.45*w);
-  } else if (u < 0.50){
-    const w = (u - 0.30)/0.20;
-    q.esc = q.escMax;
-    q.d = pegada + (soltada - pegada)*w;
-  } else {
-    const w = (u - 0.50)/0.50;
-    /* el tamaño se va antes que la distancia (exponente > 1), así que
-       parece que se pierde en el agua y no que se ha ido del cuadro */
-    q.esc = q.escMax*Math.pow(1 - w, 1.3);
-    q.d = soltada + (q.lejos - soltada)*w;
+  const n = Math.max(2, rangoE(p.gemaCuantas)|0);
+  const pal = p.paleta;
+  const i0 = pal ? pal.indexOf(j.c) : -1;
+  const roce = opt(p.gemaTono, 0), nube = opt(p.gemaNube, 1);
+  const crias = [];
+  for (let i=0;i<n;i++){
+    const esc = rango(p.gemaEsc);
+    crias.push({
+      /* negativo: todavía no ha brotado */
+      t: -i*rango(p.gemaEscalona),
+      vida: rango(p.gemaVida),
+      escMax: esc,
+      lejos: rango(p.gemaLejos) * j.r,
+      ang: (i/n)*TAU + rnd(-1, 1)*(Math.PI/n)*opt(p.gemaDesorden, 0),
+      c: (i0 >= 0 && roce)
+         ? pal[clamp(i0 + Math.round(rnd(-roce, roce)), 0, pal.length-1)]
+         : j.c,
+      nT: Math.max(2, Math.round(j.nT*esc*nube)),
+      nA: Math.max(1, Math.round(j.nA*esc*nube)),
+      d: 0, dx: 0, dy: 0, esc: 0,
+    });
   }
-  q.dx = Math.cos(q.ang)*q.d;
-  q.dy = Math.sin(q.ang)*q.d;
+  j.crias = crias;
+}
+
+function pasoCrias(j, dt){
+  let vivas = 0;
+  for (const q of j.crias){
+    q.t += dt;
+    if (q.t < 0){ vivas++; continue; }     // aún sin brotar
+    const u = q.t/q.vida;
+    if (u >= 1){ q.esc = 0; continue; }    // ya no está
+    vivas++;
+    const pegada = j.r*0.85, soltada = j.r*2.2;
+    if (u < 0.35){
+      const w = u/0.35;
+      /* arranca en la décima parte de lo que va a ser, y la décima es
+         RELATIVA: con un suelo absoluto una cría de 0,15 nacería ya al
+         70 % de su tamaño y no se vería brotar. */
+      q.esc = q.escMax*(0.10 + 0.90*w);
+      /* NACE DENTRO DE ELLA y va saliendo: a 0,25 del radio el bulto
+         está bien metido en la campana, y en aditivo eso es justo lo que
+         parece —un hinchazón encendido en el costado— hasta que asoma.
+         Empezando ya en el canto no se desprende de nada, aparece. */
+      q.d = pegada*(0.25 + 0.75*w);
+    } else if (u < 0.60){
+      const w = (u - 0.35)/0.25;
+      q.esc = q.escMax;
+      q.d = pegada + (soltada - pegada)*w;
+    } else {
+      const w = (u - 0.60)/0.40;
+      /* el tamaño se va antes que la distancia (exponente > 1), así que
+         parece que se pierde en el agua y no que se ha ido del cuadro */
+      q.esc = q.escMax*Math.pow(1 - w, 1.3);
+      q.d = soltada + (q.lejos - soltada)*w;
+    }
+    q.dx = Math.cos(q.ang)*q.d;
+    q.dy = Math.sin(q.ang)*q.d;
+  }
+  if (!vivas) j.crias = null;
+}
+
+/* ── Y LA MADRE SE VA VACIANDO ──────────────────────────────────────
+   Lo hinchada que está NO LLEVA RELOJ PROPIO: sale de cuántas crías le
+   quedan dentro. Llena al empezar, y cada parto le baja un escalón, así
+   que se desinfla al ritmo al que pare y acaba exactamente como estaba.
+
+   Ésa es la razón de que no haya un `gemaHinchaVida` que cuadrar a mano:
+   un reloj aparte se descuadra en cuanto se toca `gemaEscalona` o
+   `gemaCuantas` —y se descuadra en silencio, dejándola desinflarse con
+   hijas todavía pegadas al costado—. Aquí no puede pasar.
+
+   Lo único que hace falta es que no salte: el escalón se persigue con
+   `gemaHinchaVel`, que es lo deprisa que alcanza al objetivo.
+
+   Y `hincha` multiplica el radio SÓLO AL DIBUJAR (ver `dibuja`), que no
+   es pereza: `j.r` es el número con el que la subasta de `gema` decide
+   quién gema, así que moverlo de verdad cambiaría quién es «la mayor» a
+   mitad de maniobra. Su luz y su campo tampoco se enteran, y está bien
+   —lo que se pide es un gesto, no otra medusa—. */
+function pasoHincha(j, p, dt){
+  let obj = 1;
+  if (j.crias){
+    /* «dentro» es la que aún no ha terminado de brotar: la que va por el
+       primer tramo de su `u` o ni siquiera ha empezado */
+    let dentro = 0;
+    for (const q of j.crias) if (q.t < q.vida*0.35) dentro++;
+    obj = 1 + (p.gemaHincha - 1)*(dentro/j.crias.length);
+  }
+  j.hincha += (obj - j.hincha)*Math.min(1, dt*p.gemaHinchaVel);
+  if (!j.crias && Math.abs(j.hincha - 1) < 1e-3) j.hincha = 1;
 }
 
 const MEDUSA = {
@@ -251,8 +335,9 @@ const MEDUSA = {
       nC: rangoE(p.canales), nA: rangoE(p.brazos),
       cX: rango(p.ensancha), cY: rango(p.achata),
       hist: new Float32Array(HIST*3), head: 0, acc: 0,
-      /* la cría, mientras la tiene: ver `pasoCria` y el evento `gemacion` */
-      cria: null,
+      /* la horda, mientras la tiene, y lo hinchada que está mientras la
+         suelta: ver `pasoCrias` y el evento `gemacion` */
+      crias: null, hincha: 1,
       tLen: new Int16Array(nT), tSeed: new Float32Array(nT),
       tAmp: new Float32Array(nT), tLat: new Float32Array(nT),
       /* CUÁNTO ALUMBRA, en dos alcances: `rLuz` a cuánto enciende plancton,
@@ -318,17 +403,23 @@ const MEDUSA = {
 
     /* ── LA GEMACIÓN ──────────────────────────────────────────────
        Un campo `gema` es una orden en el agua y el cupo viaja en su `d`: la
-       primera que lo lee lo descuenta, así que sale UNA cría y no una por
-       medusa. Ni ella sabe quién la ha dado ni el evento sabe que hay
-       medusas. */
-    if (!j.cria){
+       primera que lo lee lo descuenta, así que gema UNA medusa y no todas.
+       Ni ella sabe quién la ha dado ni el evento sabe que hay medusas. */
+    if (!j.crias){
       const gm = M.campo('gema', j.x, j.y);
       if (gm && gm.d && gm.d.quedan > 0){
-        /* se apunta con su radio, y del segundo fotograma en adelante se la
-           queda la mayor —o sea la más cercana, que el radio lleva dentro
-           la escala del plano—. Ver por qué en eventos/gemacion.js. */
-        if (j.r > gm.d.mejorR) gm.d.mejorR = j.r;
-        if (gm.d.lista && j.r >= gm.d.mejorR){
+        if (gm.d.elegido < 0){
+          /* primer fotograma: se apunta con su radio y el cupo se queda
+             con los `entre` mayores —o sea los más cercanos, que el radio
+             lleva dentro la escala de su plano—. Se ordena y se corta a
+             mano porque son tres medusas y una vez: cualquier cosa más
+             lista aquí es más código que trabajo ahorrado. Ver por qué en
+             eventos/gemacion.js. */
+          const ms = gm.d.mejores;
+          ms.push(j.r);
+          ms.sort((a, b) => b - a);
+          if (ms.length > gm.d.entre) ms.length = gm.d.entre;
+        } else if (gm.d.elegido === j.r){
           /* y SE GASTA EL CUPO: es lo que mata al evento en el acto —lee
              su `quedan`— y lo que pone el «una y sólo una» en el cupo y no
              en el desempate por radio. */
@@ -337,7 +428,9 @@ const MEDUSA = {
         }
       }
     }
-    if (j.cria) pasoCria(j, dt);
+    if (j.crias) pasoCrias(j, dt);
+    /* y sigue desinflándose después de la última: ver `pasoHincha` */
+    if (j.crias || j.hincha !== 1) pasoHincha(j, p, dt);
 
     reaccionBorde(j, M, p, j.x, j.y, dt);
 
@@ -391,27 +484,43 @@ const MEDUSA = {
   },
 
   dibuja(j, M, L, p, g){
-    /* LA CRÍA SE PINTA CON ESTA MISMA FUNCIÓN, dentro de una
-       transformación: es la misma medusa vista más pequeña y más lejos, y
-       cualquier otra forma de dibujarla sería un segundo sitio describiendo
-       la misma campana —el vicio que esta casa persigue—. Se aparta
-       `j.cria` durante la llamada o se llamaría a sí misma sin fin.
+    /* LAS CRÍAS SE PINTAN CON ESTA MISMA FUNCIÓN, cada una dentro de su
+       transformación: son la misma medusa vista más pequeña y más lejos, y
+       cualquier otra forma de dibujarlas sería un segundo sitio
+       describiendo la misma campana —el vicio que esta casa persigue—.
 
-       Va ANTES que la madre y da igual: en aditivo sumar es conmutativo. */
-    if (j.cria && j.cria.esc > 0.02){
-      const q = j.cria;
-      j.cria = null;
-      g.save();
-      g.translate(j.x + q.dx, j.y + q.dy);
-      g.scale(q.esc, q.esc);
-      g.translate(-j.x, -j.y);
-      MEDUSA.dibuja(j, M, L, p, g);
-      g.restore();
-      j.cria = q;
+       LO QUE CAMBIA DE UNA A OTRA SE LE PRESTA A LA MADRE y se le devuelve
+       al salir: su color, cuántos tentáculos y cuántos brazos. Es el mismo
+       apaño que apartar `j.crias` para no llamarse a sí misma sin fin, y
+       la razón de que la cría pueda ser otro color sin que exista.
+
+       Y `hincha` se pone a 1: la madre puede estar hinchada mientras las
+       suelta, y sin esto las crías saldrían hinchadas también.
+
+       Van ANTES que la madre y da igual: en aditivo sumar es conmutativo. */
+    if (j.crias){
+      const cr = j.crias, c0 = j.c, nT0 = j.nT, nA0 = j.nA, h0 = j.hincha;
+      j.crias = null; j.hincha = 1;
+      for (const q of cr){
+        if (!(q.esc > 0.02)) continue;
+        j.c = q.c; j.nT = q.nT; j.nA = q.nA;
+        g.save();
+        g.translate(j.x + q.dx, j.y + q.dy);
+        g.scale(q.esc, q.esc);
+        g.translate(-j.x, -j.y);
+        MEDUSA.dibuja(j, M, L, p, g);
+        g.restore();
+      }
+      j.crias = cr; j.c = c0; j.nT = nT0; j.nA = nA0; j.hincha = h0;
     }
     const c = j.contract;
-    const rx = j.r * j.ancho * (0.94 + j.cX*c);
-    const ry = j.r * j.alto  * (1.10 - j.cY*c);
+    /* EL RADIO CON EL QUE SE DIBUJA, que no es `j.r`: mientras gema está
+       hinchada. Todo el cuerpo sale de aquí —campana, nube y los dos
+       halos—, y `j.r` se queda como está porque es el número con el que
+       se decide quién gema. */
+    const R = j.r * j.hincha;
+    const rx = R * j.ancho * (0.94 + j.cX*c);
+    const ry = R * j.alto  * (1.10 - j.cY*c);
     const skirt = ry * j.faldon;
     const bright = (0.58 + 0.42*c) * j.vigor * (1 + 0.40*j.destello) * p.brillo
                  * (1 - silencio(M, j.x, j.y, L));
@@ -419,19 +528,19 @@ const MEDUSA = {
     const sh = L.sharp, S = L.scale;
 
     const glow = j.c.glow;
-    mancha(g, j.x, j.y, j.r*4.0, [
+    mancha(g, j.x, j.y, R*4.0, [
       [0.00, glow, 0.50*bright],  [0.14, glow, 0.24*bright],
       [0.36, glow, 0.085*bright], [0.64, glow, 0.024*bright],
       [1.00, glow, 0],
-    ], j.r*0.08);
+    ], R*0.08);
 
     const bx = j.x + Math.sin(j.tilt)*ry*0.14;
     const by = j.y - Math.cos(j.tilt)*ry*0.14;
-    mancha(g, bx, by, j.r*1.35, [
+    mancha(g, bx, by, R*1.35, [
       [0.00, j.c.mid, 0.46*bright],
       [0.35, j.c.mid, 0.17*bright],
       [1.00, j.c.mid, 0],
-    ], j.r*0.04);
+    ], R*0.04);
 
     /* ── LA NUBE ──────────────────────────────────────────────────
        El historial da el retardo y el serpenteo; la caída con la edad da
@@ -496,10 +605,10 @@ const MEDUSA = {
 
     bellPath(g, j, rx, ry, skirt);
     g.strokeStyle = rgba(j.c.mid,  0.40*bright);
-    g.lineWidth = Math.max(1, j.r*0.19);
+    g.lineWidth = Math.max(1, R*0.19);
     g.stroke();
     g.strokeStyle = rgba(j.c.core, 0.44*bright*sh);
-    g.lineWidth = Math.max(0.6, j.r*0.022);
+    g.lineWidth = Math.max(0.6, R*0.022);
     g.stroke();
 
     /* canales radiales: se apagan antes de llegar abajo; enteros, la campana
@@ -509,7 +618,7 @@ const MEDUSA = {
     cg.addColorStop(0.45, rgba(j.c.core, 0.07*bright*sh));
     cg.addColorStop(1.00, rgba(j.c.core, 0));
     g.strokeStyle = cg;
-    g.lineWidth = Math.max(0.5, j.r*0.024);
+    g.lineWidth = Math.max(0.5, R*0.024);
     for (let i=0;i<j.nC;i++){
       const t = (i+0.5)/j.nC, s = 1-2*t;
       g.beginPath();
@@ -521,10 +630,10 @@ const MEDUSA = {
 
     margenPath(g, j, rx, skirt);
     g.strokeStyle = rgba(j.c.mid,  0.34*bright);
-    g.lineWidth = Math.max(1.2, j.r*0.15);
+    g.lineWidth = Math.max(1.2, R*0.15);
     g.stroke();
     g.strokeStyle = rgba(j.c.core, 0.46*bright*sh);
-    g.lineWidth = Math.max(0.7, j.r*0.030);
+    g.lineWidth = Math.max(0.7, R*0.030);
     g.stroke();
 
     g.restore();
