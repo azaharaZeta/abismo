@@ -885,11 +885,11 @@ export const ABISMO = {
          minuto y no pasa nada: no hay prisa y el reloj de la pieza deja
          que se le solape otro.
 
-         `gemaEsc` es lo grandes que salen respecto a su madre, y ahora
-         salen GRANDES: por debajo de un cuarto no se ve de dónde se
-         despegan, que es lo que hay que ver. El techo lo pone que sigan
-         leyéndose como crías —por encima de la mitad son otra medusa que
-         se va—. `gemaLejos` es hasta dónde llegan, en radios de su madre:
+         `gemaEsc` es lo grandes que salen respecto a su madre, y salen
+         GRANDES: por debajo de un cuarto no se ve de dónde se despegan,
+         que es lo que hay que ver. Y el techo está CERCA del valor de
+         hoy: por encima de la mitad dejan de leerse como crías y son otra
+         medusa que se va, así que 0,47 es casi lo último que vale. `gemaLejos` es hasta dónde llegan, en radios de su madre:
          lo que se ve es que se alejan, así que tienen que salir del sitio
          donde han nacido —a menos de cinco radios parece que se apagan en
          el mismo punto—.
@@ -916,7 +916,7 @@ export const ABISMO = {
          `gemaHinchaVel` es sólo lo deprisa que persigue ese escalón, para
          que baje y no salte. */
       gemaCuantas: [12, 16], gemaVida: [11, 18], gemaEscalona: [0.8, 3.2],
-      gemaEsc: [0.26, 0.40], gemaLejos: [7, 11], gemaDesorden: 0.7,
+      gemaEsc: [0.32, 0.47], gemaLejos: [7, 11], gemaDesorden: 0.7,
       gemaTono: 2, gemaNube: 1.0,
       gemaHincha: 1.32, gemaHinchaVel: 0.85,
       /* ── SE LADEA AL PASAR EL DEDO ─────────────────────────────
@@ -964,6 +964,38 @@ export const ABISMO = {
          aparta dentro de lo que ya se movía. Una medusa que huye deja de
          ser una medusa. */
       recela: 5.0, recelo: 0.9,
+      /* ── Y DE LOS CUERPOS, QUE ES OTRA COSA ────────────────────
+         El recelo de arriba mira la esca, y la esca se apaga: medido, un
+         rape y una medusa se pisan en pantalla el 10-20 % del tiempo y en
+         tres cuartos de ese rato la trampa está apagada, así que el
+         recelo no actúa. Esto lee el campo `tapa` —«aquí hay un cuerpo»—
+         y no pregunta de quién es.
+
+         `apartaCuerpo` es la velocidad del desvío en U/s y va MUCHO más
+         alta que `recelo`: el recelo se anticipa desde cinco U y puede
+         permitirse ser un empujón, pero esto salta cuando ya se están
+         pisando y lo que tiene que hacer es sacarla de ahí. MEDIDO,
+         cinco semillas de diez minutos, el tiempo que medusa y rape se
+         pisan en pantalla: 17,6 % apagado, 13,1 % a 2,2 y 11,3 % a 5,5.
+         Y no la pone nerviosa —su velocidad real no se mueve: p50 0,14
+         · p90 0,6 · p99 1,1 U/s con y sin esto—, porque el empuje sólo
+         existe dentro del campo.
+
+         NO LO RESUELVE DEL TODO y conviene saber por qué: el empuje se
+         anula justo en el borde del campo `tapa`, que es de la talla del
+         cuerpo, así que la medusa se queda aparcada en ese canto —todavía
+         rozándose— y ahí ya no hay nada que la mueva. Subir la velocidad
+         no arregla ESO: de 2,2 a 7 el solape baja pero la racha más larga
+         se queda clavada en unos 40 s. Para quitarlo del todo haría falta
+         que el rape declarase una huella de «no te acerques» más ancha
+         que su `tapa`, y eso es un campo nuevo.
+
+         `apartaLado` inclina el desvío a lo horizontal, en fracción del
+         radial: a 0 sale en línea recta desde el cuerpo —y por arriba o
+         por abajo eso la empuja contra su propia flotación, que es donde
+         menos recorrido tiene—. A 0,9 sale de lado aunque esté justo
+         encima, que es como se sale de un encuadre. */
+      apartaCuerpo: 5.5, apartaLado: 0.9,
       borde: 0.8,
     },
 

@@ -444,6 +444,19 @@ const MEDUSA = {
        acudir. De paso, recela de la TRAMPA y no del animal: con la esca
        apagada el rape es un hueco invisible y se le acerca sin saberlo.
 
+       ESO ÚLTIMO TIENE UN PRECIO EN PANTALLA, y está medido: con un rape
+       en la pecera, medusa y rape se pisan el 10-20 % del tiempo y en
+       TRES CUARTOS de ese rato la esca está apagada, o sea que esto no
+       está actuando. De ahí el bloque de abajo, que mira el CUERPO.
+
+       Y NO SE ARREGLA SUBIÉNDOLO, que es lo que no se adivina leyendo:
+       este desvío sale de la ESCA, y la esca va por delante del morro,
+       así que para una medusa que esté al costado «alejarse» es correrse
+       A LO LARGO del cuerpo —acabar encima de la cola—. MEDIDO: con un
+       suelo que lo mantenga activo con la esca apagada, el tiempo que se
+       pisan SUBE del 17 % al 25 %. Lo que hace falta para el solape es
+       un centro en el cuerpo, no más fuerza aquí.
+
        De ahí sale gratis la profundidad: `L.luces` es por plano, así que
        una medusa del fondo no recela de una trampa que está delante. Con
        un campo habría hecho falta guarda, y la de `M.campo` va justo al
@@ -464,6 +477,37 @@ const MEDUSA = {
       const d = Math.sqrt(d2) || 1e-4;
       const w = (1 - d/r)*p.recelo*M.U;
       rvx += ex/d*w; rvy += ey/d*w;
+    }
+    /* ── Y SE APARTA DE LOS CUERPOS ───────────────────────────────
+       No es lo mismo que el recelo de arriba, y la diferencia se ve en
+       pantalla. El recelo mira la TRAMPA —la esca— y la esca se apaga:
+       medido, con un rape en la pecera medusa y rape se pisan el 10-20 %
+       del tiempo, y en TRES CUARTOS de ese rato la esca está apagada, o
+       sea que el recelo ni se entera. Y lo que molesta a la vista no es
+       la trampa: son dos siluetas grandes superpuestas, que en aditivo no
+       se leen ni como una ni como dos.
+
+       Lo que dice «aquí hay un cuerpo» ya existe y es el campo `tapa`
+       —el mismo que lee `silencio` para callarse dentro de él—. Aquí se
+       lee para IRSE. Sigue sin saber de quién es: hoy lo ponen el rape,
+       el visitante y la carroña, y de los tres conviene apartarse por lo
+       mismo. Salta cuando ya se están pisando, que es cuando empieza lo
+       feo, así que lo que se le pide no es anticipar sino NO QUEDARSE.
+
+       Y TIRA A LO HORIZONTAL (`apartaLado`): por arriba y por abajo la
+       medusa tiene poco recorrido —su patrulla la ata a una banda— y
+       encima empujarla en vertical es empujarla contra su flotación. De
+       lado sí puede, y de lado es como se sale de un encuadre. */
+    const cuerpo = M.campo('tapa', j.x, j.y, L.i);
+    if (cuerpo && cuerpo.peso > 0 && p.apartaCuerpo > 0){
+      const ex = j.x - cuerpo.x, ey = j.y - cuerpo.y;
+      const d = Math.hypot(ex, ey) || 1e-4;
+      /* el lado al que ya está, para no cruzarle por delante */
+      const lat = ex >= 0 ? 1 : -1;
+      const hx = ex/d + lat*opt(p.apartaLado, 0), hy = ey/d;
+      const hm = Math.hypot(hx, hy) || 1;
+      const w = cuerpo.peso * p.apartaCuerpo * M.U;
+      rvx += hx/hm*w; rvy += hy/hm*w;
     }
     avanza(j, M, L, dt, j.dx + rvx, j.dy + rvy);
     topa(j, M, p);
