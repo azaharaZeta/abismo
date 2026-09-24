@@ -237,7 +237,11 @@ especie('pezlinterna', {
               ? M.elige(p.mandan) : M.color(p.paleta);
     return {
       c,
-      tinte: 0,
+      /* el tinte de la floración, y el episodio que lo genera: ver
+         «LA FLORACIÓN LO TIÑE» en `actualiza`. `tinte` puede ser NEGATIVO
+         —el valle de la envolvente—, y quien lo lea tiene que contar con
+         ello: el color se recorta a 0 y el brillo no. */
+      tinte: 0, flor: 0, florT: 1, florVisto: false,
       Lg,
       x: rnd(0,M.W), y: rnd(0,M.H),
       /* como emisor es débil y NO es un señuelo: los demás peces linterna no
@@ -348,15 +352,37 @@ especie('pezlinterna', {
       z.prox  = Math.max(z.prox, 1.6);
     } else z.panico = 0;
 
-    /* ── LA FLORACIÓN LO TIÑE ─────────────────────────────────────
+    /* ── LA FLORACIÓN LO TIÑE, Y LE DA UN ATAQUE ──────────────────
        Un campo `tinta` pasa por encima y el pez coge su propio tono
-       saturado: la onda no trae un color, trae la orden de darlo todo. Sube
-       de golpe —el frente pasa en menos de un segundo— y baja despacio, así
-       que por el banco cruza una ola y detrás queda un rastro que se apaga.
-       Ni el pez sabe qué lo ha teñido ni el evento sabe que hay peces. */
+       saturado: la onda no trae un color, trae la orden de darlo todo. Ni
+       el pez sabe qué lo ha teñido ni el evento sabe que hay peces.
+
+       EL FRENTE NO TIÑE: DISPARA. Lo que se ve lo pone una envolvente que
+       es de cada pez y arranca cuando el frente le llega, así que la ola
+       sigue barriendo el banco pez a pez pero lo que hace cada uno dura
+       más que el paso del frente y no depende de lo gordo que sea.
+
+       Y LA ENVOLVENTE OSCILA: `sin(u·3π)` da dos lomos con un valle en
+       medio, o sea SUBE mucho, SE APAGA por debajo de lo normal y vuelve
+       a subir antes de quedarse en nada. El valle es de verdad negativo
+       —`rl` baja de 1 y el pez se oscurece—, que es lo que lo convierte
+       en un latido y no en un desvanecido; `florApaga` es cuánto. En
+       u=1 el seno vale exactamente 0, así que cierra solo y no hace
+       falta rampa de salida.
+
+       Se dispara por FLANCO (`florVisto`): el aro es ancho y un pez
+       puede pasarse dentro más de lo que dura su episodio, y sin el
+       flanco se le encadenarían dos seguidos. */
     const tn = M.campo('tinta', z.x, z.y, L.i);
-    if (tn && tn.peso > z.tinte) z.tinte = tn.peso;
-    else if (z.tinte > 0) z.tinte = Math.max(0, z.tinte - dt*p.tinteVuelve);
+    const hayFrente = !!tn && tn.peso > p.florUmbral;
+    if (hayFrente && !z.florVisto && z.flor <= 0) z.flor = z.florT = rango(p.florDura);
+    z.florVisto = hayFrente;
+    if (z.flor > 0){
+      z.flor = Math.max(0, z.flor - dt);
+      const u = 1 - z.flor/z.florT;
+      const sn = Math.sin(u*Math.PI*3);
+      z.tinte = sn >= 0 ? sn : sn*opt(p.florApaga, 0);
+    } else z.tinte = 0;
 
     /* ¿hay una esca a la vista? Sólo señuelos: un pez linterna no persigue a
        otro pez linterna. */
@@ -516,7 +542,13 @@ especie('pezlinterna', {
        escribir en la entrada de paleta —el halo se cachea DENTRO de ella
        (`M.halo`) y es compartido por todo el tramo—, de ahí que se mezcle
        aquí y sólo para pintar. */
-    const rl = 1 + z.tinte*opt(p.tinteBrillo, 0);
+    /* NO BAJA DE CERO: el valle de la floración mete un `tinte`
+       negativo, y un alfa negativo no apaga más, rompe. */
+    const rl = Math.max(0, 1 + z.tinte*opt(p.tinteBrillo, 0));
+    /* el COLOR sólo con el tinte positivo: con el negativo `mezcla`
+       extrapolaría al otro lado del núcleo y saldrían colores que no
+       están en la paleta. En el valle el pez se apaga, no cambia de
+       tono. */
     const cCore = z.tinte > 0.004
       ? mezcla(z.c.core, z.c.mid, z.tinte*p.tinteSat) : z.c.core;
     const cMid = z.c.mid, cGlow = z.c.glow;
@@ -619,7 +651,21 @@ especie('pezlinterna', {
          canto, así que la hilera se afina hacia el morro y hacia la cola
          —que es como la lleva un mictófido de verdad. */
       const rr = Math.min(Lg*0.035, pz[1] - fy);
-      pintaHalo(g, M, z.c, fx, fy, rr*5, pa*0.55);
+      /* ── Y CON LA FLORACIÓN NO SE ENCIENDE MÁS: CRECE ──────────
+         A alfa 1 no se puede subir el brillo, sólo el TAMAÑO, y el punto
+         ya llega a 1 él solo. MEDIDO con los `ilum` vivos del banco: sin
+         floración el alfa del punto se recorta el 1 % de las muestras y
+         CON ella el 52 %, así que la mitad de `tinteBrillo` se estaba
+         tirando contra el tope. Y lo poco que pasaba lo comía el cambio
+         de color —el núcleo se va del casi blanco al tono del pez, que
+         tiene menos luminancia—: la cuenta completa daba ×0,84, o sea que
+         el banco se veía MENOS durante la floración.
+
+         El halo sí tiene sitio: su alfa va a la mitad (`pa*0,55`) y su
+         radio no lo topa nadie. `tinteCrece` es lo que se agranda, y el
+         área va con el cuadrado, así que sube deprisa. */
+      const cre = 1 + z.tinte*opt(p.tinteCrece, 0);
+      pintaHalo(g, M, z.c, fx, fy, rr*5*cre, pa*0.55);
       g.fillStyle = rgba(cCore, Math.min(1, pa));
       g.beginPath(); g.arc(fx, fy, rr, 0, TAU); g.fill();
     }

@@ -28,7 +28,7 @@ Este fichero es **solo el backlog de ideas SIN PROCESAR**. Reglas estrictas para
 ## Ideas de usuario (pendientes de procesar)
 > Solo un humano edita esta sección. Texto breve; el detalle se desarrolla al crear la ficha.
 
-_(vacío: las tres del 2026-09-22 están procesadas)_
+_(vacío: las tres del 2026-09-23 están procesadas)_
 
 ## Ideas propuestas por Claude (staging — el humano las sube arriba si las acepta)
 > Cabos sueltos de las ideas procesadas entre el 2026-09-17 y el 2026-09-21.

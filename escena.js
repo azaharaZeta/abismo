@@ -408,6 +408,20 @@ export const ABISMO = {
        bien»; `base` es lo que se intuye sin nada, y va mínimo. */
     { evento: 'carrona', plano: 1,
       banda: [0.14, 0.86],
+      /* ── CUÁNTAS CAEN, Y NO A LA VEZ ─────────────────────────────
+         Un esqueleto suelto es un hallazgo; tres bajando a distinto
+         ritmo son un sitio donde ha pasado algo. `retraso` son los
+         segundos entre uno y el siguiente, y va LARGO porque también lo
+         es la caída —de 37 a 64 s en cruzar un móvil de pie—: lo que se
+         quiere es encontrarse otro cuando el primero va ya por la mitad,
+         no tres en fila. Cada uno sortea por su cuenta el largo, la
+         velocidad, el volteo, la anatomía y el hueso, así que no hay dos
+         iguales.
+
+         Y CUENTA PARA EL COSTE: cada carroña empuja un campo `tapa` por
+         vértebra —de 11 a 16—, así que tres son hasta 48 campos que todo
+         bicho que consulte `tapa` tiene que recorrer. */
+      cuantas: [1, 3], retraso: [6, 20],
       vel: [0.55, 0.95], largo: [5.2, 9.0],
       giro: [-0.10, 0.10], deriva: 0.25,
       /* ── SIEMPRE HUESO ───────────────────────────────────────────
@@ -887,12 +901,17 @@ export const ABISMO = {
 
          `gemaEsc` es lo grandes que salen respecto a su madre, y salen
          GRANDES: por debajo de un cuarto no se ve de dónde se despegan,
-         que es lo que hay que ver. Y el techo está CERCA del valor de
-         hoy: por encima de la mitad dejan de leerse como crías y son otra
-         medusa que se va, así que 0,47 es casi lo último que vale. `gemaLejos` es hasta dónde llegan, en radios de su madre:
-         lo que se ve es que se alejan, así que tienen que salir del sitio
-         donde han nacido —a menos de cinco radios parece que se apagan en
-         el mismo punto—.
+         que es lo que hay que ver. Están POR ENCIMA DE LA MITAD, que es
+         donde estaría el techo si sólo se mirase eso —de ahí para arriba
+         una cría empieza a leerse como otra medusa que se va—, y lo que
+         lo sostiene es que la madre está HINCHADA mientras pare: contra
+         su 1,32, un 0,58 es el 44 % de lo que se ve a su lado. Si algún
+         día se baja `gemaHincha`, esto hay que volver a mirarlo.
+
+         `gemaLejos` es hasta dónde llegan, en radios de su madre: lo que
+         se ve es que se alejan, así que tienen que salir del sitio donde
+         han nacido —a menos de cinco radios parece que se apagan en el
+         mismo punto—.
 
          `gemaDesorden` es el temblor del ángulo, en fracción del hueco
          entre dos crías: a 0 salen en corona perfecta y se lee como un
@@ -916,7 +935,7 @@ export const ABISMO = {
          `gemaHinchaVel` es sólo lo deprisa que persigue ese escalón, para
          que baje y no salte. */
       gemaCuantas: [12, 16], gemaVida: [11, 18], gemaEscalona: [0.8, 3.2],
-      gemaEsc: [0.32, 0.47], gemaLejos: [7, 11], gemaDesorden: 0.7,
+      gemaEsc: [0.42, 0.58], gemaLejos: [7, 11], gemaDesorden: 0.7,
       gemaTono: 2, gemaNube: 1.0,
       gemaHincha: 1.32, gemaHinchaVel: 0.85,
       /* ── SE LADEA AL PASAR EL DEDO ─────────────────────────────
@@ -1589,12 +1608,27 @@ export const ABISMO = {
          se abre y se rehace solo. */
       panico: 1.8,
       /* ── Y LO QUE LE HACE LA FLORACIÓN ─────────────────────────
-         `tinteVuelve` es a qué velocidad se le va el tinte, en 1/s: a 0,4
-         el color aguanta dos segundos y medio después de que el frente
-         pase, así que la onda deja rastro en vez de una línea.
-         `tinteBrillo` es cuánto emite de más mientras lo tiene, y hace
-         falta: de lejos, de un pez lo que se ve es el halo del fotóforo, y
-         un cambio de tono a brillo constante casi no se lee. */
+         EL FRENTE NO TIÑE, DISPARA: cuando le llega, el pez arranca un
+         episodio suyo de `florDura` segundos y lo que se ve sale de una
+         envolvente, no del campo. Así la ola sigue barriendo el banco pez
+         a pez, pero lo que hace cada uno dura lo que tiene que durar y no
+         lo que tarde el aro en pasarle por encima.
+
+         `florUmbral` es cuánto peso del frente hace falta para
+         dispararlo. Bajo a propósito: un pez que sólo roza el canto del
+         aro tiene que florecer igual, porque lo que se mira es el banco
+         entero y un hueco se nota.
+
+         `florApaga` es lo hondo que baja el VALLE, y va en la misma
+         escala que el tinte pero con signo: a 0,6 el pez se queda en el
+         28 % de su brillo normal antes del segundo lomo. Es lo que hace
+         que se lea como un latido y no como un desvanecido, y por eso el
+         tinte puede ser negativo —quien lo lea tiene que contar con ello.
+
+         `tinteBrillo` es cuánto emite de más en los lomos, y hace falta:
+         de lejos, de un pez lo que se ve es el halo del fotóforo, y un
+         cambio de tono a brillo constante casi no se lee. */
+      florDura: [3.4, 5.0], florUmbral: 0.18, florApaga: 0.6,
       /* `tinteSat` es CUÁNTO se va el núcleo del fotóforo hacia el color
          del pez cuando pasa la onda, y es el número que hace el evento:
          el punto se pinta con `core`, que sale casi blanco pase lo que
@@ -1602,7 +1636,12 @@ export const ABISMO = {
          en el color del bicho (saturación real 0,88-0,99) y la hilera
          pasa de blanca a encendida; a 1 es el `mid` pelado y el núcleo
          deja de leerse como núcleo. */
-      tinteVuelve: 0.4, tinteBrillo: 1.2, tinteSat: 0.88,
+      /* `tinteCrece` es lo que se agranda el HALO de cada fotóforo, y es
+         donde acaba yendo casi toda la floración: el punto ya está a alfa
+         1 sin ella, así que subirle el brillo no pinta un fotón más (ver
+         la medida en pezlinterna.js). El área va con el cuadrado del
+         radio, así que a 0,8 el halo pone más del doble de luz. */
+      tinteBrillo: 1.2, tinteSat: 0.88, tinteCrece: 0.55,
 
       /* DESORDEN POR CIZALLA: abre la velocidad de crucero y los pesos de
          grupo pez a pez, así que unos adelantan a otros. Sin esto todos

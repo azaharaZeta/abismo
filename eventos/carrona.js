@@ -28,8 +28,13 @@ import { pintaHalo, reparte } from '../bichos/comun.js';
    aditivo— y no hace falta: lo que se reconoce de un cuerpo hundiéndose
    es la silueta de las costillas.                                    */
 
-evento('carrona', {
-  arranca(M, p, x, y){
+/* ── UN ESQUELETO ───────────────────────────────────────────────────
+   Todo lo suyo se sortea AQUÍ y una sola vez, así que de una tanda no
+   salen dos iguales: el largo, la velocidad, el volteo, la anatomía y el
+   hueso. `espera` son los segundos que tarda en asomar detrás del
+   anterior —lo que los reparte por el minuto en vez de soltarlos
+   juntos—. */
+function hueso(M, p, x, y, espera){
     const Lg = M.U * rango(p.largo);
     /* UN SOLO SORTEO de vértebras: de aquí salen el contador Y el largo
        del array de luz. Sorteados por separado no coinciden, y entonces
@@ -90,9 +95,15 @@ evento('carrona', {
          pintar. */
       luz: new Float32Array(nv),
       ilum: 0,
+      espera,
+      hecho: false,
     };
-  },
-  actualiza(e, M, p, dt){
+}
+
+/* Lo que hace UNO por fotograma. Devuelve false cuando ha salido por
+   abajo y ya no hay que volver a tocarlo. */
+function pasoHueso(e, M, p, dt){
+    if (e.espera > 0){ e.espera -= dt; return true; }
     e.y += e.vel * dt;
     e.ang += e.vGiro * dt;
     e.x += Math.sin(M.t*0.13 + e.fase) * opt(p.deriva, 0) * M.U * dt;
@@ -163,8 +174,10 @@ evento('carrona', {
                       x: e.x, y: e.y, r: e.Lg*0.75,
                       fuerza: en, filo: 2.0, c: e.c });
     return true;
-  },
-  dibuja(e, M, p, g){
+}
+
+/* y lo que se ve de UNO. */
+function pinta(e, M, p, g){
     const br = e.ilum;
     if (br < 0.02) return;
     const c = e.c;
@@ -322,6 +335,40 @@ evento('carrona', {
     }
     g.stroke();
     g.restore();
+}
+
+/* ── LA TANDA ───────────────────────────────────────────────────────
+   De una vez cae MÁS DE UNO, escalonados. No es sólo «más cosas»: un
+   esqueleto suelto es un hallazgo y tres bajando a distinto ritmo son un
+   sitio donde ha pasado algo, que es de lo que va el evento. Cada uno se
+   sortea entero por su cuenta en `hueso()` —largo, velocidad, volteo,
+   anatomía y hueso—, así que no hay dos iguales ni bajan a la par.
+
+   El primero entra YA; los demás esperan lo suyo. El contacto no le pasa
+   sitio a ninguno: una carroña que sale del dedo se lee como que el dedo
+   la ha hecho, y este evento va de encontrársela.                    */
+evento('carrona', {
+  arranca(M, p){
+    const n = Math.max(1, rangoE(opt(p.cuantas, 1))|0);
+    const ks = [];
+    let espera = 0;
+    for (let i=0;i<n;i++){
+      ks.push(hueso(M, p, undefined, undefined, espera));
+      espera += rango(opt(p.retraso, 0));
+    }
+    return { ks };
+  },
+  actualiza(e, M, p, dt){
+    let quedan = 0;
+    for (const k of e.ks){
+      if (k.hecho) continue;
+      if (pasoHueso(k, M, p, dt)) quedan++;
+      else k.hecho = true;
+    }
+    return quedan > 0;
+  },
+  dibuja(e, M, p, g){
+    for (const k of e.ks) if (!k.hecho) pinta(k, M, p, g);
   },
 });
 
